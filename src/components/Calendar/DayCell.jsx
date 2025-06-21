@@ -2,39 +2,64 @@
 
 import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { getDayInfo, getWorkoutColor } from '../../utils/calendarUtils.js';
+import { getDayInfo, getWorkoutColor } from './WorkoutCalendar.jsx';
 
-const DayCell = ({ day, onDayClick }) => { // Receive onDayClick prop
+const DayCell = ({ day, onDayClick }) => {
   const { appState } = useContext(AppStateContext);
   
-  const programStartDate = new Date(2025, 0, 1);
+  // Use the dynamic start date from the context
+  const programStartDate = appState.challengeStartDate;
+  
+  // If the challenge hasn't started, only 'today' styling is relevant
+  if (!programStartDate) {
+      let cellClass = 'day-cell';
+      if (day.isToday) cellClass += ' today';
+      return (
+        <div className={cellClass} style={{ cursor: 'default', opacity: 0.5 }}>
+            <span className="day-number">{day.dayNumber}</span>
+        </div>
+      );
+  }
+
   const dayInfo = getDayInfo(day, programStartDate);
   
-  const isCompleted = !dayInfo.isFuture && dayInfo.programDay && dayInfo.programDay < appState.currentDay;
-  const isToday = day.isToday;
-
   if (dayInfo.isBlank) {
     return <div className="day-cell blank"></div>;
   }
 
+  // Check if the workout for this day has been completed
+  const isCompleted = dayInfo.programDay !== null && appState.workoutsCompleted.includes(dayInfo.programDay);
+  const isProgramCurrentDay = dayInfo.programDay !== null && dayInfo.programDay === appState.currentDay;
+  const isUpcomingWorkout = dayInfo.programDay !== null && !isCompleted && !isProgramCurrentDay;
+  const isToday = dayInfo.isToday;
+
   const workoutColor = getWorkoutColor(dayInfo.workoutType);
-  const cellStyle = { '--workout-color': workoutColor, };
+  const cellStyle = { '--workout-color': workoutColor };
 
   let cellClass = 'day-cell';
-  if (dayInfo.isFuture || !dayInfo.workoutType) {
-    cellClass += ' future';
-  } else if (isCompleted) {
+  if (isCompleted) {
     cellClass += ' completed';
-  } else {
-    cellClass += ' upcoming';
+  } else if (isProgramCurrentDay) {
+    cellClass += ' upcoming'; // 'upcoming' class provides the border highlight
+  } else if (!dayInfo.programDay && !isToday) {
+    cellClass += ' future';
   }
-  if (isToday) { cellClass += ' today'; }
+
+  if (isToday) {
+    cellClass += ' today';
+  }
+
+  const handleClick = () => {
+    if (dayInfo.programDay) {
+      onDayClick(dayInfo.programDay);
+    }
+  };
 
   return (
-    <div className={cellClass} style={cellStyle} onClick={() => onDayClick(dayInfo.programDay)}>
+    <div className={cellClass} style={cellStyle} onClick={handleClick}>
       <span className="day-number">{dayInfo.dayNumber}</span>
       <div className="dot-container">
-        {workoutColor !== 'transparent' && <div className="workout-dot"></div>}
+        {isUpcomingWorkout && workoutColor !== 'transparent' && <div className="workout-dot"></div>}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 // src/App.jsx
 
 import React, { useState, useContext, useEffect } from 'react';
+// REMOVED RotateCcw from this line
 import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
 import { ThemeContext, AppStateContext } from './context/AppContext.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
@@ -10,7 +11,7 @@ import ProgressView from './components/Progress/ProgressView.jsx';
 import ProgramOverview from './components/Program/ProgramOverview.jsx';
 import TimerBar from './components/Common/TimerBar.jsx';
 import ExerciseDetailModal from './components/Common/ExerciseDetailModal.jsx';
-import Confetti from 'react-confetti'; // CORRECTED IMPORT
+import Confetti from 'react-confetti';
 import { useWindowSize } from './hooks/useWindowSize.jsx';
 import './App.css';
 import './components/Dashboard/Dashboard.css';
@@ -28,11 +29,23 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, isMobile }) => {
   return ( <button onClick={onClick} style={baseStyle} onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'; e.currentTarget.style.color = 'var(--text-primary)'; } }} onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-tertiary)'; } }} > <Icon size={isMobile ? 22 : 20} style={{ animation: isActive ? 'pulse 2s infinite' : 'none' }} /> <span style={labelStyle}>{label}</span> {isActive && ( <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', opacity: 0.2, filter: 'blur(20px)', zIndex: -1 }} /> )} </button> );
 };
 
-const ThemeToggle = () => {
+const ThemeToggle = ({ isMobile }) => {
   const { darkMode, toggleTheme } = useContext(ThemeContext);
   const buttonStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: 'var(--bg-tertiary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease', gap: '8px' };
-  return ( <button onClick={toggleTheme} style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'} > {darkMode ? ( <> <Sun size={20} style={{ color: '#fbbf24' }} /> <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>Light Mode</span> </> ) : ( <> <Moon size={20} style={{ color: '#3b82f6' }} /> <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>Dark Mode</span> </> )} </button> );
+  const spanStyle = { fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' };
+
+  if (isMobile) {
+    return (
+      <button onClick={toggleTheme} style={{...buttonStyle, width: '44px', height: '44px'}}>
+        {darkMode ? <Sun size={20} style={{ color: '#fbbf24' }} /> : <Moon size={20} style={{ color: '#3b82f6' }} />}
+      </button>
+    );
+  }
+
+  return ( <button onClick={toggleTheme} style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'} > {darkMode ? ( <> <Sun size={20} style={{ color: '#fbbf24' }} /> <span style={spanStyle}>Light Mode</span> </> ) : ( <> <Moon size={20} style={{ color: '#3b82f6' }} /> <span style={spanStyle}>Dark Mode</span> </> )} </button> );
 };
+
+// The ResetButton component has been removed from this file.
 
 export default function App() {
   const { appState } = useContext(AppStateContext);
@@ -72,9 +85,9 @@ export default function App() {
       {isMobile ? (
         <>
           <div className="mobile-header">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
               <h1 style={{ fontSize: '20px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1>
-              <ThemeToggle />
+              <ThemeToggle isMobile={true} />
             </div>
           </div>
           <main className="main-content">{renderView()}</main>
@@ -95,8 +108,9 @@ export default function App() {
               <nav style={{ flex: 1, padding: '0 16px' }}>
                 {navItems.map(item => (<div key={item.id} style={{ marginBottom: '8px' }}> <NavItem icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={false} /> </div>))}
               </nav>
+              {/* The reset button is no longer here */}
               <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
-                <ThemeToggle />
+                <ThemeToggle isMobile={false} />
               </div>
             </div>
           </div>

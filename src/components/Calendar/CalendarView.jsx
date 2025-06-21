@@ -2,16 +2,17 @@
 
 import React, { useState, useContext } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { generateMonthDays } from '../../utils/calendarUtils.js';
+import { generateMonthDays } from './WorkoutCalendar.jsx';
 import DayCell from './DayCell.jsx';
-import Modal from '../Common/Modal.jsx'; // Import the generic modal
-import WorkoutView from '../Workout/WorkoutView.jsx'; // Import our existing WorkoutView
+import Modal from '../Common/Modal.jsx';
+import WorkoutView from '../Workout/WorkoutView.jsx';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import './Calendar.css';
 
 const CalendarView = () => {
   const { appState } = useContext(AppStateContext);
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // Start in Jan 2025
+  // Set initial view to the challenge start date, or today if not started
+  const [currentDate, setCurrentDate] = useState(appState.challengeStartDate || new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
@@ -36,7 +37,6 @@ const CalendarView = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
-  // We temporarily override the app's currentDay for the preview
   const previewAppState = { ...appState, currentDay: selectedDay };
 
   return (
@@ -64,7 +64,6 @@ const CalendarView = () => {
         onClose={() => setIsPreviewModalOpen(false)}
         title={`Workout Preview: Day ${selectedDay}`}
       >
-        {/* We reuse WorkoutView inside the modal! */}
         <AppStateContext.Provider value={{ appState: previewAppState }}>
           <WorkoutView />
         </AppStateContext.Provider>

@@ -6,6 +6,35 @@ import { getExerciseByName } from '../data/exerciseDatabase.js';
 export const ThemeContext = createContext();
 export const AppStateContext = createContext();
 
+const initialAppState = {
+  challengeStartDate: null, // null means challenge hasn't started
+  currentDay: 1,
+  currentWeek: 1,
+  startingWeight: 0,
+  currentWeight: 0,
+  workoutsCompleted: [],
+  currentStreak: 0,
+  weightHistory: [],
+  photos: [],
+  totalLbsLifted: 0,
+  totalReps: 0,
+  totalSets: 0,
+  timer: { isActive: false, type: null, key: 0, duration: 0, time: 0, tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true }, emom: { totalMinutes: 0, currentMinute: 0 } },
+  isModalOpen: false,
+  modalContent: null,
+  showConfetti: false,
+};
+
+// Helper to calculate day difference, ignoring time
+const diffDays = (date1, date2) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    d1.setHours(0, 0, 0, 0);
+    d2.setHours(0, 0, 0, 0);
+    return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+};
+
+
 const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(true);
   useEffect(() => { document.body.className = darkMode ? 'dark-theme' : 'light-theme'; }, [darkMode]);
@@ -14,16 +43,76 @@ const ThemeProvider = ({ children }) => {
 };
 
 const AppStateProvider = ({ children }) => {
-  const [appState, setAppState] = useState({
-    currentDay: 1, currentWeek: 1, startingWeight: 0, currentWeight: 0,
-    workoutsCompleted: [], currentStreak: 0, weightHistory: [], photos: [],
-    totalLbsLifted: 0, totalReps: 0, totalSets: 0,
-    timer: { isActive: false, type: null, key: 0, duration: 0, time: 0, tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true, }, emom: { totalMinutes: 0, currentMinute: 0, } },
-    isModalOpen: false, modalContent: null,
-    showConfetti: false,
+  const [appState, setAppState] = useState(() => {
+    try {
+      const savedState = localStorage.getItem('crossfitChallengeState');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        // Re-hydrate date objects from string format
+        if (parsed.challengeStartDate) {
+          parsed.challengeStartDate = new Date(parsed.challengeStartDate);
+        }
+        if (parsed.weightHistory) {
+            parsed.weightHistory.forEach(e => e.day = parseInt(e.day, 10));
+        }
+        return parsed;
+      }
+    } catch (error) {
+      console.error("Could not load state from localStorage", error);
+    }
+    return initialAppState;
   });
 
+  // Persist state to localStorage on any change
+  useEffect(() => {
+    try {
+      localStorage.setItem('crossfitChallengeState', JSON.stringify(appState));
+    } catch (error) {
+      console.error("Could not save state to localStorage", error);
+    }
+  }, [appState]);
+
+  // Dynamically update currentDay based on real time
+  useEffect(() => {
+    if (appState.challengeStartDate) {
+      const today = new Date();
+      const dayNumber = diffDays(appState.challengeStartDate, today) + 1;
+      
+      // Ensure day doesn't exceed 60
+      const newCurrentDay = Math.min(Math.max(1, dayNumber), 60);
+
+      if (newCurrentDay !== appState.currentDay) {
+        updateAppState({ 
+          currentDay: newCurrentDay,
+          currentWeek: Math.ceil(newCurrentDay / 7)
+        });
+      }
+    }
+  }, []); // Runs once on app load
+
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
+
+  const startChallenge = () => {
+    const startDate = new Date();
+    startDate.setHours(0,0,0,0); // Normalize to start of day
+    
+    setAppState(prev => ({
+      ...initialAppState, // Reset all progress
+      challengeStartDate: startDate,
+      startingWeight: prev.startingWeight, // Keep any pre-entered weight
+      currentWeight: prev.currentWeight,
+      weightHistory: prev.weightHistory,
+      photos: prev.photos
+    }));
+  };
+  
+  const resetChallenge = () => {
+    const isConfirmed = window.confirm("Are you sure you want to reset all progress? This action cannot be undone.");
+    if (isConfirmed) {
+      localStorage.removeItem('crossfitChallengeState');
+      window.location.reload();
+    }
+  };
 
   const startTimer = ({ type, duration = 0, tabataRounds = 8 }) => {
     setAppState(prev => {
@@ -62,17 +151,24 @@ const AppStateProvider = ({ children }) => {
   const addPhotoEntry = (photoUrl) => { setAppState(p => { const photo = {day: p.currentDay, url: photoUrl}; const updated = [...p.photos, photo].sort((a,b)=>a.day-b.day); return {...p, photos: updated};})};
 
   const completeWorkout = (stats) => {
-    setAppState(prev => ({
-      ...prev,
-      totalSets: prev.totalSets + stats.sets,
-      totalReps: prev.totalReps + stats.reps,
-      totalLbsLifted: prev.totalLbsLifted + stats.weight,
-      workoutsCompleted: [...prev.workoutsCompleted, prev.currentDay],
-      currentStreak: prev.currentStreak + 1,
-      currentDay: prev.currentDay + 1,
-      currentWeek: Math.ceil((prev.currentDay + 1) / 7),
-      showConfetti: true,
-    }));
+    setAppState(prev => {
+      // Logic to determine if the last completed day was yesterday
+      const lastCompletedDay = prev.workoutsCompleted.length > 0 
+        ? Math.max(...prev.workoutsCompleted) 
+        : 0;
+      
+      const newStreak = (prev.currentDay - lastCompletedDay === 1) ? prev.currentStreak + 1 : 1;
+
+      return {
+        ...prev,
+        totalSets: prev.totalSets + stats.sets,
+        totalReps: prev.totalReps + stats.reps,
+        totalLbsLifted: prev.totalLbsLifted + stats.weight,
+        workoutsCompleted: [...new Set([...prev.workoutsCompleted, prev.currentDay])], // Use Set to avoid duplicates
+        currentStreak: newStreak,
+        showConfetti: true,
+      }
+    });
     setTimeout(() => {
       setAppState(prev => ({ ...prev, showConfetti: false }));
     }, 5000);
@@ -82,7 +178,8 @@ const AppStateProvider = ({ children }) => {
     <AppStateContext.Provider value={{ 
       appState, updateAppState, startTimer, stopTimer,
       openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
-      completeWorkout
+      completeWorkout, startChallenge,
+      resetChallenge
     }}>
       {children}
     </AppStateContext.Provider>

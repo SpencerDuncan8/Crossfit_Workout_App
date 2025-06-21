@@ -111,3 +111,47 @@
   transform: scale(1.02);
   box-shadow: 0 5px 15px #8b5cf650;
 }
+/* src/components/Progress/Progress.css */
+
+/* ... (all previous CSS is unchanged) ... */
+
+/* --- NEW DANGER ZONE STYLES --- */
+
+.danger-zone {
+  border-color: rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.danger-zone .progress-card-title {
+  color: #ef4444; /* red-500 */
+}
+
+.danger-zone-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.reset-progress-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.reset-progress-btn:hover {
+  background-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
