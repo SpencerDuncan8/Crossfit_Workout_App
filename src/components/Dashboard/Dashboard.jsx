@@ -7,15 +7,15 @@ import MetricCard from './MetricCard.jsx';
 import WeightChart from './WeightChart.jsx';
 import WeightLogger from '../Progress/WeightLogger.jsx';
 import PhotoProgress from '../Progress/PhotoProgress.jsx';
+import InitialSetup from './InitialSetup.jsx'; // <-- IMPORT THE NEW COMPONENT
 import './Dashboard.css';
-// Add CheckCircle for the new completed card
 import { Weight, TrendingDown, Target, Flame, Dumbbell, Repeat, BarChart, PlayCircle, CheckCircle } from 'lucide-react';
 
 const Dashboard = ({ setActiveView }) => {
   const { appState, startChallenge } = useContext(AppStateContext);
 
+  // VIEW 1: Challenge has not started
   if (!appState.challengeStartDate) {
-    // ... (This "Start Challenge" part is unchanged)
     return (
       <div className="dashboard-container">
         <div className="overview-card" style={{ textAlign: 'center', padding: '40px', backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)'}}>
@@ -33,17 +33,17 @@ const Dashboard = ({ setActiveView }) => {
                 Begin Challenge
             </button>
         </div>
-        <WeightLogger /> 
-        <PhotoProgress />
       </div>
     );
   }
 
-  // --- Regular Dashboard View ---
+  // VIEW 2: User just started, needs to do initial setup
+  if (appState.isFirstTimeSetup) {
+      return <InitialSetup />;
+  }
 
-  // Check if today's workout is done
+  // VIEW 3: Regular Dashboard for an ongoing challenge
   const isTodayWorkoutCompleted = appState.workoutsCompleted.includes(appState.currentDay);
-
   const programCompletion = (appState.workoutsCompleted.length / 50) * 100;
   const weightLost = appState.startingWeight > 0 ? appState.startingWeight - appState.currentWeight : 0;
 
@@ -68,11 +68,8 @@ const Dashboard = ({ setActiveView }) => {
         {metricCardsData.map((card, index) => ( <MetricCard key={index} {...card} /> ))}
       </div>
       <WeightChart />
-
-      {/* --- NEW CONDITIONAL WORKOUT CARD --- */}
       <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '12px', padding: '24px', boxShadow: 'var(--shadow)', border: '1px solid var(--border-color)' }}>
         {isTodayWorkoutCompleted ? (
-          // Display this card if the workout IS completed
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <CheckCircle size={48} color="#10b981" />
             <div>
@@ -83,7 +80,6 @@ const Dashboard = ({ setActiveView }) => {
             </div>
           </div>
         ) : (
-          // Display this card if the workout IS NOT completed
           <div>
             <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--text-primary)' }}>Today's Workout</h3>
             <p style={{ fontWeight: '600', fontSize: '18px', color: '#FF6B35' }}>Time to train!</p>

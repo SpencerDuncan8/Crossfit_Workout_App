@@ -7,7 +7,8 @@ export const ThemeContext = createContext();
 export const AppStateContext = createContext();
 
 const initialAppState = {
-  challengeStartDate: null, // null means challenge hasn't started
+  challengeStartDate: null,
+  isFirstTimeSetup: false, // For onboarding
   currentDay: 1,
   currentWeek: 1,
   startingWeight: 0,
@@ -33,7 +34,6 @@ const diffDays = (date1, date2) => {
     d2.setHours(0, 0, 0, 0);
     return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
 };
-
 
 const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(true);
@@ -74,11 +74,11 @@ const AppStateProvider = ({ children }) => {
 
   // Dynamically update currentDay based on real time
   useEffect(() => {
-    if (appState.challengeStartDate) {
+    // Don't run this during the initial setup phase
+    if (appState.challengeStartDate && !appState.isFirstTimeSetup) {
       const today = new Date();
       const dayNumber = diffDays(appState.challengeStartDate, today) + 1;
       
-      // Ensure day doesn't exceed 60
       const newCurrentDay = Math.min(Math.max(1, dayNumber), 60);
 
       if (newCurrentDay !== appState.currentDay) {
@@ -88,21 +88,29 @@ const AppStateProvider = ({ children }) => {
         });
       }
     }
-  }, []); // Runs once on app load
+  }, [appState.challengeStartDate, appState.isFirstTimeSetup]); // Re-run if setup state changes
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
 
   const startChallenge = () => {
     const startDate = new Date();
-    startDate.setHours(0,0,0,0); // Normalize to start of day
-    
+    startDate.setHours(0,0,0,0);
     setAppState(prev => ({
-      ...initialAppState, // Reset all progress
+      ...initialAppState,
       challengeStartDate: startDate,
-      startingWeight: prev.startingWeight, // Keep any pre-entered weight
+      isFirstTimeSetup: true, // Set onboarding to true
+      // Keep any pre-entered data just in case
+      startingWeight: prev.startingWeight,
       currentWeight: prev.currentWeight,
       weightHistory: prev.weightHistory,
       photos: prev.photos
+    }));
+  };
+
+  const completeInitialSetup = () => {
+    setAppState(prev => ({
+      ...prev,
+      isFirstTimeSetup: false
     }));
   };
   
@@ -152,19 +160,14 @@ const AppStateProvider = ({ children }) => {
 
   const completeWorkout = (stats) => {
     setAppState(prev => {
-      // Logic to determine if the last completed day was yesterday
-      const lastCompletedDay = prev.workoutsCompleted.length > 0 
-        ? Math.max(...prev.workoutsCompleted) 
-        : 0;
-      
+      const lastCompletedDay = prev.workoutsCompleted.length > 0 ? Math.max(...prev.workoutsCompleted) : 0;
       const newStreak = (prev.currentDay - lastCompletedDay === 1) ? prev.currentStreak + 1 : 1;
-
       return {
         ...prev,
         totalSets: prev.totalSets + stats.sets,
         totalReps: prev.totalReps + stats.reps,
         totalLbsLifted: prev.totalLbsLifted + stats.weight,
-        workoutsCompleted: [...new Set([...prev.workoutsCompleted, prev.currentDay])], // Use Set to avoid duplicates
+        workoutsCompleted: [...new Set([...prev.workoutsCompleted, prev.currentDay])],
         currentStreak: newStreak,
         showConfetti: true,
       }
@@ -173,13 +176,13 @@ const AppStateProvider = ({ children }) => {
       setAppState(prev => ({ ...prev, showConfetti: false }));
     }, 5000);
   };
-
+  
   return (
     <AppStateContext.Provider value={{ 
       appState, updateAppState, startTimer, stopTimer,
       openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
-      completeWorkout, startChallenge,
-      resetChallenge
+      completeWorkout, startChallenge, resetChallenge,
+      completeInitialSetup
     }}>
       {children}
     </AppStateContext.Provider>
@@ -187,5 +190,11 @@ const AppStateProvider = ({ children }) => {
 };
 
 export const AppProviders = ({ children }) => {
-  return ( <ThemeProvider><AppStateProvider>{children}</AppStateProvider></ThemeProvider> );
+  return (
+    <ThemeProvider>
+      <AppStateProvider>
+        {children}
+      </AppStateProvider>
+    </ThemeProvider>
+  );
 };

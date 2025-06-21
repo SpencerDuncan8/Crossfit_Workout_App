@@ -5,7 +5,8 @@ import { AppStateContext } from '../../context/AppContext.jsx';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 
-const PhotoProgress = () => {
+// Accept a new prop `isInitialSetup` which defaults to false
+const PhotoProgress = ({ isInitialSetup = false }) => {
   const { appState, addPhotoEntry } = useContext(AppStateContext);
   const { photos } = appState;
   const fileInputRef = useRef(null);
@@ -25,10 +26,9 @@ const PhotoProgress = () => {
   const firstPhoto = photos[0];
   const lastPhoto = photos.length > 1 ? photos[photos.length - 1] : null;
 
-  // THE FIX: Define a style object to make sure the image is contained, not cropped.
   const imageStyle = {
     objectFit: 'contain',
-    backgroundColor: 'var(--bg-primary)' // Match the background
+    backgroundColor: 'var(--bg-primary)'
   };
 
   return (
@@ -41,14 +41,23 @@ const PhotoProgress = () => {
       </div>
       
       <div className="photo-progress-container">
-        {photos.length < 2 ? (
+        {photos.length < 2 && !isInitialSetup ? (
+          // This is the view for the regular Progress tab with 0 or 1 photo
           <div className="photo-placeholder">
             <p>Upload at least two photos to see your comparison.</p>
             {firstPhoto && <img src={firstPhoto.url} alt={`Day ${firstPhoto.day}`} className="single-photo-preview" />}
           </div>
+        ) : photos.length === 0 && isInitialSetup ? (
+          // THIS IS THE NEW VIEW: For initial setup when no photo is uploaded yet
+          <div className="photo-placeholder">
+            <p>Upload your 'Day 1' photo to get started.</p>
+          </div>
+        ) : photos.length > 0 && (photos.length < 2 || isInitialSetup) ? (
+            // This is the view for when the first photo has been uploaded (during setup or otherwise)
+            <img src={photos[photos.length - 1].url} alt={`Day ${photos[photos.length - 1].day}`} style={{...imageStyle, width: '100%', height: '100%'}} className="single-photo-preview" />
         ) : (
+          // This is the comparison view, shown on the Progress tab when there are 2+ photos
           <ReactCompareSlider
-            // Apply the style to both images in the slider
             itemOne={<ReactCompareSliderImage src={firstPhoto.url} alt={`Day ${firstPhoto.day}`} style={imageStyle} />}
             itemTwo={<ReactCompareSliderImage src={lastPhoto.url} alt={`Day ${lastPhoto.day}`} style={imageStyle} />}
             className="comparison-slider"
@@ -65,7 +74,8 @@ const PhotoProgress = () => {
       />
       <button className="upload-photo-btn" onClick={handleUploadClick}>
         <Camera size={20} />
-        Upload Today's Photo
+        {/* Change button text based on context */}
+        {photos.length === 0 && isInitialSetup ? 'Upload Day 1 Photo' : "Upload Today's Photo"}
       </button>
     </div>
   );
