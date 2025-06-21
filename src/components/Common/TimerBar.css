@@ -1,0 +1,45 @@
+/* src/components/Common/TimerBar.css */
+
+.timer-bar {
+  position: fixed; bottom: 80px; left: 16px; right: 16px; height: 60px;
+  background-color: var(--bg-secondary); border-radius: 12px;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.25); z-index: 1000;
+  overflow: hidden; border: 1px solid var(--border-color);
+  animation: slideUp 0.3s ease-out;
+}
+@media (min-width: 769px) { .timer-bar { bottom: 24px; left: auto; width: 450px; right: 24px; } }
+@keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.timer-progress {
+  position: absolute; top: 0; left: 0; height: 100%; width: 100%;
+  background: linear-gradient(90deg, #FF6B3550, #f74d0e80);
+  transform-origin: left; animation: shrink-width linear forwards;
+}
+@keyframes shrink-width { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.timer-content {
+  position: relative; height: 100%; display: flex;
+  justify-content: space-between; align-items: center;
+  padding: 0 16px; color: var(--text-primary);
+}
+.timer-info {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 14px;
+  letter-spacing: 0.5px; color: var(--text-secondary);
+}
+.timer-time-cluster { display: flex; align-items: center; gap: 12px; }
+.timer-time { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.timer-close-btn {
+  background: var(--bg-tertiary); border: none; border-radius: 50%;
+  width: 32px; height: 32px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+.timer-close-btn:hover { background-color: #ff6b35; color: #fff; }
+
+.tabata-phase-badge {
+  padding: 4px 10px; border-radius: 6px; font-size: 14px;
+  font-weight: 700; letter-spacing: 1px;
+}
+.tabata-phase-badge.work { background-color: #10b981; color: #fff; }
+.tabata-phase-badge.rest { background-color: #3b82f6; color: #fff; }

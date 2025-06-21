@@ -1,0 +1,35 @@
+/* src/components/Calendar/Calendar.css */
+/* ... (all previous styles are the same up to .workout-dot) ... */
+.calendar-container { background-color: var(--bg-secondary); border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow); animation: fadeIn 0.5s ease-out; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.current-month-label { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+.month-nav-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; padding: 8px; border-radius: 50%; transition: background-color 0.2s, color 0.2s; }
+.month-nav-btn:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.day-of-week-header { text-align: center; font-size: 14px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 8px; }
+.day-cell { aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; border-radius: 12px; transition: all 0.2s ease; position: relative; }
+.day-cell.blank { background: none; }
+.day-cell:not(.blank) { cursor: pointer; }
+.day-cell:not(.blank):hover { background-color: var(--bg-tertiary); }
+.day-number { font-size: 14px; font-weight: 500; color: var(--text-secondary); align-self: flex-start; }
+.day-cell.future { opacity: 0.5; }
+.day-cell.completed { background-color: var(--workout-color); }
+.day-cell.completed .day-number { color: white; }
+.day-cell.completed .workout-dot { display: none; }
+.day-cell.upcoming { border: 2px solid var(--workout-color); }
+.day-cell.upcoming .day-number { color: var(--workout-color); font-weight: 700; }
+.day-cell.upcoming .workout-dot { display: none; }
+.dot-container { display: flex; gap: 4px; }
+.workout-dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--workout-color); }
+
+/* --- ADD THIS STYLE FOR TODAY --- */
+.day-cell.today .day-number {
+  background-color: #FF6B35; /* Electric Orange */
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
