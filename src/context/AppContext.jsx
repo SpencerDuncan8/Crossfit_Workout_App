@@ -8,7 +8,7 @@ export const AppStateContext = createContext();
 
 const initialAppState = {
   challengeStartDate: null,
-  isFirstTimeSetup: false, // For onboarding
+  isFirstTimeSetup: false,
   currentDay: 1,
   currentWeek: 1,
   startingWeight: 0,
@@ -48,7 +48,6 @@ const AppStateProvider = ({ children }) => {
       const savedState = localStorage.getItem('crossfitChallengeState');
       if (savedState) {
         const parsed = JSON.parse(savedState);
-        // Re-hydrate date objects from string format
         if (parsed.challengeStartDate) {
           parsed.challengeStartDate = new Date(parsed.challengeStartDate);
         }
@@ -63,7 +62,6 @@ const AppStateProvider = ({ children }) => {
     return initialAppState;
   });
 
-  // Persist state to localStorage on any change
   useEffect(() => {
     try {
       localStorage.setItem('crossfitChallengeState', JSON.stringify(appState));
@@ -72,15 +70,11 @@ const AppStateProvider = ({ children }) => {
     }
   }, [appState]);
 
-  // Dynamically update currentDay based on real time
   useEffect(() => {
-    // Don't run this during the initial setup phase
     if (appState.challengeStartDate && !appState.isFirstTimeSetup) {
       const today = new Date();
       const dayNumber = diffDays(appState.challengeStartDate, today) + 1;
-      
       const newCurrentDay = Math.min(Math.max(1, dayNumber), 60);
-
       if (newCurrentDay !== appState.currentDay) {
         updateAppState({ 
           currentDay: newCurrentDay,
@@ -88,7 +82,7 @@ const AppStateProvider = ({ children }) => {
         });
       }
     }
-  }, [appState.challengeStartDate, appState.isFirstTimeSetup]); // Re-run if setup state changes
+  }, [appState.challengeStartDate, appState.isFirstTimeSetup]);
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
 
@@ -98,22 +92,21 @@ const AppStateProvider = ({ children }) => {
     setAppState(prev => ({
       ...initialAppState,
       challengeStartDate: startDate,
-      isFirstTimeSetup: true, // Set onboarding to true
-      // Keep any pre-entered data just in case
+      isFirstTimeSetup: true,
       startingWeight: prev.startingWeight,
       currentWeight: prev.currentWeight,
       weightHistory: prev.weightHistory,
       photos: prev.photos
     }));
   };
-
+  
   const completeInitialSetup = () => {
     setAppState(prev => ({
       ...prev,
       isFirstTimeSetup: false
     }));
   };
-  
+
   const resetChallenge = () => {
     const isConfirmed = window.confirm("Are you sure you want to reset all progress? This action cannot be undone.");
     if (isConfirmed) {
@@ -126,8 +119,14 @@ const AppStateProvider = ({ children }) => {
     setAppState(prev => {
       let newTimerState = { isActive: true, type: type, key: prev.timer.key + 1, duration: duration, time: 0, tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true }, emom: { totalMinutes: 0, currentMinute: 0 } };
       if (type === 'countdown') newTimerState.time = duration;
-      if (type === 'emom') { newTimerState.time = 60; newTimerState.emom = { totalMinutes: duration / 60, currentMinute: 1 }; }
-      if (type === 'tabata') { newTimerState.time = 20; newTimerState.tabata = { totalRounds: tabataRounds, currentRound: 1, isWorkPhase: true }; }
+      if (type === 'emom') {
+        newTimerState.time = 59; 
+        newTimerState.emom = { totalMinutes: duration / 60, currentMinute: 1 };
+      }
+      if (type === 'tabata') {
+        newTimerState.time = 20;
+        newTimerState.tabata = { totalRounds: tabataRounds, currentRound: 1, isWorkPhase: true };
+      }
       return { ...prev, timer: newTimerState };
     });
   };
@@ -181,7 +180,8 @@ const AppStateProvider = ({ children }) => {
     <AppStateContext.Provider value={{ 
       appState, updateAppState, startTimer, stopTimer,
       openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
-      completeWorkout, startChallenge, resetChallenge,
+      completeWorkout, startChallenge, 
+      resetChallenge, // <-- THE FIX IS ENSURING THIS IS IN THE VALUE OBJECT
       completeInitialSetup
     }}>
       {children}
