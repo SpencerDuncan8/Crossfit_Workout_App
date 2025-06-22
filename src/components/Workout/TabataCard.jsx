@@ -9,7 +9,11 @@ const TabataCard = ({ data }) => {
   const { name, format, rounds } = data;
 
   const handleStartWOD = () => {
-    startTimer({ type: 'tabata', tabataRounds: rounds.length * 2 }); // Each entry is 2 rounds of 20/10
+    // THE FIX: Be more specific about where to get the round count from.
+    // This assumes the format will be like "8 Rounds Tabata".
+    // It defaults to the old calculation if no number is found.
+    const totalRounds = parseInt(format.match(/\d+/)?.[0], 10) || rounds.length;
+    startTimer({ type: 'tabata', tabataRounds: totalRounds });
   };
 
   return (

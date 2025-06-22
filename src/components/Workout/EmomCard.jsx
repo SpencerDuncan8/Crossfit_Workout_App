@@ -10,7 +10,8 @@ const EmomCard = ({ data }) => {
 
   const handleStartWOD = () => {
     const durationMinutes = parseInt(format.match(/\d+/)[0], 10);
-    startTimer({ type: 'emom', duration: durationMinutes });
+    // THE FIX: Convert minutes to seconds before starting the timer.
+    startTimer({ type: 'emom', duration: durationMinutes * 60 });
   };
 
   return (

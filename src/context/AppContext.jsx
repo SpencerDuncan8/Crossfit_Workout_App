@@ -137,16 +137,57 @@ const AppStateProvider = ({ children }) => {
     if (!appState.timer.isActive) return;
     const interval = setInterval(() => {
       setAppState(prev => {
-        const timer = { ...prev.timer };
+        const timer = prev.timer;
         if (!timer.isActive) { clearInterval(interval); return prev; }
+        
+        // --- IMMUTABLE UPDATE LOGIC ---
+        const newTimer = { ...timer };
+
         switch (timer.type) {
-          case 'countdown': timer.time -= 1; if (timer.time < 0) { timer.isActive = false; timer.time = 0; } break;
-          case 'stopwatch': timer.time += 1; break;
-          case 'emom': timer.time -= 1; if (timer.time < 0) { timer.emom.currentMinute += 1; if (timer.emom.currentMinute > timer.emom.totalMinutes) { timer.isActive = false; } else { timer.time = 59; } } break;
-          case 'tabata': timer.time -= 1; if (timer.time < 0) { const nextIsWork = !timer.tabata.isWorkPhase; if (nextIsWork) { timer.tabata.currentRound += 1; if (timer.tabata.currentRound > timer.tabata.totalRounds) { timer.isActive = false; } else { timer.tabata.isWorkPhase = true; timer.time = 20; } } else { timer.tabata.isWorkPhase = false; timer.time = 10; } } break;
-          default: break;
+          case 'countdown':
+            newTimer.time -= 1;
+            if (newTimer.time < 0) {
+              newTimer.isActive = false;
+              newTimer.time = 0;
+            }
+            break;
+          case 'stopwatch':
+            newTimer.time += 1;
+            break;
+          case 'emom':
+            newTimer.time -= 1;
+            if (newTimer.time < 0) {
+              const newCurrentMinute = newTimer.emom.currentMinute + 1;
+              if (newCurrentMinute > newTimer.emom.totalMinutes) {
+                newTimer.isActive = false;
+              } else {
+                newTimer.time = 59;
+                newTimer.emom = { ...newTimer.emom, currentMinute: newCurrentMinute };
+              }
+            }
+            break;
+          case 'tabata':
+            newTimer.time -= 1;
+            if (newTimer.time < 0) {
+              const nextIsWork = !newTimer.tabata.isWorkPhase;
+              if (nextIsWork) {
+                const newCurrentRound = newTimer.tabata.currentRound + 1;
+                if (newCurrentRound > newTimer.tabata.totalRounds) {
+                  newTimer.isActive = false;
+                } else {
+                  newTimer.tabata = { ...newTimer.tabata, isWorkPhase: true, currentRound: newCurrentRound };
+                  newTimer.time = 20;
+                }
+              } else {
+                newTimer.tabata = { ...newTimer.tabata, isWorkPhase: false };
+                newTimer.time = 10;
+              }
+            }
+            break;
+          default:
+            break;
         }
-        return { ...prev, timer };
+        return { ...prev, timer: newTimer };
       });
     }, 1000);
     return () => clearInterval(interval);
@@ -181,7 +222,7 @@ const AppStateProvider = ({ children }) => {
       appState, updateAppState, startTimer, stopTimer,
       openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
       completeWorkout, startChallenge, 
-      resetChallenge, // <-- THE FIX IS ENSURING THIS IS IN THE VALUE OBJECT
+      resetChallenge, 
       completeInitialSetup
     }}>
       {children}
