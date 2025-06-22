@@ -1,23 +1,26 @@
 // src/components/Workout/WorkoutSection.jsx
 
-import React, { useState, useEffect } from 'react'; // Added useEffect
-import { ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { ChevronDown, Timer, Play } from 'lucide-react'; // Add Play icon
 import ExerciseCard from './ExerciseCard.jsx';
 import ConditioningCard from './ConditioningCard.jsx';
+import { AppStateContext } from '../../context/AppContext.jsx';
 
 const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEditable }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { startTimer } = useContext(AppStateContext);
 
-  // This effect will run once when the component mounts
   useEffect(() => {
-    if (title === 'Warm-up' || title === 'Cool-down') {
+    // Keep warm-up collapsed by default, but allow cool-down to be open if it has no exercises
+    if (title === 'Warm-up' || (title === 'Cool-down' && data.exercises)) {
       setIsCollapsed(true);
     }
-  }, [title]); // The dependency array ensures this runs only when the title changes (i.e., once)
+  }, [title, data.exercises]);
+
 
   if (!data) return null;
   
-  if (data.description) {
+  if (data.description && !data.exercises) { // For simple cool-downs
     return (
       <div className="workout-section">
         <div className="section-header simple-header"><h3>{title}</h3></div>
@@ -27,6 +30,7 @@ const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEdit
   }
 
   const isConditioning = title === 'Conditioning';
+  const isWarmup = title === 'Warm-up';
 
   return (
     <div className={`workout-section ${isCollapsed ? 'collapsed' : ''}`}>
@@ -40,10 +44,10 @@ const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEdit
       </div>
       {!isCollapsed && (
         <div className="section-content">
-          {isConditioning ? (
-            <ConditioningCard data={data} isEditable={isEditable} />
-          ) : (
-            data.exercises?.map((exercise, index) => {
+          {isConditioning && <ConditioningCard data={data} isEditable={isEditable} />}
+          
+          {/* Render regular exercises for Warm-up, Strength, etc. */}
+          {!isConditioning && data.exercises?.map((exercise, index) => {
               const exerciseId = `${sectionKey}-${index}`;
               return (
                 <ExerciseCard 
@@ -55,13 +59,23 @@ const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEdit
                   isEditable={isEditable}
                 />
               );
-            })
+            })}
+          
+          {/* THE FIX: Add the large start button specifically for the warm-up section */}
+          {isWarmup && (
+             <button 
+                className="start-wod-button warmup-button" 
+                onClick={() => startTimer({ type: 'stopwatch' })}
+              >
+                <Play size={20} />
+                Start Warm-up Timer
+              </button>
           )}
+
         </div>
       )}
     </div>
   );
 };
 
-// THE MISSING LINE THAT CAUSED THE ERROR
 export default WorkoutSection;
