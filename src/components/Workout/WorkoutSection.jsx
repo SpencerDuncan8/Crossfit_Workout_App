@@ -28,7 +28,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
       </div>
       {!isCollapsed && (
         <div className="section-content">
-          {/* Pass startTimer down to ConditioningCard */}
+          {/* THE DEFINITIVE FIX: Pass startTimer down to ConditioningCard */}
           {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
           
           {isStrength && block.exercises?.map((exercise) => {
@@ -41,7 +41,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
                   progress={progress[exerciseId]}
                   onSetUpdate={onSetUpdate}
                   restDuration={block.rest}
-                  startTimer={startTimer} // Pass startTimer down to ExerciseCard
+                  startTimer={startTimer}
                 />
               );
           })}

@@ -1,23 +1,27 @@
 // src/components/Workout/ConditioningCard.jsx
 
 import React, { useContext } from 'react';
-import { AppStateContext } from '../../context/AppContext.jsx';
+import { AppStateContext } from '../../context/AppContext.jsx'; // Still needed for openExerciseModal
 import { Play, HelpCircle } from 'lucide-react';
 
-// THE FIX: Change prop from 'data' to 'block'
-const ConditioningCard = ({ block }) => {
-  const { startTimer, openExerciseModal } = useContext(AppStateContext);
+// THE DEFINITIVE FIX: Accept `startTimer` as a prop, not from context.
+const ConditioningCard = ({ block, startTimer }) => {
+  const { openExerciseModal } = useContext(AppStateContext);
   
-  // Now, destructure from 'block'
+  // Destructure all possible properties from the 'block' prop
   const { type, exercises, duration, rounds, work, rest, minutes } = block;
 
   const handleStartWOD = () => {
+    if (!startTimer) {
+      console.error("startTimer function not provided to ConditioningCard!");
+      return;
+    }
+
     if (type === 'Conditioning: AMRAP') {
         startTimer({ type: 'amrap', duration: (duration || 0) * 60 });
     } else if (type === 'Conditioning: Tabata') {
         startTimer({ type: 'tabata', tabataRounds: rounds, tabataWork: work, tabataRest: rest });
     } else if (type === 'Conditioning: EMOM') {
-        // Duration is the number of minutes
         startTimer({ type: 'emom', duration: (minutes?.length || 0) * 60 });
     } else { // For RFT and Chipper
       startTimer({ type: 'stopwatch' });
@@ -44,11 +48,11 @@ const ConditioningCard = ({ block }) => {
   const buttonInfo = getButtonInfo();
   
   const formatBadge = () => {
-      if (type === 'Conditioning: AMRAP') return `${duration} Min AMRAP`;
-      if (type === 'Conditioning: RFT') return `${rounds} Rounds For Time`;
+      if (type === 'Conditioning: AMRAP') return `${duration || 0} Min AMRAP`;
+      if (type === 'Conditioning: RFT') return `${rounds || 0} Rounds For Time`;
       if (type === 'Conditioning: Chipper') return 'For Time';
       if (type === 'Conditioning: EMOM') return `EMOM for ${minutes?.length || 0} Mins`;
-      if (type === 'Conditioning: Tabata') return `${rounds} Rounds (${work}s/${rest}s)`;
+      if (type === 'Conditioning: Tabata') return `${rounds || 0} Rounds (${work || 0}s/${rest || 0}s)`;
       return type;
   }
 
@@ -60,18 +64,16 @@ const ConditioningCard = ({ block }) => {
       </div>
       
       <ul className="exercise-list">
-        {/* Render EMOM minutes */}
         {minutes?.map((min, index) => (
             <li key={index} className="exercise-list-item">
                 <span className="exercise-list-reps">{`Min ${index + 1}`}</span>
                 <span className="exercise-list-name">{min.task}</span>
             </li>
         ))}
-        {/* Render standard exercises for other types */}
         {exercises?.map((ex, index) => (
           <li key={index} className="exercise-list-item clickable" onClick={() => handleExerciseClick(ex)}>
             <div className="exercise-list-main">
-              <span className="exercise-list-reps">{ex.reps}</span>
+              {ex.reps && <span className="exercise-list-reps">{ex.reps}</span>}
               <span className="exercise-list-name">{ex.name}</span>
             </div>
             {ex.id && <HelpCircle size={18} className="help-icon" />}
