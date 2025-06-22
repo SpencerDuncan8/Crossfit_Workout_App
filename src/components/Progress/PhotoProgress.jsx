@@ -5,17 +5,27 @@ import { AppStateContext } from '../../context/AppContext.jsx';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 
-// Accept a new prop `isInitialSetup` which defaults to false
 const PhotoProgress = ({ isInitialSetup = false }) => {
   const { appState, addPhotoEntry } = useContext(AppStateContext);
-  const { photos } = appState;
+  
+  // THE FIX: Filter the photos array to only include valid, persistent Base64 URLs.
+  // This prevents the component from crashing on dead blob URLs.
+  const validPhotos = appState.photos.filter(p => p.url && p.url.startsWith('data:image'));
+  
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const photoUrl = URL.createObjectURL(file);
-      addPhotoEntry(photoUrl);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const photoUrl = e.target.result;
+        addPhotoEntry(photoUrl);
+      };
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -23,8 +33,9 @@ const PhotoProgress = ({ isInitialSetup = false }) => {
     fileInputRef.current.click();
   };
 
-  const firstPhoto = photos[0];
-  const lastPhoto = photos.length > 1 ? photos[photos.length - 1] : null;
+  // Now, use the "safe" validPhotos array for all logic and rendering.
+  const firstPhoto = validPhotos[0];
+  const lastPhoto = validPhotos.length > 1 ? validPhotos[validPhotos.length - 1] : null;
 
   const imageStyle = {
     objectFit: 'contain',
@@ -41,22 +52,18 @@ const PhotoProgress = ({ isInitialSetup = false }) => {
       </div>
       
       <div className="photo-progress-container">
-        {photos.length < 2 && !isInitialSetup ? (
-          // This is the view for the regular Progress tab with 0 or 1 photo
+        {validPhotos.length < 2 && !isInitialSetup ? (
           <div className="photo-placeholder">
             <p>Upload at least two photos to see your comparison.</p>
             {firstPhoto && <img src={firstPhoto.url} alt={`Day ${firstPhoto.day}`} className="single-photo-preview" />}
           </div>
-        ) : photos.length === 0 && isInitialSetup ? (
-          // THIS IS THE NEW VIEW: For initial setup when no photo is uploaded yet
+        ) : validPhotos.length === 0 && isInitialSetup ? (
           <div className="photo-placeholder">
             <p>Upload your 'Day 1' photo to get started.</p>
           </div>
-        ) : photos.length > 0 && (photos.length < 2 || isInitialSetup) ? (
-            // This is the view for when the first photo has been uploaded (during setup or otherwise)
-            <img src={photos[photos.length - 1].url} alt={`Day ${photos[photos.length - 1].day}`} style={{...imageStyle, width: '100%', height: '100%'}} className="single-photo-preview" />
+        ) : validPhotos.length > 0 && (validPhotos.length < 2 || isInitialSetup) ? (
+            <img src={validPhotos[validPhotos.length - 1].url} alt={`Day ${validPhotos[validPhotos.length - 1].day}`} style={{...imageStyle, width: '100%', height: '100%'}} className="single-photo-preview" />
         ) : (
-          // This is the comparison view, shown on the Progress tab when there are 2+ photos
           <ReactCompareSlider
             itemOne={<ReactCompareSliderImage src={firstPhoto.url} alt={`Day ${firstPhoto.day}`} style={imageStyle} />}
             itemTwo={<ReactCompareSliderImage src={lastPhoto.url} alt={`Day ${lastPhoto.day}`} style={imageStyle} />}
@@ -74,8 +81,7 @@ const PhotoProgress = ({ isInitialSetup = false }) => {
       />
       <button className="upload-photo-btn" onClick={handleUploadClick}>
         <Camera size={20} />
-        {/* Change button text based on context */}
-        {photos.length === 0 && isInitialSetup ? 'Upload Day 1 Photo' : "Upload Today's Photo"}
+        {validPhotos.length === 0 && isInitialSetup ? 'Upload Day 1 Photo' : "Upload Today's Photo"}
       </button>
     </div>
   );
