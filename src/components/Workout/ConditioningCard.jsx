@@ -9,17 +9,21 @@ const ConditioningCard = ({ data }) => {
   const { name, type, format, exercises, note, rounds, description } = data;
 
   const handleStartWOD = () => {
-    if (type === 'tabata') {
-      // For Tabata, total rounds is the number of work/rest pairs
+    if (type === 'amrap') {
+      const durationMinutes = parseInt(format, 10);
+      if (!isNaN(durationMinutes)) {
+        // THE FIX: Use a dedicated 'amrap' type for clarity.
+        startTimer({ type: 'amrap', duration: durationMinutes * 60 });
+      }
+    } else if (type === 'tabata') {
       const workRounds = data.rounds.length;
       startTimer({ type: 'tabata', tabataRounds: workRounds });
     } else if (type === 'emom') {
-      // Extracts the number from a string like "8 Minutes EMOM"
-      const durationMinutes = parseInt(format);
+      const durationMinutes = parseInt(format, 10);
       if (!isNaN(durationMinutes)) {
         startTimer({ type: 'emom', duration: durationMinutes * 60 });
       }
-    } else { // Default for 'fortime', 'amrap', 'rounds'
+    } else { 
       startTimer({ type: 'stopwatch' });
     }
   };
@@ -30,7 +34,12 @@ const ConditioningCard = ({ data }) => {
     }
   };
 
-  const WOD_BUTTON_MAP = { /* ... Unchanged ... */ };
+  const WOD_BUTTON_MAP = {
+    amrap: { text: "Start AMRAP", style: "amrap-button" },
+    fortime: { text: "Start Timer", style: "fortime-button" },
+    emom: { text: "Start EMOM", style: "emom-button" },
+    tabata: { text: "Start Tabata", style: "tabata-button" },
+  };
   const buttonInfo = WOD_BUTTON_MAP[type] || { text: "Start Timer", style: "fortime-button" };
 
   return (

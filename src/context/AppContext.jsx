@@ -118,7 +118,8 @@ const AppStateProvider = ({ children }) => {
   const startTimer = ({ type, duration = 0, tabataRounds = 8 }) => {
     setAppState(prev => {
       let newTimerState = { isActive: true, type: type, key: prev.timer.key + 1, duration: duration, time: 0, tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true }, emom: { totalMinutes: 0, currentMinute: 0 } };
-      if (type === 'countdown') newTimerState.time = duration;
+      // Both 'countdown' and 'amrap' start by setting the time to the full duration.
+      if (type === 'countdown' || type === 'amrap') newTimerState.time = duration;
       if (type === 'emom') {
         newTimerState.time = 59; 
         newTimerState.emom = { totalMinutes: duration / 60, currentMinute: 1 };
@@ -140,10 +141,11 @@ const AppStateProvider = ({ children }) => {
         const timer = prev.timer;
         if (!timer.isActive) { clearInterval(interval); return prev; }
         
-        // --- IMMUTABLE UPDATE LOGIC ---
         const newTimer = { ...timer };
 
         switch (timer.type) {
+          // 'amrap' timers behave just like countdowns
+          case 'amrap':
           case 'countdown':
             newTimer.time -= 1;
             if (newTimer.time < 0) {

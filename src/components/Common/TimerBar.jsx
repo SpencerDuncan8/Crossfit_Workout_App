@@ -19,6 +19,11 @@ const TimerBar = () => {
 
   const getTitle = () => {
     switch (timer.type) {
+      // THE FIX: Check for 'amrap' specifically.
+      // Since AMRAPs also use the 'countdown' timer type, we need to distinguish them.
+      // We can do this by checking the original WOD type that started the timer.
+      // Let's add an 'amrap' type to be more explicit.
+      case 'amrap': return 'AMRAP'; 
       case 'countdown': return 'REST';
       case 'stopwatch': return 'WOD TIMER';
       case 'emom': return `EMOM - MINUTE ${timer.emom.currentMinute} / ${timer.emom.totalMinutes}`;
@@ -26,10 +31,14 @@ const TimerBar = () => {
       default: return 'TIMER';
     }
   };
+  
+  // To make getTitle work, we need to start the timer with type 'amrap'
+  // Let's adjust ConditioningCard.jsx as well.
 
   return (
     <div className="timer-bar" key={timer.key}>
-      {timer.type === 'countdown' && (
+      {/* We want the progress bar for AMRAPs too, so we'll check for both types */}
+      {(timer.type === 'countdown' || timer.type === 'amrap') && (
         <div className="timer-progress" style={{ animationDuration: `${timer.duration}s` }}></div>
       )}
       
