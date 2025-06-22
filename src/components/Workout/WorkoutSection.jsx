@@ -1,54 +1,38 @@
 // src/components/Workout/WorkoutSection.jsx
 
-import React, { useState, useEffect, useContext } from 'react';
-import { ChevronDown, Timer, Play } from 'lucide-react'; // Add Play icon
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, Play } from 'lucide-react';
 import ExerciseCard from './ExerciseCard.jsx';
 import ConditioningCard from './ConditioningCard.jsx';
-import { AppStateContext } from '../../context/AppContext.jsx';
 
-const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEditable }) => {
+// It now receives startTimer as a prop
+const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { startTimer } = useContext(AppStateContext);
 
   useEffect(() => {
-    // Keep warm-up collapsed by default, but allow cool-down to be open if it has no exercises
-    if (title === 'Warm-up' || (title === 'Cool-down' && data.exercises)) {
+    if (block.type === 'Warm-up' || block.type === 'Cool-down') {
       setIsCollapsed(true);
     }
-  }, [title, data.exercises]);
+  }, [block.type]);
 
+  if (!block) return null;
 
-  if (!data) return null;
-  
-  if (data.description && !data.exercises) { // For simple cool-downs
-    return (
-      <div className="workout-section">
-        <div className="section-header simple-header"><h3>{title}</h3></div>
-        <div className="section-content"><p className="cooldown-description">{data.description}</p></div>
-      </div>
-    );
-  }
-
-  const isConditioning = title === 'Conditioning';
-  const isWarmup = title === 'Warm-up';
+  const isConditioning = block.type.startsWith('Conditioning:');
+  const isStrength = block.type === 'Strength';
 
   return (
     <div className={`workout-section ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="section-header" onClick={() => setIsCollapsed(!isCollapsed)}>
-        <h3>{title}</h3>
-        <div className="section-meta">
-          {data.duration && <span>{data.duration}</span>}
-          {isConditioning && data.format && <span>{data.format}</span>}
-          <ChevronDown size={24} className="collapse-icon" />
-        </div>
+        <h3>{block.type}</h3>
+        <div className="section-meta"><ChevronDown size={24} className="collapse-icon" /></div>
       </div>
       {!isCollapsed && (
         <div className="section-content">
-          {isConditioning && <ConditioningCard data={data} isEditable={isEditable} />}
+          {/* Pass startTimer down to ConditioningCard */}
+          {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
           
-          {/* Render regular exercises for Warm-up, Strength, etc. */}
-          {!isConditioning && data.exercises?.map((exercise, index) => {
-              const exerciseId = `${sectionKey}-${index}`;
+          {isStrength && block.exercises?.map((exercise) => {
+              const exerciseId = `${block.id}-${exercise.id}`;
               return (
                 <ExerciseCard 
                   key={exerciseId} 
@@ -56,13 +40,17 @@ const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEdit
                   exercise={exercise} 
                   progress={progress[exerciseId]}
                   onSetUpdate={onSetUpdate}
-                  isEditable={isEditable}
+                  restDuration={block.rest}
+                  startTimer={startTimer} // Pass startTimer down to ExerciseCard
                 />
               );
-            })}
-          
-          {/* THE FIX: Add the large start button specifically for the warm-up section */}
-          {isWarmup && (
+          })}
+
+          {!isStrength && !isConditioning && block.exercises?.map((exercise, index) => (
+             <div key={index} className="exercise-card-simple"><h4>{exercise.name}</h4></div>
+          ))}
+
+          {block.type === 'Warm-up' && (
              <button 
                 className="start-wod-button warmup-button" 
                 onClick={() => startTimer({ type: 'stopwatch' })}
@@ -71,7 +59,6 @@ const WorkoutSection = ({ title, sectionKey, data, progress, onSetUpdate, isEdit
                 Start Warm-up Timer
               </button>
           )}
-
         </div>
       )}
     </div>

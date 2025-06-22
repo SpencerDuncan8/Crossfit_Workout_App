@@ -8,30 +8,48 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
   const animationRef = useRef();
 
   useEffect(() => {
+    // Ensure value is a number for animation
+    const numericValue = typeof value === 'number' ? value : 0;
+    
+    let start = null;
+    const duration = 1500;
+    
     const animate = (timestamp) => {
       if (!start) start = timestamp;
       const progress = timestamp - start;
-      const newDisplayValue = Math.min((progress / duration) * value, value);
+      const newDisplayValue = Math.min((progress / duration) * numericValue, numericValue);
       setDisplayValue(newDisplayValue);
       if (progress < duration) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
-        setDisplayValue(value);
+        setDisplayValue(numericValue);
       }
     };
     const observer = new IntersectionObserver( (entries) => { if (entries[0].isIntersecting) { start = null; animationRef.current = requestAnimationFrame(animate); observer.disconnect(); } }, { threshold: 0.5 } );
     if (cardRef.current) { observer.observe(cardRef.current); }
-    return () => { cancelAnimationFrame(animationRef.current); if(observer && observer.disconnect) { observer.disconnect(); } };
+    
+    setDisplayValue(0); // Reset for re-animation if value changes
+
+    return () => { 
+        if(animationRef.current) cancelAnimationFrame(animationRef.current);
+        if(observer && observer.disconnect) observer.disconnect(); 
+    };
   }, [value]);
 
-  let start = null;
-  const duration = 1500;
-
-  // THE CHANGE IS HERE: Add number formatting
   const formattedValue = (val) => {
-    if (val % 1 !== 0) return val.toFixed(1);
+    // Special handling for weight cards when value is 0 or less
+    if (val <= 0 && (title.toLowerCase().includes("weight"))) {
+        return '---';
+    }
+    
+    // Show one decimal for floats, none for integers
+    if (val % 1 !== 0) {
+      return val.toFixed(1);
+    }
     return Math.round(val).toLocaleString('en-US');
   };
+
+  const showUnit = unit && ( (title.toLowerCase().includes("weight") && displayValue > 0) || !title.toLowerCase().includes("weight") );
 
   return (
     <div className="metric-card" ref={cardRef}>
@@ -43,7 +61,7 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
         <div className="metric-card-title">{title}</div>
         <div className="metric-card-value">
           {formattedValue(displayValue)}
-          {unit && <span className="metric-card-unit">{unit}</span>}
+          {showUnit && <span className="metric-card-unit">{unit}</span>}
         </div>
       </div>
     </div>

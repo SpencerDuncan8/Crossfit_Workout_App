@@ -1,8 +1,8 @@
 // src/App.jsx
 
 import React, { useState, useContext, useEffect } from 'react';
-// REMOVED RotateCcw from this line
-import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
+import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen } from 'lucide-react';
+// THE DEFINITIVE FIX: Import ThemeContext directly from AppContext.jsx, not as a named import
 import { ThemeContext, AppStateContext } from './context/AppContext.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
 import WorkoutView from './components/Workout/WorkoutView.jsx';
@@ -11,6 +11,7 @@ import ProgressView from './components/Progress/ProgressView.jsx';
 import ProgramOverview from './components/Program/ProgramOverview.jsx';
 import TimerBar from './components/Common/TimerBar.jsx';
 import ExerciseDetailModal from './components/Common/ExerciseDetailModal.jsx';
+import WorkoutEditor from './components/Program/WorkoutEditor.jsx';
 import Confetti from 'react-confetti';
 import { useWindowSize } from './hooks/useWindowSize.jsx';
 import './App.css';
@@ -22,6 +23,7 @@ import './components/Calendar/Calendar.css';
 import './components/Common/Modal.css';
 import './components/Progress/Progress.css';
 import './components/Program/ProgramOverview.css';
+import './components/Program/WorkoutEditor.css';
 
 const NavItem = ({ icon: Icon, label, isActive, onClick, isMobile }) => {
   const baseStyle = { display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start', padding: isMobile ? '12px' : '12px 16px', borderRadius: '12px', transition: 'all 0.3s ease', cursor: 'pointer', border: 'none', background: isActive ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent', color: isActive ? '#ffffff' : 'var(--text-tertiary)', boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none', transform: isActive ? 'scale(1.02)' : 'scale(1)', width: '100%', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '12px', position: 'relative', overflow: 'hidden' };
@@ -33,23 +35,13 @@ const ThemeToggle = ({ isMobile }) => {
   const { darkMode, toggleTheme } = useContext(ThemeContext);
   const buttonStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: 'var(--bg-tertiary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease', gap: '8px' };
   const spanStyle = { fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' };
-
-  if (isMobile) {
-    return (
-      <button onClick={toggleTheme} style={{...buttonStyle, width: '44px', height: '44px'}}>
-        {darkMode ? <Sun size={20} style={{ color: '#fbbf24' }} /> : <Moon size={20} style={{ color: '#3b82f6' }} />}
-      </button>
-    );
-  }
-
+  if (isMobile) { return ( <button onClick={toggleTheme} style={{...buttonStyle, width: '44px', height: '44px'}}> {darkMode ? <Sun size={20} style={{ color: '#fbbf24' }} /> : <Moon size={20} style={{ color: '#3b82f6' }} />} </button> ); }
   return ( <button onClick={toggleTheme} style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'} > {darkMode ? ( <> <Sun size={20} style={{ color: '#fbbf24' }} /> <span style={spanStyle}>Light Mode</span> </> ) : ( <> <Moon size={20} style={{ color: '#3b82f6' }} /> <span style={spanStyle}>Dark Mode</span> </> )} </button> );
 };
 
-// The ResetButton component has been removed from this file.
-
 export default function App() {
   const { appState } = useContext(AppStateContext);
-  const [activeView, setActiveView] = useState('dashboard');
+  const [activeView, setActiveView] = useState('program');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { width, height } = useWindowSize();
 
@@ -61,64 +53,40 @@ export default function App() {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'workout', label: 'Workout', icon: Dumbbell },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'progress', label: 'Progress', icon: TrendingUp },
     { id: 'program', label: 'Program', icon: BookOpen },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'workout', label: 'Workout', icon: Dumbbell },
+    { id: 'progress', label: 'Progress', icon: TrendingUp },
   ];
 
   const renderView = () => {
     switch (activeView) {
       case 'dashboard': return <Dashboard setActiveView={setActiveView} />;
       case 'workout': return <WorkoutView setActiveView={setActiveView} />;
-      case 'calendar': return <CalendarView />;
+      case 'calendar': return <CalendarView setActiveView={setActiveView} />;
       case 'progress': return <ProgressView />;
-      case 'program': return <ProgramOverview />;
-      default: return <Dashboard setActiveView={setActiveView} />;
+      case 'program': return <ProgramOverview setActiveView={setActiveView} />;
+      default: return <ProgramOverview setActiveView={setActiveView} />;
     }
   };
 
   return (
     <div className="app">
       {appState.showConfetti && <Confetti width={width} height={height} recycle={false} onConfettiComplete={(confetti) => confetti.reset()} />}
-
       {isMobile ? (
         <>
-          <div className="mobile-header">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
-              <h1 style={{ fontSize: '20px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1>
-              <ThemeToggle isMobile={true} />
-            </div>
-          </div>
+          <div className="mobile-header"><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}><h1 style={{ fontSize: '20px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1><ThemeToggle isMobile={true} /></div></div>
           <main className="main-content">{renderView()}</main>
-          <div className="mobile-nav">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', padding: '8px' }}>
-              {navItems.map(item => (<NavItem key={item.id} icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={true} />))}
-            </div>
-          </div>
+          <div className="mobile-nav"><div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', padding: '8px' }}>{navItems.map(item => (<NavItem key={item.id} icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={true} />))}</div></div>
         </>
       ) : (
         <>
-          <div className="sidebar">
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '24px' }}>
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1>
-                <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginTop: '4px' }}>60-Day Transformation</p>
-              </div>
-              <nav style={{ flex: 1, padding: '0 16px' }}>
-                {navItems.map(item => (<div key={item.id} style={{ marginBottom: '8px' }}> <NavItem icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={false} /> </div>))}
-              </nav>
-              {/* The reset button is no longer here */}
-              <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
-                <ThemeToggle isMobile={false} />
-              </div>
-            </div>
-          </div>
+          <div className="sidebar"><div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><div style={{ padding: '24px' }}><h1 style={{ fontSize: '24px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1></div><nav style={{ flex: 1, padding: '0 16px' }}>{navItems.map(item => (<div key={item.id} style={{ marginBottom: '8px' }}> <NavItem icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={false} /> </div>))}</nav><div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}><ThemeToggle isMobile={false} /></div></div></div>
           <main className="main-content">{renderView()}</main>
         </>
       )}
-
       {appState.isModalOpen && <ExerciseDetailModal />}
+      {appState.isWorkoutEditorOpen && <WorkoutEditor />}
       <TimerBar />
     </div>
   );

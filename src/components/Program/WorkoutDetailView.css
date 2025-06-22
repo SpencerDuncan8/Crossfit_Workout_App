@@ -1,0 +1,61 @@
+/* src/components/Program/WorkoutDetailView.css */
+
+.workout-detail-container {
+  padding: 8px;
+}
+
+.completed-summary {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.completed-summary h4 {
+  color: #10b981;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: space-around;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-blocks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-block-card {
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.detail-block-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #FF6B35;
+  margin-bottom: 8px;
+}
+
+.detail-exercise-list {
+  list-style: none;
+  padding-left: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.detail-exercise-list li {
+  padding: 4px 0;
+}
+
+.detail-exercise-list strong {
+    color: var(--text-primary);
+}

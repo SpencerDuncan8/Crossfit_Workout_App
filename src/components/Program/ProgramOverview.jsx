@@ -1,52 +1,66 @@
 // src/components/Program/ProgramOverview.jsx
 
-import React from 'react';
-import { getWorkoutType } from '../../data/workoutProgram.js';
-import { getWorkoutColor } from '../../utils/calendarUtils.js';
+import React, { useContext } from 'react';
+import { AppStateContext } from '../../context/AppContext.jsx';
+import { PlusCircle, Trash2, Edit, Play } from 'lucide-react';
 import './ProgramOverview.css';
 
-const ProgramOverview = () => {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
-  // We'll just show the template for one week as it repeats
-  const weeklySchedule = Array.from({ length: 7 }, (_, i) => {
-    const dayNum = i + 1;
-    const workoutType = getWorkoutType(dayNum);
-    const color = getWorkoutColor(workoutType);
-    return { dayName: days[i], type: workoutType, color };
-  });
+const ProgramOverview = ({ setActiveView }) => { // Accept setActiveView as a prop
+  const { appState, saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, setActiveWorkout } = useContext(AppStateContext);
+
+  const handleCreateNewWorkout = () => {
+    const newWorkout = { id: Date.now(), name: 'My New Workout', blocks: [] };
+    openWorkoutEditor(newWorkout.id);
+    saveCustomWorkout(newWorkout);
+  };
+
+  const handleStartWorkout = (workoutId) => {
+    setActiveWorkout(workoutId); // Set the active workout in the global state
+    setActiveView('workout');    // Switch to the workout tab
+  };
 
   return (
     <div className="program-view-container">
-      <div className="page-header">
-        <h1>Program Overview</h1>
-        <p>The 4-week cycle designed for fat loss and muscle preservation.</p>
-      </div>
-
-      <div className="overview-card">
-        <h3 className="overview-card-title">Weekly Schedule</h3>
-        <p className="overview-card-subtitle">This 5-day workout split with 2 active recovery days repeats every week for each 4-week phase.</p>
-        <div className="schedule-matrix">
-          {weeklySchedule.map(item => (
-            <div key={item.dayName} className="schedule-day-card">
-              <div className="schedule-day-header">
-                <span className="schedule-day-color-dot" style={{ backgroundColor: item.color }}></span>
-                <span className="schedule-day-name">{item.dayName}</span>
-              </div>
-              <p className="schedule-workout-type">{item.type}</p>
-            </div>
-          ))}
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>My Workouts</h1>
+          <p>Create, edit, and manage your custom workout routines.</p>
         </div>
+        <button className="create-workout-btn" onClick={handleCreateNewWorkout}>
+          <PlusCircle size={20} />
+          <span>Create Workout</span>
+        </button>
       </div>
 
-      <div className="overview-card">
-        <h3 className="overview-card-title">Program Principles</h3>
-        <ul className="principles-list">
-          <li><strong>Progressive Overload:</strong> Each 4-week cycle is designed to be slightly more challenging than the last. Focus on increasing weights or reps.</li>
-          <li><strong>Metabolic Conditioning (MetCon):</strong> High-intensity workouts are key to maximizing calorie burn and boosting metabolism for fat loss.</li>
-          <li><strong>Strength Preservation:</strong> Compound lifts are included to ensure you maintain (and even build) muscle mass while in a caloric deficit.</li>
-          <li><strong>Active Recovery:</strong> Light activity on rest days helps reduce muscle soreness and improves blood flow, speeding up recovery.</li>
-        </ul>
+      <div className="custom-workouts-list">
+        {appState.customWorkouts.length === 0 ? (
+          <div className="empty-state-card">
+            <h3 className="empty-state-title">Your workout library is empty</h3>
+            <p className="empty-state-text">Click "Create Workout" to build your first custom routine.</p>
+          </div>
+        ) : (
+          appState.customWorkouts.map(workout => (
+            <div key={workout.id} className="custom-workout-card">
+              <div className="workout-card-header">
+                <h3 className="workout-card-title">{workout.name}</h3>
+                <p className="workout-card-subtitle">{workout.blocks.length} block{workout.blocks.length !== 1 ? 's' : ''}</p>
+              </div>
+              <div className="workout-card-actions">
+                <button className="action-btn start-btn" onClick={() => handleStartWorkout(workout.id)}>
+                  <Play size={18} />
+                  Start
+                </button>
+                <button className="action-btn edit-btn" onClick={() => openWorkoutEditor(workout.id)}>
+                  <Edit size={18} />
+                  Edit
+                </button>
+                <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(workout.id)}>
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

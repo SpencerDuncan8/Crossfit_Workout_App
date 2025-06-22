@@ -5,11 +5,9 @@ import { AppStateContext } from '../../context/AppContext.jsx';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 
-const PhotoProgress = ({ isInitialSetup = false }) => {
+const PhotoProgress = () => { // Removed isInitialSetup as it's no longer needed
   const { appState, addPhotoEntry } = useContext(AppStateContext);
   
-  // THE FIX: Filter the photos array to only include valid, persistent Base64 URLs.
-  // This prevents the component from crashing on dead blob URLs.
   const validPhotos = appState.photos.filter(p => p.url && p.url.startsWith('data:image'));
   
   const fileInputRef = useRef(null);
@@ -18,29 +16,17 @@ const PhotoProgress = ({ isInitialSetup = false }) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const photoUrl = e.target.result;
-        addPhotoEntry(photoUrl);
-      };
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-      };
+      reader.onload = (e) => { addPhotoEntry(e.target.result); };
+      reader.onerror = (error) => { console.error("Error reading file:", error); };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleUploadClick = () => { fileInputRef.current.click(); };
 
-  // Now, use the "safe" validPhotos array for all logic and rendering.
   const firstPhoto = validPhotos[0];
   const lastPhoto = validPhotos.length > 1 ? validPhotos[validPhotos.length - 1] : null;
-
-  const imageStyle = {
-    objectFit: 'contain',
-    backgroundColor: 'var(--bg-primary)'
-  };
+  const imageStyle = { objectFit: 'contain', backgroundColor: 'var(--bg-primary)' };
 
   return (
     <div className="progress-card">
@@ -52,21 +38,18 @@ const PhotoProgress = ({ isInitialSetup = false }) => {
       </div>
       
       <div className="photo-progress-container">
-        {validPhotos.length < 2 && !isInitialSetup ? (
+        {validPhotos.length < 2 ? (
           <div className="photo-placeholder">
-            <p>Upload at least two photos to see your comparison.</p>
-            {firstPhoto && <img src={firstPhoto.url} alt={`Day ${firstPhoto.day}`} className="single-photo-preview" />}
+            {firstPhoto ? (
+              <img src={firstPhoto.url} alt={`Photo from ${firstPhoto.date}`} className="single-photo-preview" />
+            ) : (
+              <p>Upload at least two photos to see your comparison.</p>
+            )}
           </div>
-        ) : validPhotos.length === 0 && isInitialSetup ? (
-          <div className="photo-placeholder">
-            <p>Upload your 'Day 1' photo to get started.</p>
-          </div>
-        ) : validPhotos.length > 0 && (validPhotos.length < 2 || isInitialSetup) ? (
-            <img src={validPhotos[validPhotos.length - 1].url} alt={`Day ${validPhotos[validPhotos.length - 1].day}`} style={{...imageStyle, width: '100%', height: '100%'}} className="single-photo-preview" />
         ) : (
           <ReactCompareSlider
-            itemOne={<ReactCompareSliderImage src={firstPhoto.url} alt={`Day ${firstPhoto.day}`} style={imageStyle} />}
-            itemTwo={<ReactCompareSliderImage src={lastPhoto.url} alt={`Day ${lastPhoto.day}`} style={imageStyle} />}
+            itemOne={<ReactCompareSliderImage src={firstPhoto.url} alt={`Photo from ${firstPhoto.date}`} style={imageStyle} />}
+            itemTwo={<ReactCompareSliderImage src={lastPhoto.url} alt={`Photo from ${lastPhoto.date}`} style={imageStyle} />}
             className="comparison-slider"
           />
         )}
@@ -81,7 +64,7 @@ const PhotoProgress = ({ isInitialSetup = false }) => {
       />
       <button className="upload-photo-btn" onClick={handleUploadClick}>
         <Camera size={20} />
-        {validPhotos.length === 0 && isInitialSetup ? 'Upload Day 1 Photo' : "Upload Today's Photo"}
+        {validPhotos.length === 0 ? 'Upload First Photo' : "Upload Today's Photo"}
       </button>
     </div>
   );

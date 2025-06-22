@@ -4,26 +4,22 @@ import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { Play, HelpCircle } from 'lucide-react';
 
-const ConditioningCard = ({ data }) => {
+// THE FIX: Change prop from 'data' to 'block'
+const ConditioningCard = ({ block }) => {
   const { startTimer, openExerciseModal } = useContext(AppStateContext);
-  const { name, type, format, exercises, note, rounds, description } = data;
+  
+  // Now, destructure from 'block'
+  const { type, exercises, duration, rounds, work, rest, minutes } = block;
 
   const handleStartWOD = () => {
-    if (type === 'amrap') {
-      const durationMinutes = parseInt(format, 10);
-      if (!isNaN(durationMinutes)) {
-        // THE FIX: Use a dedicated 'amrap' type for clarity.
-        startTimer({ type: 'amrap', duration: durationMinutes * 60 });
-      }
-    } else if (type === 'tabata') {
-      const workRounds = data.rounds.length;
-      startTimer({ type: 'tabata', tabataRounds: workRounds });
-    } else if (type === 'emom') {
-      const durationMinutes = parseInt(format, 10);
-      if (!isNaN(durationMinutes)) {
-        startTimer({ type: 'emom', duration: durationMinutes * 60 });
-      }
-    } else { 
+    if (type === 'Conditioning: AMRAP') {
+        startTimer({ type: 'amrap', duration: (duration || 0) * 60 });
+    } else if (type === 'Conditioning: Tabata') {
+        startTimer({ type: 'tabata', tabataRounds: rounds, tabataWork: work, tabataRest: rest });
+    } else if (type === 'Conditioning: EMOM') {
+        // Duration is the number of minutes
+        startTimer({ type: 'emom', duration: (minutes?.length || 0) * 60 });
+    } else { // For RFT and Chipper
       startTimer({ type: 'stopwatch' });
     }
   };
@@ -34,42 +30,55 @@ const ConditioningCard = ({ data }) => {
     }
   };
 
-  const WOD_BUTTON_MAP = {
-    amrap: { text: "Start AMRAP", style: "amrap-button" },
-    fortime: { text: "Start Timer", style: "fortime-button" },
-    emom: { text: "Start EMOM", style: "emom-button" },
-    tabata: { text: "Start Tabata", style: "tabata-button" },
+  const getButtonInfo = () => {
+    switch(type) {
+      case 'Conditioning: AMRAP': return { text: "Start AMRAP", style: "amrap-button" };
+      case 'Conditioning: RFT':
+      case 'Conditioning: Chipper': return { text: "Start Timer", style: "fortime-button" };
+      case 'Conditioning: EMOM': return { text: "Start EMOM", style: "emom-button" };
+      case 'Conditioning: Tabata': return { text: "Start Tabata", style: "tabata-button" };
+      default: return { text: "Start Timer", style: "fortime-button" };
+    }
   };
-  const buttonInfo = WOD_BUTTON_MAP[type] || { text: "Start Timer", style: "fortime-button" };
+
+  const buttonInfo = getButtonInfo();
+  
+  const formatBadge = () => {
+      if (type === 'Conditioning: AMRAP') return `${duration} Min AMRAP`;
+      if (type === 'Conditioning: RFT') return `${rounds} Rounds For Time`;
+      if (type === 'Conditioning: Chipper') return 'For Time';
+      if (type === 'Conditioning: EMOM') return `EMOM for ${minutes?.length || 0} Mins`;
+      if (type === 'Conditioning: Tabata') return `${rounds} Rounds (${work}s/${rest}s)`;
+      return type;
+  }
 
   return (
     <div className="conditioning-card">
       <div className="conditioning-header">
-        <h3>{name}</h3>
-        <span className="wod-format-badge">{format}</span>
+        <h3>{type.replace('Conditioning: ', '')}</h3>
+        <span className="wod-format-badge">{formatBadge()}</span>
       </div>
-      {description && <p className="conditioning-description">{description}</p>}
+      
       <ul className="exercise-list">
+        {/* Render EMOM minutes */}
+        {minutes?.map((min, index) => (
+            <li key={index} className="exercise-list-item">
+                <span className="exercise-list-reps">{`Min ${index + 1}`}</span>
+                <span className="exercise-list-name">{min.task}</span>
+            </li>
+        ))}
+        {/* Render standard exercises for other types */}
         {exercises?.map((ex, index) => (
           <li key={index} className="exercise-list-item clickable" onClick={() => handleExerciseClick(ex)}>
             <div className="exercise-list-main">
-              <span className="exercise-list-reps">{ex.reps || ex.distance || ex.duration}</span>
-              <span className="exercise-list-name">{ex.name || ex.exercise}</span>
+              <span className="exercise-list-reps">{ex.reps}</span>
+              <span className="exercise-list-name">{ex.name}</span>
             </div>
             {ex.id && <HelpCircle size={18} className="help-icon" />}
           </li>
         ))}
-        {rounds?.map((r, i) => (
-          <li key={i} className="exercise-list-item clickable" onClick={() => handleExerciseClick(r)}>
-            <div className="exercise-list-main">
-              <span className="exercise-list-reps">{r.round}</span>
-              <span className="exercise-list-name">{r.exercise}</span>
-            </div>
-            {r.id && <HelpCircle size={18} className="help-icon" />}
-          </li>
-        ))}
       </ul>
-      {note && <p className="exercise-note">{note}</p>}
+
       <button className={`start-wod-button ${buttonInfo.style}`} onClick={handleStartWOD}>
         <Play size={20} />
         {buttonInfo.text}

@@ -1,16 +1,14 @@
 // src/components/Dashboard/WeightChart.jsx
 
 import React, { useContext } from 'react';
-// This import is back to the original state
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AppStateContext } from '../../context/AppContext.jsx';
 
-// Custom Tooltip for a better look
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div className="custom-tooltip">
-        <p className="tooltip-label">{`Day ${label}`}</p>
+        <p className="tooltip-label">{`Entry ${label}`}</p>
         <p className="tooltip-intro">{`Weight: ${payload[0].value.toFixed(1)} lbs`}</p>
       </div>
     );
@@ -20,10 +18,15 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const WeightChart = () => {
   const { appState } = useContext(AppStateContext);
-  const data = appState.weightHistory;
+  
+  // THE FIX: Create a 'day' number for the chart's x-axis from the history index
+  const data = appState.weightHistory.map((entry, index) => ({
+      ...entry,
+      day: index + 1
+  }));
 
   const gridColor = 'var(--border-color)';
-  const textColor = 'var(--text-tertiary)'; // Reverted to the original color variable
+  const textColor = 'var(--text-tertiary)';
 
   return (
     <div className="chart-container">
@@ -31,14 +34,8 @@ const WeightChart = () => {
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={data}
-          margin={{
-            top: 5,
-            right: 20,
-            left: -10,
-            bottom: 5,
-          }}
+          margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
         >
-          {/* This JSX is correct, even without the explicit import */}
           <defs>
             <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
@@ -51,7 +48,7 @@ const WeightChart = () => {
             tick={{ fill: textColor, fontSize: 12 }} 
             tickLine={{ stroke: textColor }}
             axisLine={{ stroke: gridColor }}
-            label={{ value: 'Day', position: 'insideBottom', offset: -5, fill: textColor, fontSize: 12 }}
+            label={{ value: 'Entry', position: 'insideBottom', offset: -5, fill: textColor, fontSize: 12 }}
           />
           <YAxis 
             tick={{ fill: textColor, fontSize: 12 }}

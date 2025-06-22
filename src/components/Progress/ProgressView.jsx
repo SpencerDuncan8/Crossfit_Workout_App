@@ -1,16 +1,16 @@
 // src/components/Progress/ProgressView.jsx
 
-import React, { useContext } from 'react'; // Import useContext
+import React, { useContext } from 'react';
 import WeightLogger from './WeightLogger.jsx';
 import PhotoProgress from './PhotoProgress.jsx';
 import WeightChart from '../Dashboard/WeightChart.jsx';
-import { AppStateContext } from '../../context/AppContext.jsx'; // Import AppStateContext
-import { RotateCcw } from 'lucide-react'; // Import the icon
+import { AppStateContext } from '../../context/AppContext.jsx';
+import { RotateCcw } from 'lucide-react';
 import './Progress.css';
 
 const ProgressView = () => {
-  // Get the reset function from the context
-  const { resetChallenge } = useContext(AppStateContext);
+  // Get the renamed reset function from the context
+  const { resetAllData } = useContext(AppStateContext);
 
   return (
     <div className="progress-view-container">
@@ -27,21 +27,18 @@ const ProgressView = () => {
       
       <PhotoProgress />
 
-      {/* --- NEW DANGER ZONE CARD --- */}
       <div className="progress-card danger-zone">
         <div className="progress-card-header">
           <h3 className="progress-card-title">Advanced Options</h3>
         </div>
         <p className="danger-zone-text">
-          Permanently delete all saved progress and reset the challenge. This action cannot be undone.
+          Permanently delete all saved progress and workouts. This action cannot be undone.
         </p>
-        <button className="reset-progress-btn" onClick={resetChallenge}>
+        <button className="reset-progress-btn" onClick={resetAllData}>
           <RotateCcw size={20} />
-          Reset All Progress
+          Reset All Data
         </button>
       </div>
-      {/* --- END DANGER ZONE CARD --- */}
-
     </div>
   );
 };

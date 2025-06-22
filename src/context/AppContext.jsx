@@ -1,38 +1,85 @@
 // src/context/AppContext.jsx
 
-import React, { useState, useEffect, createContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { getExerciseByName } from '../data/exerciseDatabase.js';
+import { usePersistentState } from '../hooks/usePersistentState.jsx';
+import { TimerProvider, TimerContext } from './TimerContext.jsx';
 
-export const ThemeContext = createContext();
 export const AppStateContext = createContext();
+export const ThemeContext = createContext(); // Make sure ThemeContext is exported
 
 const initialAppState = {
-  challengeStartDate: null,
-  isFirstTimeSetup: false,
-  currentDay: 1,
-  currentWeek: 1,
-  startingWeight: 0,
-  currentWeight: 0,
-  workoutsCompleted: [],
-  currentStreak: 0,
-  weightHistory: [],
-  photos: [],
-  totalLbsLifted: 0,
-  totalReps: 0,
-  totalSets: 0,
-  timer: { isActive: false, type: null, key: 0, duration: 0, time: 0, tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true }, emom: { totalMinutes: 0, currentMinute: 0 } },
-  isModalOpen: false,
-  modalContent: null,
-  showConfetti: false,
+  startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
+  weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
+  customWorkouts: [], workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
+  isModalOpen: false, modalContent: null, showConfetti: false,
+  isWorkoutEditorOpen: false, editingWorkoutId: null,
 };
 
-// Helper to calculate day difference, ignoring time
-const diffDays = (date1, date2) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    d1.setHours(0, 0, 0, 0);
-    d2.setHours(0, 0, 0, 0);
-    return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+// Renaming this component to avoid confusion with the provider wrapper
+const AppStateProviderComponent = ({ children }) => {
+  const [appState, setAppState, clearAppState] = usePersistentState('crossfitTrackerState_v2', initialAppState);
+  const { clearTimer } = useContext(TimerContext);
+
+  const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
+
+  const resetAllData = () => {
+    if (window.confirm("Are you sure you want to reset all progress and workouts? This action cannot be undone.")) {
+      clearAppState();
+      clearTimer();
+      window.location.reload();
+    }
+  };
+  
+  const assignWorkoutToDate = (date, workoutId) => {
+    const dateString = date.toISOString().split('T')[0];
+    const currentSchedule = appState.workoutSchedule[dateString];
+    if (currentSchedule && currentSchedule.workoutId === workoutId) {
+        const newSchedule = { ...appState.workoutSchedule };
+        delete newSchedule[dateString];
+        updateAppState({ workoutSchedule: newSchedule });
+    } else {
+        updateAppState({ workoutSchedule: { ...appState.workoutSchedule, [dateString]: { workoutId, completedData: null } } });
+    }
+  };
+
+  const navigateToDate = (dateString) => updateAppState({ viewingDate: dateString });
+  const getScheduledDates = () => Object.keys(appState.workoutSchedule).sort((a,b) => new Date(a) - new Date(b));
+  const navigateToPrevScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > 0) navigateToDate(dates[i - 1]); };
+  const navigateToNextScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > -1 && i < dates.length - 1) navigateToDate(dates[i + 1]); };
+  const saveCustomWorkout = (workout) => { setAppState(prev => { const i = prev.customWorkouts.findIndex(w => w.id === workout.id); let u; if (i > -1) { u = [...prev.customWorkouts]; u[i] = workout; } else { u = [...prev.customWorkouts, workout]; } return { ...prev, customWorkouts: u }; }); };
+  const deleteCustomWorkout = (workoutId) => updateAppState({ customWorkouts: appState.customWorkouts.filter(w => w.id !== workoutId) });
+  const openWorkoutEditor = (workoutId) => updateAppState({ isWorkoutEditorOpen: true, editingWorkoutId: workoutId });
+  const closeWorkoutEditor = () => updateAppState({ isWorkoutEditorOpen: false, editingWorkoutId: null });
+  const openExerciseModal = (exerciseId) => { const details = getExerciseByName(exerciseId); if(details) updateAppState({isModalOpen: true, modalContent: details})};
+  const closeModal = () => updateAppState({ isModalOpen: false });
+  const addWeightEntry = (newWeight) => { const today = new Date().toLocaleDateString(); const entry = { date: today, weight: newWeight }; const hist = appState.weightHistory.filter(e => e.date !== today); const updated = [...hist, entry].sort((a,b) => new Date(a.date) - new Date(b.date)); const start = appState.startingWeight === 0 ? newWeight : appState.startingWeight; updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated }); };
+  const addPhotoEntry = (photoUrl) => { const today = new Date().toLocaleDateString(); const photo = { date: today, url: photoUrl }; const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date)); updateAppState({ photos: updated }); };
+  const completeWorkout = (dateString, stats) => {
+    const newSchedule = { ...appState.workoutSchedule };
+    if (newSchedule[dateString]) newSchedule[dateString].completedData = stats;
+    updateAppState({
+      workoutSchedule: newSchedule,
+      totalWorkoutsCompleted: appState.totalWorkoutsCompleted + 1,
+      totalSets: appState.totalSets + (stats.sets || 0),
+      totalReps: appState.totalReps + (stats.reps || 0),
+      totalLbsLifted: appState.totalLbsLifted + (stats.weight || 0),
+      showConfetti: true,
+    });
+    setTimeout(() => updateAppState({ showConfetti: false }), 5000);
+  };
+  
+  return (
+    <AppStateContext.Provider value={{ 
+      appState, updateAppState,
+      openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
+      completeWorkout, resetAllData,
+      saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, closeWorkoutEditor,
+      assignWorkoutToDate, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates
+    }}>
+      {children}
+    </AppStateContext.Provider>
+  );
 };
 
 const ThemeProvider = ({ children }) => {
@@ -42,202 +89,12 @@ const ThemeProvider = ({ children }) => {
   return <ThemeContext.Provider value={{ darkMode, toggleTheme }}>{children}</ThemeContext.Provider>;
 };
 
-const AppStateProvider = ({ children }) => {
-  const [appState, setAppState] = useState(() => {
-    try {
-      const savedState = localStorage.getItem('crossfitChallengeState');
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        if (parsed.challengeStartDate) {
-          parsed.challengeStartDate = new Date(parsed.challengeStartDate);
-        }
-        if (parsed.weightHistory) {
-            parsed.weightHistory.forEach(e => e.day = parseInt(e.day, 10));
-        }
-        return parsed;
-      }
-    } catch (error) {
-      console.error("Could not load state from localStorage", error);
-    }
-    return initialAppState;
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('crossfitChallengeState', JSON.stringify(appState));
-    } catch (error) {
-      console.error("Could not save state to localStorage", error);
-    }
-  }, [appState]);
-
-  useEffect(() => {
-    if (appState.challengeStartDate && !appState.isFirstTimeSetup) {
-      const today = new Date();
-      const dayNumber = diffDays(appState.challengeStartDate, today) + 1;
-      const newCurrentDay = Math.min(Math.max(1, dayNumber), 60);
-      if (newCurrentDay !== appState.currentDay) {
-        updateAppState({ 
-          currentDay: newCurrentDay,
-          currentWeek: Math.ceil(newCurrentDay / 7)
-        });
-      }
-    }
-  }, [appState.challengeStartDate, appState.isFirstTimeSetup]);
-
-  const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
-
-  const startChallenge = () => {
-    const startDate = new Date();
-    startDate.setHours(0,0,0,0);
-    setAppState(prev => ({
-      ...initialAppState,
-      challengeStartDate: startDate,
-      isFirstTimeSetup: true,
-      startingWeight: prev.startingWeight,
-      currentWeight: prev.currentWeight,
-      weightHistory: prev.weightHistory,
-      photos: prev.photos
-    }));
-  };
-  
-  const completeInitialSetup = () => {
-    setAppState(prev => ({
-      ...prev,
-      isFirstTimeSetup: false
-    }));
-  };
-
-  const resetChallenge = () => {
-    const isConfirmed = window.confirm("Are you sure you want to reset all progress? This action cannot be undone.");
-    if (isConfirmed) {
-      localStorage.removeItem('crossfitChallengeState');
-      window.location.reload();
-    }
-  };
-
-  const startTimer = ({ type, duration = 0, tabataRounds = 8 }) => {
-    setAppState(prev => {
-      let newTimerState = { isActive: true, type: type, key: prev.timer.key + 1, duration: duration, time: 0, tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true }, emom: { totalMinutes: 0, currentMinute: 0 } };
-      // Both 'countdown' and 'amrap' start by setting the time to the full duration.
-      if (type === 'countdown' || type === 'amrap') newTimerState.time = duration;
-      if (type === 'emom') {
-        newTimerState.time = 59; 
-        newTimerState.emom = { totalMinutes: duration / 60, currentMinute: 1 };
-      }
-      if (type === 'tabata') {
-        newTimerState.time = 20;
-        newTimerState.tabata = { totalRounds: tabataRounds, currentRound: 1, isWorkPhase: true };
-      }
-      return { ...prev, timer: newTimerState };
-    });
-  };
-
-  const stopTimer = () => setAppState(prev => ({ ...prev, timer: { ...prev.timer, isActive: false } }));
-
-  useEffect(() => {
-    if (!appState.timer.isActive) return;
-    const interval = setInterval(() => {
-      setAppState(prev => {
-        const timer = prev.timer;
-        if (!timer.isActive) { clearInterval(interval); return prev; }
-        
-        const newTimer = { ...timer };
-
-        switch (timer.type) {
-          // 'amrap' timers behave just like countdowns
-          case 'amrap':
-          case 'countdown':
-            newTimer.time -= 1;
-            if (newTimer.time < 0) {
-              newTimer.isActive = false;
-              newTimer.time = 0;
-            }
-            break;
-          case 'stopwatch':
-            newTimer.time += 1;
-            break;
-          case 'emom':
-            newTimer.time -= 1;
-            if (newTimer.time < 0) {
-              const newCurrentMinute = newTimer.emom.currentMinute + 1;
-              if (newCurrentMinute > newTimer.emom.totalMinutes) {
-                newTimer.isActive = false;
-              } else {
-                newTimer.time = 59;
-                newTimer.emom = { ...newTimer.emom, currentMinute: newCurrentMinute };
-              }
-            }
-            break;
-          case 'tabata':
-            newTimer.time -= 1;
-            if (newTimer.time < 0) {
-              const nextIsWork = !newTimer.tabata.isWorkPhase;
-              if (nextIsWork) {
-                const newCurrentRound = newTimer.tabata.currentRound + 1;
-                if (newCurrentRound > newTimer.tabata.totalRounds) {
-                  newTimer.isActive = false;
-                } else {
-                  newTimer.tabata = { ...newTimer.tabata, isWorkPhase: true, currentRound: newCurrentRound };
-                  newTimer.time = 20;
-                }
-              } else {
-                newTimer.tabata = { ...newTimer.tabata, isWorkPhase: false };
-                newTimer.time = 10;
-              }
-            }
-            break;
-          default:
-            break;
-        }
-        return { ...prev, timer: newTimer };
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [appState.timer.isActive, appState.timer.key]);
-
-  const openExerciseModal = (exerciseId) => { const details = getExerciseByName(exerciseId); if(details) setAppState(p => ({...p, isModalOpen: true, modalContent: details}))};
-  const closeModal = () => setAppState(prev => ({ ...prev, isModalOpen: false, }));
-  const addWeightEntry = (newWeight) => { setAppState(p => { const first = p.weightHistory.length === 0; const start = first ? newWeight : p.startingWeight; const entry = {day: p.currentDay, weight: newWeight}; const hist = p.weightHistory.filter(e => e.day !== p.currentDay); const updated = [...hist, entry].sort((a,b) => a.day - b.day); return {...p, startingWeight: start, currentWeight: newWeight, weightHistory: updated};})};
-  const addPhotoEntry = (photoUrl) => { setAppState(p => { const photo = {day: p.currentDay, url: photoUrl}; const updated = [...p.photos, photo].sort((a,b)=>a.day-b.day); return {...p, photos: updated};})};
-
-  const completeWorkout = (stats) => {
-    setAppState(prev => {
-      const lastCompletedDay = prev.workoutsCompleted.length > 0 ? Math.max(...prev.workoutsCompleted) : 0;
-      const newStreak = (prev.currentDay - lastCompletedDay === 1) ? prev.currentStreak + 1 : 1;
-      return {
-        ...prev,
-        totalSets: prev.totalSets + stats.sets,
-        totalReps: prev.totalReps + stats.reps,
-        totalLbsLifted: prev.totalLbsLifted + stats.weight,
-        workoutsCompleted: [...new Set([...prev.workoutsCompleted, prev.currentDay])],
-        currentStreak: newStreak,
-        showConfetti: true,
-      }
-    });
-    setTimeout(() => {
-      setAppState(prev => ({ ...prev, showConfetti: false }));
-    }, 5000);
-  };
-  
-  return (
-    <AppStateContext.Provider value={{ 
-      appState, updateAppState, startTimer, stopTimer,
-      openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
-      completeWorkout, startChallenge, 
-      resetChallenge, 
-      completeInitialSetup
-    }}>
-      {children}
-    </AppStateContext.Provider>
-  );
-};
-
-export const AppProviders = ({ children }) => {
-  return (
-    <ThemeProvider>
-      <AppStateProvider>
+export const AppProviders = ({ children }) => (
+  <ThemeProvider>
+    <TimerProvider>
+      <AppStateProviderComponent>
         {children}
-      </AppStateProvider>
-    </ThemeProvider>
-  );
-};
+      </AppStateProviderComponent>
+    </TimerProvider>
+  </ThemeProvider>
+);
