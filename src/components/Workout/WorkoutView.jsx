@@ -4,7 +4,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { getWorkoutByDay } from '../../data/workoutProgram.js';
 import WorkoutSection from './WorkoutSection.jsx';
-import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import './Workout.css';
 
 const WorkoutView = ({ setActiveView }) => {
@@ -14,35 +14,46 @@ const WorkoutView = ({ setActiveView }) => {
   const [exerciseProgress, setExerciseProgress] = useState({});
 
   useEffect(() => {
+    // When the app's current day changes (e.g., when a new day starts),
+    // automatically switch the view to that day.
     setViewingDay(appState.currentDay);
   }, [appState.currentDay]);
 
+  // --- THIS IS THE CORRECTED LOGIC ---
   useEffect(() => {
     const workout = getWorkoutByDay(viewingDay);
     setWorkoutData(workout);
-    
-    if (viewingDay === appState.currentDay) {
-      const initialProgress = {};
-      if (workout && !workout.isRestDay) {
-        ['warmup', 'strength', 'conditioning'].forEach(sectionKey => {
-          const section = workout[sectionKey];
-          if (section && section.exercises) {
-            section.exercises.forEach((exercise, index) => {
-              const exerciseId = `${sectionKey}-${index}`;
-              if (exercise.sets) {
-                initialProgress[exerciseId] = { sets: Array(exercise.sets).fill({ completed: false, weight: '', reps: exercise.reps }) };
-              }
-            });
-          }
-        });
-      }
-      setExerciseProgress(initialProgress);
-    } else {
-      setExerciseProgress({});
+
+    // Always initialize the structure for the day being viewed.
+    const initialProgress = {};
+    if (workout && !workout.isRestDay) {
+      ['warmup', 'strength', 'conditioning'].forEach(sectionKey => {
+        const section = workout[sectionKey];
+        if (section && section.exercises) {
+          section.exercises.forEach((exercise, index) => {
+            const exerciseId = `${sectionKey}-${index}`;
+            if (exercise.sets) {
+              // Parse "10 each arm" to just 10 for the placeholder
+              const repNumber = parseInt(exercise.reps, 10) || 0;
+              initialProgress[exerciseId] = {
+                sets: Array(exercise.sets).fill({
+                  completed: false,
+                  weight: '',
+                  reps: repNumber
+                })
+              };
+            }
+          });
+        }
+      });
     }
-  }, [viewingDay, appState.currentDay]);
+    setExerciseProgress(initialProgress);
+    // This effect now only depends on the day the user is trying to view.
+  }, [viewingDay]);
+
 
   const handleSetUpdate = (exerciseId, setIndex, field, value) => {
+    // This guard clause correctly prevents editing on non-current days.
     if (viewingDay !== appState.currentDay) return;
     setExerciseProgress(prevProgress => {
       const newProgress = { ...prevProgress };
@@ -75,12 +86,21 @@ const WorkoutView = ({ setActiveView }) => {
   };
 
   const handlePrevDay = () => { if (viewingDay > 1) setViewingDay(prev => prev - 1); };
-  const handleNextDay = () => { if (viewingDay < 60) setViewingDay(prev => prev + 1); }; // Corrected from prev - 1
+  const handleNextDay = () => { if (viewingDay < 60) setViewingDay(prev => prev + 1); };
   
-  const isViewingCurrentDay = viewingDay === appState.currentDay;
+  if (!workoutData) {
+    return (
+      <div className="workout-view-container">
+        <div className="rest-day-content" style={{ backgroundColor: 'var(--bg-tertiary)'}}>
+          <AlertTriangle size={48} color="#facc15" />
+          <h2 style={{marginTop: '16px'}}>Workout Not Found</h2>
+          <p>Could not load the workout data for Day {viewingDay}. Please try again or check the program data.</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (!workoutData) return <div>Loading workout...</div>;
-  
+  const isViewingCurrentDay = viewingDay === appState.currentDay;
   const { type, actualDay } = workoutData;
   
   if (workoutData.isRestDay) {
@@ -125,5 +145,4 @@ const WorkoutView = ({ setActiveView }) => {
   );
 };
 
-// THE MISSING LINE THAT CAUSED THE ERROR
 export default WorkoutView;

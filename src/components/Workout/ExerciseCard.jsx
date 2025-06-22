@@ -1,26 +1,24 @@
 // src/components/Workout/ExerciseCard.jsx
 
+// REMOVED useWindowSize from this import
 import React, { useContext, useState, useEffect } from 'react';
 import { Check, Square, Plus, Minus, Timer, HelpCircle } from 'lucide-react';
-import { useWindowSize } from '../../hooks/useWindowSize.jsx';
+// import { useWindowSize } from '../../hooks/useWindowSize.jsx'; // REMOVED
 import { AppStateContext } from '../../context/AppContext.jsx';
 
 const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, onRestClick }) => {
   const { completed, weight, reps } = progressData;
-  const { width } = useWindowSize();
-  const isMobile = width < 450;
+  // const { width } = useWindowSize(); // REMOVED
+  // const isMobile = width < 520; // REMOVED
 
-  // Local state for instant text input feedback
   const [localWeight, setLocalWeight] = useState(weight);
   const [localReps, setLocalReps] = useState(reps);
 
-  // Syncs local state if props change from parent
   useEffect(() => {
     setLocalWeight(weight);
     setLocalReps(reps);
   }, [weight, reps]);
   
-  // This is the key: Update the parent state on blur
   const handleBlur = (field, value) => {
     onSetUpdate(exerciseId, setIndex, field, value);
   };
@@ -75,7 +73,8 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
 
   return (
     <div className={`set-row-wrapper ${completed ? 'completed' : ''}`}>
-      <div className={`set-row ${isMobile ? 'mobile' : ''}`}>
+      {/* The 'mobile' class is no longer needed here */}
+      <div className="set-row">
         {setStatus}
         {setInputs}
       </div>
@@ -126,8 +125,8 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate }) => {
             <SetRow
               key={index}
               setIndex={index}
-              exerciseId={exerciseId} // Pass exerciseId down
-              onSetUpdate={onSetUpdate} // Pass onSetUpdate down
+              exerciseId={exerciseId}
+              onSetUpdate={onSetUpdate}
               progressData={set}
               targetReps={reps}
               onRestClick={handleRestClick}
@@ -137,7 +136,6 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate }) => {
       </div>
     );
   }
-  // This is for simple warm-up exercises etc.
   return ( <div className="exercise-card-simple clickable" onClick={handleExerciseClick}><h4>{name}</h4><div className="exercise-details">{exercise.reps && <span>{exercise.reps} REPS</span>}{exercise.duration && <span>{exercise.duration}</span>}</div></div> );
 };
 
