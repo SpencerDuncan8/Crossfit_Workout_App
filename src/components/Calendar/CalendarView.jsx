@@ -10,8 +10,10 @@ import { AppStateContext } from '../../context/AppContext.jsx';
 import './Calendar.css';
 
 const CalendarView = () => {
-  const { appState } = useContext(AppStateContext);
-  // Set initial view to the challenge start date, or today if not started
+  // THE FIX - STEP 1: Get the ENTIRE context value, not just the appState.
+  const fullContext = useContext(AppStateContext);
+  const { appState } = fullContext;
+
   const [currentDate, setCurrentDate] = useState(appState.challengeStartDate || new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -37,7 +39,14 @@ const CalendarView = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
-  const previewAppState = { ...appState, currentDay: selectedDay };
+  // THE FIX - STEP 2: Create a new context value for the preview.
+  // It includes all the original functions (like openExerciseModal)
+  // but provides a modified appState where `currentDay` is the one we've selected.
+  const previewContextValue = {
+    ...fullContext,
+    appState: { ...appState, currentDay: selectedDay },
+  };
+
 
   return (
     <>
@@ -64,7 +73,8 @@ const CalendarView = () => {
         onClose={() => setIsPreviewModalOpen(false)}
         title={`Workout Preview: Day ${selectedDay}`}
       >
-        <AppStateContext.Provider value={{ appState: previewAppState }}>
+        {/* THE FIX - STEP 3: Pass the new, complete context value here. */}
+        <AppStateContext.Provider value={previewContextValue}>
           <WorkoutView />
         </AppStateContext.Provider>
       </Modal>

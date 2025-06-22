@@ -1,7 +1,7 @@
 // src/components/Dashboard/WeightChart.jsx
 
 import React, { useContext } from 'react';
-// CORRECTED IMPORT: Removed Defs and LinearGradient from this line
+// This import is back to the original state
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AppStateContext } from '../../context/AppContext.jsx';
 
@@ -23,7 +23,7 @@ const WeightChart = () => {
   const data = appState.weightHistory;
 
   const gridColor = 'var(--border-color)';
-  const textColor = 'var(--text-tertiary)';
+  const textColor = 'var(--text-tertiary)'; // Reverted to the original color variable
 
   return (
     <div className="chart-container">
