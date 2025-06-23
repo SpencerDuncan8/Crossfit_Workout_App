@@ -6,7 +6,7 @@ import { usePersistentState } from '../hooks/usePersistentState.jsx';
 import { TimerProvider, TimerContext } from './TimerContext.jsx';
 
 export const AppStateContext = createContext();
-export const ThemeContext = createContext(); // Make sure ThemeContext is exported
+export const ThemeContext = createContext();
 
 const initialAppState = {
   startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
@@ -14,7 +14,7 @@ const initialAppState = {
   customWorkouts: [], workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingWorkoutId: null,
-  workoutToScheduleId: null, // Renamed from workoutToAssignId
+  workoutToScheduleId: null,
 };
 
 const AppStateProviderComponent = ({ children }) => {
@@ -23,6 +23,38 @@ const AppStateProviderComponent = ({ children }) => {
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
 
+  const autoScheduleProgram = (workoutsToSchedule) => {
+    let currentSchedule = { ...appState.workoutSchedule };
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    for (const workout of workoutsToSchedule) {
+      while (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      const dateString = currentDate.toISOString().split('T')[0];
+      
+      if (!currentSchedule[dateString]) {
+        currentSchedule[dateString] = { workoutId: workout.id, completedData: null };
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    updateAppState({ workoutSchedule: currentSchedule });
+    alert('Your program has been scheduled! Check the Calendar tab to see your plan.');
+  };
+
+  const loadProgramTemplate = (template) => {
+    const newWorkouts = [...appState.customWorkouts, ...template.workouts];
+    updateAppState({ customWorkouts: newWorkouts });
+    
+    if (window.confirm(`Successfully loaded "${template.name}".\n\nWould you like to automatically schedule these workouts on your calendar?`)) {
+        autoScheduleProgram(template.workouts);
+    }
+  };
+  
   const resetAllData = () => {
     if (window.confirm("Are you sure you want to reset all progress and workouts? This action cannot be undone.")) {
       clearAppState();
@@ -85,14 +117,14 @@ const AppStateProviderComponent = ({ children }) => {
       completeWorkout, resetAllData,
       saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, closeWorkoutEditor,
       scheduleWorkoutForDate, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates,
-      selectWorkoutToSchedule, clearWorkoutToSchedule
+      selectWorkoutToSchedule, clearWorkoutToSchedule,
+      loadProgramTemplate
     }}>
       {children}
     </AppStateContext.Provider>
   );
 };
 
-// -> THIS WAS THE MISSING PIECE
 const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(true);
   useEffect(() => { document.body.className = darkMode ? 'dark-theme' : 'light-theme'; }, [darkMode]);
