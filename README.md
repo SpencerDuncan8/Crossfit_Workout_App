@@ -2,37 +2,30 @@
 
 A premium web application to guide your fitness journey. Get started immediately with professionally designed programs or use the powerful editor to create, plan, and track your own custom CrossFit-style workouts.
 
-## 🎯 Project Vision & Roadmap
+## 🎯 Current Status: Major Features Complete! 🚀
 
-Our vision is a hybrid model that caters to both beginners who need guidance and experienced athletes who demand flexibility.
+The application is now built on a flexible, program-based architecture that serves both beginners and experienced athletes.
 
-*   **Part 1: Core Engine** - ✅ **Complete**
-    *   This is the powerful, flexible foundation of the app. All core features for creating, logging, and tracking workouts are fully implemented.
-    *   ✅ Custom Workout Builder
-    *   ✅ Interactive Workout View & Timers
-    *   ✅ Full-Featured Calendar & Logbook
-    *   ✅ Progress Tracking Dashboard
-
-*   **Part 2: Guided Programs & Onboarding** - **In Progress**
-    *   This phase focuses on providing immediate value to new users with pre-built content, turning the app from an empty tool into an instant workout plan.
-    *   **In Progress:** Create data structure for program templates.
-    *   **Next Up:** Build the logic to load a template into a user's library.
-    *   **Planned:** Design a "First-Time User" onboarding screen to select a program.
-    *   **Planned:** Add an option to auto-schedule the selected program onto the calendar.
-
-*   **Part 3: Premium Tier & Expansion** - **Planned**
-    *   With the core engine and free templates in place, we will build out a premium subscription offering.
-    *   **Planned:** Expanded Template Library (e.g., Kettlebell, Strength-Focus, Competition Prep).
-    *   **Planned:** Advanced analytics and personalized progress insights.
-    *   **Planned:** Video demonstrations for exercises.
+*   **Phase 1: Core Engine** - ✅ **Complete**
+*   **Phase 2: Guided Programs & Onboarding** - ✅ **Complete**
+    *   A program-based architecture has been implemented.
+    *   Users can now load pre-built template programs into their library.
+    *   A "quick start" option automatically schedules loaded programs onto the calendar.
+    *   Users can create, edit, copy, and delete their own custom programs.
+*   **Phase 3: Premium Tier & Expansion** - **Next Up**
+    *   **Planned:** Add more diverse program templates (e.g., Kettlebell, Strength-Focus).
+    *   **Planned:** Implement a "premium" tier to unlock the full template library.
+    *   **Planned:** Add advanced analytics and personalized progress insights.
 
 ## 🚀 Features
 
-### 1. Guided Program Templates
-- **Instant Start:** Choose from professionally designed, multi-week programs (e.g., "Bodyweight Blast") to instantly populate your workout library and calendar.
-- **Perfect Starting Point:** Eliminates the "blank page" problem by providing immediate, actionable workout plans. Fully customizable after loading.
+### 1. Guided & Custom Program Library
+- **Template Programs:** Browse pre-built programs like "Bodyweight Blast". Load them into your library with a single tap.
+- **Load & Schedule:** A "quick start" option instantly adds a template to your library and schedules the workouts onto your calendar, providing an immediate plan.
+- **Copy & Edit:** Duplicate any template to create your own editable version, allowing for full customization.
+- **Create From Scratch:** Build your own custom programs from the ground up, adding as many unique workouts as you need.
 
-### 2. Custom Workout Builder
+### 2. Powerful Workout Editor
 - **Modular Blocks:** Build workouts using different block types: Warm-up, Strength, Cardio, Cool-down, and multiple Conditioning formats.
 - **Strength Blocks:** Define exercises with unique sets and reps for each (e.g., 5x5, pyramid sets).
 - **Conditioning Blocks:**
@@ -49,7 +42,7 @@ Our vision is a hybrid model that caters to both beginners who need guidance and
 - **Rest Timer:** Quickly start a rest timer between sets in a strength block.
 
 ### 4. Full-Featured Calendar
-- **Workout Planner:** Click on any future date to assign one of your custom-built or template-based workouts.
+- **Workout Planner:** Click on any future date to assign one of your workouts from any program in your library.
 - **Workout Logbook:** After completing a workout, the calendar entry is updated. Click on any completed day to see a summary of your performance.
 - **Navigation:** Easily jump between your scheduled workouts directly from the Workout View.
 

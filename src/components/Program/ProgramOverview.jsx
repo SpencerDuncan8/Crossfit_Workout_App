@@ -9,13 +9,14 @@ import Modal from '../Common/Modal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  const { appState, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, deleteProgram, updateProgram, addTemplateToLibrary, loadAndScheduleTemplate, copyProgram } = useContext(AppStateContext);
+  const { appState, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
   
   const [viewingProgramId, setViewingProgramId] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [editingProgramName, setEditingProgramName] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newProgramName, setNewProgramName] = useState('My New Program');
+  const [scheduleConfirm, setScheduleConfirm] = useState(null);
 
   const handleScheduleWorkout = (workoutId) => {
     selectWorkoutToSchedule(workoutId);
@@ -45,6 +46,22 @@ const ProgramOverview = ({ setActiveView }) => {
     e.preventDefault();
     updateProgram(editingProgramId, { name: editingProgramName });
     setEditingProgramId(null);
+  };
+  
+  const handleLoadAndSchedule = (template) => {
+    const isAlreadyLoaded = appState.programs.some(p => p.id === template.id);
+    if (!isAlreadyLoaded) {
+      loadProgramTemplate(template);
+    }
+    setScheduleConfirm(template); 
+  };
+  
+  const handleConfirmSchedule = () => {
+    if (scheduleConfirm) {
+      autoScheduleProgram(scheduleConfirm.workouts);
+      alert('Your program has been scheduled! Check the Calendar tab to see your plan.');
+      setScheduleConfirm(null);
+    }
   };
 
   const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
@@ -149,7 +166,6 @@ const ProgramOverview = ({ setActiveView }) => {
       <div className="programs-list">
         {programTemplates.map(template => {
             const isLoaded = appState.programs.some(p => p.id === template.id);
-
             return (
               <div key={template.id} className="program-card template">
                     <h3 className="program-card-title">{template.name}</h3>
@@ -157,16 +173,16 @@ const ProgramOverview = ({ setActiveView }) => {
                     <div className="template-actions">
                         <button 
                             className="action-btn load-btn"
-                            onClick={() => loadAndScheduleTemplate(template)}
+                            onClick={() => handleLoadAndSchedule(template)}
                         >
                             Load & Schedule
                         </button>
                         <button 
                             className={`action-btn copy-btn ${isLoaded ? 'disabled' : ''}`}
-                            onClick={() => !isLoaded && addTemplateToLibrary(template)}
+                            onClick={() => !isLoaded && loadProgramTemplate(template)}
                             disabled={isLoaded}
                         >
-                            {isLoaded ? <><Check size={16}/> In Library</> : <><PlusCircle size={16}/> Add to Library</>}
+                            {isLoaded ? <><Check size={16}/> Added</> : 'Add to Library'}
                         </button>
                     </div>
               </div>
@@ -174,11 +190,7 @@ const ProgramOverview = ({ setActiveView }) => {
         })}
       </div>
 
-      <Modal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
-        title="Create New Program"
-      >
+      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Program">
         <form onSubmit={handleConfirmCreateProgram} className="modal-form-container">
           <label htmlFor="newProgramName" className="modal-label">Program Name</label>
           <input
@@ -194,6 +206,24 @@ const ProgramOverview = ({ setActiveView }) => {
             <button type="submit" className="action-btn schedule-btn">Create Program</button>
           </div>
         </form>
+      </Modal>
+
+      <Modal 
+        isOpen={!!scheduleConfirm} 
+        onClose={() => setScheduleConfirm(null)} 
+        title="Schedule Program"
+      >
+        <div className="modal-form-container">
+          <p className="modal-confirm-text">
+            "{scheduleConfirm?.name}" is in My Programs.
+            <br/><br/>
+            Would you like to automatically schedule it on your calendar now?
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="action-btn" onClick={() => setScheduleConfirm(null)}>Cancel</button>
+            <button type="button" className="action-btn schedule-btn" onClick={handleConfirmSchedule}>OK</button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

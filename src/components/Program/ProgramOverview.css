@@ -673,3 +673,11 @@
   background-color: #3b82f6;
   color: #fff;
 }
+/* --- ADD THIS NEW STYLE for the Confirm Modal --- */
+.modal-confirm-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: 16px;
+}
