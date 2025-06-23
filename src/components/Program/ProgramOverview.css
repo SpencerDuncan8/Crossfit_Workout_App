@@ -138,4 +138,21 @@
 .action-btn.delete-btn:hover {
   background-color: #ef4444;
   color: #fff;
+}/* src/components/Program/ProgramOverview.css */
+
+/* ... (previous styles) ... */
+
+/* --- RENAME THIS STYLE from .assign-btn --- */
+.action-btn.schedule-btn {
+  background-color: #3b82f6; /* A nice blue color */
+  color: #fff;
 }
+.action-btn.schedule-btn:hover {
+  background-color: #2563eb;
+}
+/* --- END RENAMED STYLE --- */
+
+.action-btn.edit-btn {
+  /* ... */
+}
+/* ... (rest of the file) ... */

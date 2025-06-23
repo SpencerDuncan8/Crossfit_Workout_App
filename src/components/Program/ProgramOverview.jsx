@@ -2,11 +2,12 @@
 
 import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { PlusCircle, Trash2, Edit, Play } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, CalendarPlus } from 'lucide-react'; 
 import './ProgramOverview.css';
 
-const ProgramOverview = ({ setActiveView }) => { // Accept setActiveView as a prop
-  const { appState, saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, setActiveWorkout } = useContext(AppStateContext);
+const ProgramOverview = ({ setActiveView }) => {
+  // -> Get the renamed function from context
+  const { appState, saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule } = useContext(AppStateContext);
 
   const handleCreateNewWorkout = () => {
     const newWorkout = { id: Date.now(), name: 'My New Workout', blocks: [] };
@@ -14,9 +15,10 @@ const ProgramOverview = ({ setActiveView }) => { // Accept setActiveView as a pr
     saveCustomWorkout(newWorkout);
   };
 
-  const handleStartWorkout = (workoutId) => {
-    setActiveWorkout(workoutId); // Set the active workout in the global state
-    setActiveView('workout');    // Switch to the workout tab
+  // -> Rename the handler function
+  const handleScheduleWorkout = (workoutId) => {
+    selectWorkoutToSchedule(workoutId); // "Pick up" the workout
+    setActiveView('calendar');      // Switch to the calendar tab
   };
 
   return (
@@ -46,9 +48,10 @@ const ProgramOverview = ({ setActiveView }) => { // Accept setActiveView as a pr
                 <p className="workout-card-subtitle">{workout.blocks.length} block{workout.blocks.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="workout-card-actions">
-                <button className="action-btn start-btn" onClick={() => handleStartWorkout(workout.id)}>
-                  <Play size={18} />
-                  Start
+                {/* -> UPDATE THE BUTTON */}
+                <button className="action-btn schedule-btn" onClick={() => handleScheduleWorkout(workout.id)}>
+                  <CalendarPlus size={18} />
+                  Schedule
                 </button>
                 <button className="action-btn edit-btn" onClick={() => openWorkoutEditor(workout.id)}>
                   <Edit size={18} />

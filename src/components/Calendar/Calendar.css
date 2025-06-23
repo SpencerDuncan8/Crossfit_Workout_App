@@ -55,3 +55,132 @@
   background: none; border: none; color: var(--text-secondary); display: flex;
   align-items: center; gap: 8px; font-weight: 500; cursor: pointer; margin-bottom: 16px;
 }
+/* src/components/Calendar/Calendar.css */
+
+/* ... (previous styles) ... */
+
+/* --- RENAME THESE STYLES --- */
+
+.scheduling-banner { /* -> Renamed from .assignment-banner */
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.cancel-schedule-btn { /* -> Renamed from .cancel-assign-btn */
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.cancel-schedule-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.calendar-container.is-scheduling .day-cell:not(.blank) { /* -> Renamed from .is-assigning */
+  cursor: copy; /* Visual cue for scheduling */
+}
+
+.calendar-container.is-scheduling .day-cell:not(.blank):hover { /* -> Renamed from .is-assigning */
+  background-color: rgba(59, 130, 246, 0.2);
+  transform: scale(1.05);
+}
+
+/* --- END RENAMED STYLES --- */
+/* --- ADD THESE NEW STYLES FOR THE MODAL'S EMPTY STATE --- */
+
+.modal-empty-state {
+  text-align: center;
+  padding: 16px;
+}
+
+.modal-empty-state h4 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal-empty-state p {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin-bottom: 24px;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.modal-empty-state .action-btn {
+  width: 100%;
+}
+/* --- ADD THESE NEW STYLES FOR THE ACTION-SELECT MODAL --- */
+.action-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+.action-select-container h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.action-select-container p {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-top: -8px; /* Pull it closer to the title */
+  margin-bottom: 8px;
+}
+
+.action-select-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.action-select-btn.primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+}
+
+.action-select-btn.primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.action-select-btn:not(.primary) {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.action-select-btn:not(.primary):hover {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}

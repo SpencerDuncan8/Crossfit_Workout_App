@@ -14,9 +14,9 @@ const initialAppState = {
   customWorkouts: [], workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingWorkoutId: null,
+  workoutToScheduleId: null, // Renamed from workoutToAssignId
 };
 
-// Renaming this component to avoid confusion with the provider wrapper
 const AppStateProviderComponent = ({ children }) => {
   const [appState, setAppState, clearAppState] = usePersistentState('crossfitTrackerState_v2', initialAppState);
   const { clearTimer } = useContext(TimerContext);
@@ -31,7 +31,15 @@ const AppStateProviderComponent = ({ children }) => {
     }
   };
   
-  const assignWorkoutToDate = (date, workoutId) => {
+  const selectWorkoutToSchedule = (workoutId) => {
+    updateAppState({ workoutToScheduleId: workoutId });
+  };
+  
+  const clearWorkoutToSchedule = () => {
+    updateAppState({ workoutToScheduleId: null });
+  };
+  
+  const scheduleWorkoutForDate = (date, workoutId) => {
     const dateString = date.toISOString().split('T')[0];
     const currentSchedule = appState.workoutSchedule[dateString];
     if (currentSchedule && currentSchedule.workoutId === workoutId) {
@@ -41,6 +49,7 @@ const AppStateProviderComponent = ({ children }) => {
     } else {
         updateAppState({ workoutSchedule: { ...appState.workoutSchedule, [dateString]: { workoutId, completedData: null } } });
     }
+    clearWorkoutToSchedule();
   };
 
   const navigateToDate = (dateString) => updateAppState({ viewingDate: dateString });
@@ -75,13 +84,15 @@ const AppStateProviderComponent = ({ children }) => {
       openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
       completeWorkout, resetAllData,
       saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, closeWorkoutEditor,
-      assignWorkoutToDate, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates
+      scheduleWorkoutForDate, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates,
+      selectWorkoutToSchedule, clearWorkoutToSchedule
     }}>
       {children}
     </AppStateContext.Provider>
   );
 };
 
+// -> THIS WAS THE MISSING PIECE
 const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(true);
   useEffect(() => { document.body.className = darkMode ? 'dark-theme' : 'light-theme'; }, [darkMode]);
