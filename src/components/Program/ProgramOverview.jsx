@@ -9,12 +9,11 @@ import Modal from '../Common/Modal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  const { appState, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate } = useContext(AppStateContext);
+  const { appState, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, deleteProgram, updateProgram, addTemplateToLibrary, loadAndScheduleTemplate, copyProgram } = useContext(AppStateContext);
   
   const [viewingProgramId, setViewingProgramId] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [editingProgramName, setEditingProgramName] = useState('');
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newProgramName, setNewProgramName] = useState('My New Program');
 
@@ -150,20 +149,24 @@ const ProgramOverview = ({ setActiveView }) => {
       <div className="programs-list">
         {programTemplates.map(template => {
             const isLoaded = appState.programs.some(p => p.id === template.id);
+
             return (
               <div key={template.id} className="program-card template">
                     <h3 className="program-card-title">{template.name}</h3>
                     <p className="program-card-description">{template.description}</p>
                     <div className="template-actions">
                         <button 
-                            className={`action-btn load-btn ${isLoaded ? 'disabled' : ''}`}
-                            onClick={() => !isLoaded && loadProgramTemplate(template)}
+                            className="action-btn load-btn"
+                            onClick={() => loadAndScheduleTemplate(template)}
+                        >
+                            Load & Schedule
+                        </button>
+                        <button 
+                            className={`action-btn copy-btn ${isLoaded ? 'disabled' : ''}`}
+                            onClick={() => !isLoaded && addTemplateToLibrary(template)}
                             disabled={isLoaded}
                         >
-                            {isLoaded ? <><Check size={16}/> Added</> : 'Load'}
-                        </button>
-                        <button className="action-btn copy-btn" onClick={() => copyProgram(template)}>
-                            <Copy size={16} /> Copy & Edit
+                            {isLoaded ? <><Check size={16}/> In Library</> : <><PlusCircle size={16}/> Add to Library</>}
                         </button>
                     </div>
               </div>

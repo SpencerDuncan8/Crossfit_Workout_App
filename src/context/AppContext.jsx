@@ -39,6 +39,45 @@ const AppStateProviderComponent = ({ children }) => {
     return newProgram.id;
   };
 
+  const addTemplateToLibrary = (template) => {
+    if (appState.programs.some(p => p.id === template.id)) {
+        alert(`"${template.name}" has already been added to your programs.`);
+        return;
+    }
+
+    const newProgram = {
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        workouts: template.workouts,
+        isTemplate: false
+    };
+    
+    const updatedPrograms = [...appState.programs, newProgram];
+    updateAppState({ programs: updatedPrograms });
+    alert(`"${template.name}" has been added to My Programs. You can now view and schedule it.`);
+  };
+
+  const loadAndScheduleTemplate = (template) => {
+    const isAlreadyLoaded = appState.programs.some(p => p.id === template.id);
+    
+    if (!isAlreadyLoaded) {
+      const newProgram = {
+          id: template.id,
+          name: template.name,
+          description: template.description,
+          workouts: template.workouts,
+          isTemplate: false
+      };
+      const updatedPrograms = [...appState.programs, newProgram];
+      updateAppState({ programs: updatedPrograms });
+    }
+    
+    if (window.confirm(`"${template.name}" is in My Programs.\n\nWould you like to automatically schedule it now?`)) {
+        autoScheduleProgram(template.workouts);
+    }
+  };
+
   const copyProgram = (programToCopy) => {
     const newProgram = {
       ...JSON.parse(JSON.stringify(programToCopy)),
@@ -83,28 +122,6 @@ const AppStateProviderComponent = ({ children }) => {
         });
         return { ...prev, programs: updatedPrograms };
     });
-  };
-
-  const loadProgramTemplate = (template) => {
-    if (appState.programs.some(p => p.id === template.id)) {
-        alert(`"${template.name}" has already been added to your programs. You can copy it again to create another version.`);
-        return;
-    }
-
-    const newProgram = {
-        id: template.id, // Keep the original template ID to prevent duplicates
-        name: template.name,
-        description: template.description,
-        workouts: template.workouts,
-        isTemplate: false // This makes it appear in the user's "My Programs" list
-    };
-    
-    const updatedPrograms = [...appState.programs, newProgram];
-    updateAppState({ programs: updatedPrograms });
-    
-    if (window.confirm(`"${template.name}" has been added to My Programs.\n\nWould you like to automatically schedule it now?`)) {
-        autoScheduleProgram(template.workouts);
-    }
   };
 
   const deleteCustomWorkout = (programId, workoutId) => {
@@ -206,7 +223,8 @@ const AppStateProviderComponent = ({ children }) => {
     <AppStateContext.Provider value={{ 
       appState, allWorkouts, updateAppState,
       createProgram, copyProgram, deleteProgram, updateProgram,
-      saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, loadProgramTemplate,
+      saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, 
+      addTemplateToLibrary, loadAndScheduleTemplate, // Pass new functions
       closeWorkoutEditor, openExerciseModal, closeModal, addWeightEntry, addPhotoEntry, 
       completeWorkout, resetAllData, scheduleWorkoutForDate, navigateToDate, 
       navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, 
