@@ -51,12 +51,10 @@ const AppStateProviderComponent = ({ children }) => {
   };
 
   const deleteProgram = (programId) => {
-    if (window.confirm("Are you sure you want to delete this entire program and all of its workouts? This cannot be undone.")) {
-        setAppState(prev => ({
-            ...prev,
-            programs: prev.programs.filter(p => p.id !== programId)
-        }));
-    }
+    setAppState(prev => ({
+        ...prev,
+        programs: prev.programs.filter(p => p.id !== programId)
+    }));
   };
 
   const updateProgram = (programId, updates) => {
@@ -146,12 +144,12 @@ const AppStateProviderComponent = ({ children }) => {
     updateAppState({ workoutSchedule: currentSchedule });
   };
   
+  // --- THE FIX IS HERE ---
+  // The window.confirm call is removed. The confirmation is now handled in the ProgressView component.
   const resetAllData = () => {
-    if (window.confirm("Are you sure you want to reset all progress and workouts? This action cannot be undone.")) {
-      clearAppState();
-      clearTimer();
-      window.location.reload();
-    }
+    clearAppState();
+    clearTimer();
+    window.location.reload();
   };
   
   const selectWorkoutToSchedule = (workoutId) => {
@@ -184,7 +182,6 @@ const AppStateProviderComponent = ({ children }) => {
   const addWeightEntry = (newWeight) => { const today = new Date().toLocaleDateString(); const entry = { date: today, weight: newWeight }; const hist = appState.weightHistory.filter(e => e.date !== today); const updated = [...hist, entry].sort((a,b) => new Date(a.date) - new Date(b.date)); const start = appState.startingWeight === 0 ? newWeight : appState.startingWeight; updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated }); };
   const addPhotoEntry = (photoUrl) => { const today = new Date().toLocaleDateString(); const photo = { date: today, url: photoUrl }; const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date)); updateAppState({ photos: updated }); };
   
-  // --- THIS IS THE RESTORED, FULLY FUNCTIONAL VERSION ---
   const completeWorkout = (dateString, stats) => {
     const newSchedule = { ...appState.workoutSchedule };
     if (newSchedule[dateString]) newSchedule[dateString].completedData = stats;

@@ -17,6 +17,8 @@ const ProgramOverview = ({ setActiveView }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newProgramName, setNewProgramName] = useState('My New Program');
   const [scheduleConfirm, setScheduleConfirm] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [programToDelete, setProgramToDelete] = useState(null);
 
   const handleScheduleWorkout = (workoutId) => {
     selectWorkoutToSchedule(workoutId);
@@ -59,17 +61,27 @@ const ProgramOverview = ({ setActiveView }) => {
   const handleConfirmSchedule = () => {
     if (scheduleConfirm) {
       autoScheduleProgram(scheduleConfirm.workouts);
-      alert('Your program has been scheduled! Check the Calendar tab to see your plan.');
+      setShowSuccessModal(true);
       setScheduleConfirm(null);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (programToDelete) {
+      deleteProgram(programToDelete.id);
+      setViewingProgramId(null); // Go back to the main list
+      setProgramToDelete(null);
     }
   };
 
   const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
 
+  let currentView;
+
   if (viewingProgram) {
     const isEditingThisProgram = editingProgramId === viewingProgram.id;
-    return (
+    currentView = (
       <div className="program-view-container">
         <div className="page-header">
           <button className="back-to-programs-btn" onClick={() => setViewingProgramId(null)}>
@@ -122,73 +134,79 @@ const ProgramOverview = ({ setActiveView }) => {
           )}
         </div>
         {!viewingProgram.isTemplate && (
-            <button className="delete-program-btn" onClick={() => {deleteProgram(viewingProgram.id); setViewingProgramId(null);}}>
+            <button className="delete-program-btn" onClick={() => setProgramToDelete(viewingProgram)}>
                 <Trash2 size={16}/> Delete Program
             </button>
         )}
       </div>
     );
+  } else {
+    currentView = (
+      <div className="program-view-container">
+        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1>My Programs</h1>
+            <p>Select a program to view its workouts.</p>
+          </div>
+          <button className="create-workout-btn" onClick={handleCreateProgram}>
+            <PlusCircle size={20} />
+            <span>Create Program</span>
+          </button>
+        </div>
+        
+        {userPrograms.length > 0 ? (
+          <div className="programs-list">
+              {userPrograms.map(program => (
+                <div key={program.id} className="program-card" onClick={() => setViewingProgramId(program.id)}>
+                  <h3 className="program-card-title">{program.name}</h3>
+                  <p className="program-card-description">{program.workouts.length} workout{program.workouts.length !== 1 ? 's' : ''}</p>
+                  <span className="program-card-view-btn">View Program <ChevronsRight size={16}/></span>
+                </div>
+              ))}
+          </div>
+        ) : (
+          <div className="program-empty-state">
+              <p>You haven't created or loaded any programs yet. Create a new one or load a template below to get started.</p>
+          </div>
+        )}
+
+        <div className="page-header" style={{marginTop: '24px'}}>
+          <h2>Template Programs</h2>
+          <p>Load a pre-built program to get started or for new ideas.</p>
+        </div>
+        <div className="programs-list">
+          {programTemplates.map(template => {
+              const isLoaded = appState.programs.some(p => p.id === template.id);
+              return (
+                <div key={template.id} className="program-card template">
+                      <h3 className="program-card-title">{template.name}</h3>
+                      <p className="program-card-description">{template.description}</p>
+                      <div className="template-actions">
+                          <button 
+                              className="action-btn load-btn"
+                              onClick={() => handleLoadAndSchedule(template)}
+                          >
+                              Load & Schedule
+                          </button>
+                          <button 
+                              className={`action-btn copy-btn ${isLoaded ? 'disabled' : ''}`}
+                              onClick={() => !isLoaded && loadProgramTemplate(template)}
+                              disabled={isLoaded}
+                          >
+                              {isLoaded ? <><Check size={16}/> Added</> : 'Add to Library'}
+                          </button>
+                      </div>
+                </div>
+              )
+          })}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="program-view-container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1>My Programs</h1>
-          <p>Select a program to view its workouts.</p>
-        </div>
-        <button className="create-workout-btn" onClick={handleCreateProgram}>
-          <PlusCircle size={20} />
-          <span>Create Program</span>
-        </button>
-      </div>
-      
-      {userPrograms.length > 0 ? (
-        <div className="programs-list">
-            {userPrograms.map(program => (
-              <div key={program.id} className="program-card" onClick={() => setViewingProgramId(program.id)}>
-                <h3 className="program-card-title">{program.name}</h3>
-                <p className="program-card-description">{program.workouts.length} workout{program.workouts.length !== 1 ? 's' : ''}</p>
-                <span className="program-card-view-btn">View Program <ChevronsRight size={16}/></span>
-              </div>
-            ))}
-        </div>
-      ) : (
-        <div className="program-empty-state">
-            <p>You haven't created or loaded any programs yet. Create a new one or load a template below to get started.</p>
-        </div>
-      )}
-
-      <div className="page-header" style={{marginTop: '24px'}}>
-        <h2>Template Programs</h2>
-        <p>Load a pre-built program to get started or for new ideas.</p>
-      </div>
-      <div className="programs-list">
-        {programTemplates.map(template => {
-            const isLoaded = appState.programs.some(p => p.id === template.id);
-            return (
-              <div key={template.id} className="program-card template">
-                    <h3 className="program-card-title">{template.name}</h3>
-                    <p className="program-card-description">{template.description}</p>
-                    <div className="template-actions">
-                        <button 
-                            className="action-btn load-btn"
-                            onClick={() => handleLoadAndSchedule(template)}
-                        >
-                            Load & Schedule
-                        </button>
-                        <button 
-                            className={`action-btn copy-btn ${isLoaded ? 'disabled' : ''}`}
-                            onClick={() => !isLoaded && loadProgramTemplate(template)}
-                            disabled={isLoaded}
-                        >
-                            {isLoaded ? <><Check size={16}/> Added</> : 'Add to Library'}
-                        </button>
-                    </div>
-              </div>
-            )
-        })}
-      </div>
+    <>
+      {currentView}
 
       <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Program">
         <form onSubmit={handleConfirmCreateProgram} className="modal-form-container">
@@ -225,7 +243,47 @@ const ProgramOverview = ({ setActiveView }) => {
           </div>
         </div>
       </Modal>
-    </div>
+      
+      <Modal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+        title="Success"
+      >
+        <div className="modal-form-container">
+          <p className="modal-confirm-text">
+            Your program has been scheduled!
+            <br/>
+            Check the Calendar tab to see your plan.
+          </p>
+          <div className="modal-actions" style={{ justifyContent: 'center' }}>
+            <button 
+              type="button" 
+              className="action-btn schedule-btn" 
+              onClick={() => setShowSuccessModal(false)} 
+              style={{ flexGrow: 0, padding: '10px 40px' }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!programToDelete}
+        onClose={() => setProgramToDelete(null)}
+        title="Delete Program"
+      >
+        <div className="modal-form-container">
+          <p className="modal-confirm-text">
+            Are you sure you want to delete the "<strong>{programToDelete?.name}</strong>" program? This will permanently remove all of its workouts and cannot be undone.
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="action-btn" onClick={() => setProgramToDelete(null)}>Cancel</button>
+            <button type="button" className="action-btn danger-btn" onClick={handleConfirmDelete}>Delete</button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 };
 
