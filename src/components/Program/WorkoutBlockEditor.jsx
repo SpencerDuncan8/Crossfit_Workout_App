@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Trash2, PlusCircle, X } from 'lucide-react';
-import { generateUniqueId } from '../../utils/idUtils.js'; // <-- Import the new ID generator
+import { generateUniqueId } from '../../utils/idUtils.js';
 
 const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const updateBlockField = (field, value) => onUpdate({ ...block, [field]: value });
@@ -22,7 +22,7 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
     onUpdate({ ...block, exercises: newExercises });
   };
 
-  const removeExercise = (exIndex) => { const n = block.exercises.filter((_, i) => i !== exIndex); onUpdate({ ...block, exercises: n }); };
+  const removeExercise = (exIndex) => { const n = { ...block, exercises: block.exercises.filter((_, i) => i !== exIndex) }; onUpdate(n); };
 
   const renderBlockContent = () => {
     let placeholder = block.type === 'Conditioning: AMRAP' || block.type === 'Warm-up' ? "e.g., 10 Dumbbell Thrusters" : "Exercise Name";
@@ -36,7 +36,40 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
         <>{block.type === 'Conditioning: RFT' && (<div className="block-form-grid"><div className="block-input-group"><label>Rounds</label><input type="number" value={block.rounds || ''} onChange={(e) => updateBlockField('rounds', e.target.value)} /></div></div>)}<div className="exercise-editor-list"><label className="editor-label">Exercises</label>{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="exercise-editor-item"><input type="text" className="reps-input for-time-reps" placeholder="Reps" value={ex.reps || ''} onChange={(e) => updateExerciseField(exIndex, 'reps', e.target.value)} /><span className="for-time-x">x</span><input type="text" placeholder="Exercise Name" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
       );
       case 'Conditioning: Tabata': return ( <><div className="block-form-grid"><div className="block-input-group"><label>Work (sec)</label><input type="number" value={block.work || ''} onChange={(e) => updateBlockField('work', e.target.value)} /></div><div className="block-input-group"><label>Rest (sec)</label><input type="number" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} /></div><div className="block-input-group"><label>Rounds</label><input type="number" value={block.rounds || ''} onChange={(e) => updateBlockField('rounds', e.target.value)} /></div></div><div className="exercise-editor-list"><label className="editor-label">Exercises</label>{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="exercise-editor-item"><input type="text" placeholder={placeholder} value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></> );
-      case 'Cardio': return ( <div className="block-form-grid"><div className="block-input-group"><label>Duration (minutes)</label><input type="number" value={block.duration || ''} onChange={(e) => updateBlockField('duration', e.target.value)} /></div></div> );
+      case 'Cardio': return (
+        <div className="exercise-editor-list">
+            <label className="editor-label">Exercises</label>
+            {(block.exercises || []).map((ex, exIndex) => (
+                <div key={ex.id} className="exercise-editor-item">
+                    <input 
+                        type="text" 
+                        placeholder="e.g., Rowing" 
+                        value={ex.name || ''} 
+                        onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} 
+                    />
+                    <input 
+                        type="number" 
+                        className="reps-input" 
+                        placeholder="Mins" 
+                        value={ex.duration || ''} 
+                        onChange={(e) => updateExerciseField(exIndex, 'duration', e.target.value)}
+                    />
+                    <span className="reps-label">min</span>
+                    <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}>
+                        <X size={16} />
+                    </button>
+                </div>
+            ))}
+            <button 
+                className="add-exercise-btn" 
+                onClick={() => {
+                    const newExercises = [...(block.exercises || []), { id: generateUniqueId(), name: '', duration: '10' }];
+                    onUpdate({ ...block, exercises: newExercises });
+                }}>
+                <PlusCircle size={16} /> Add Exercise
+            </button>
+        </div>
+      );
       default: return (
         <>{block.type === 'Conditioning: AMRAP' && <div className="block-form-grid"><div className="block-input-group"><label>Time (minutes)</label><input type="number" value={block.duration || ''} onChange={(e) => updateBlockField('duration', e.target.value)} /></div></div>}<div className="exercise-editor-list"><label className="editor-label">Exercises</label>{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="exercise-editor-item"><input type="text" placeholder={placeholder} value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
       );

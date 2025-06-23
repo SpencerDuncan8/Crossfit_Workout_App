@@ -26,7 +26,15 @@ const WorkoutDetailView = ({ workout, completedData }) => {
             <ul className="detail-exercise-list">
               {block.type === 'Conditioning: EMOM' ? (
                 block.minutes.map((min, i) => <li key={i}><strong>Min {i + 1}:</strong> {min.task}</li>)
-              ) : (
+              ) : 
+              block.type === 'Cardio' ? (
+                (block.exercises || []).map((ex, i) => (
+                    <li key={i}>
+                        <strong>{ex.duration} min:</strong> {ex.name || 'General Cardio'}
+                    </li>
+                ))
+              ) :
+              (
                 (block.exercises || []).map((ex, i) => (
                   <li key={i}>
                     {block.type === 'Strength' && `${ex.sets.length} x `}

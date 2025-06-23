@@ -4,7 +4,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { X, Save, Plus } from 'lucide-react';
 import WorkoutBlockEditor from './WorkoutBlockEditor.jsx';
-import { generateUniqueId } from '../../utils/idUtils.js'; // <-- Import the new ID generator
+import { generateUniqueId } from '../../utils/idUtils.js';
 import './WorkoutEditor.css';
 
 const blockTypes = [
@@ -54,7 +54,7 @@ const WorkoutEditor = () => {
         newBlock = { ...newBlock, work: 20, rest: 10, rounds: 8 };
         break;
       case 'Cardio':
-        newBlock = { ...newBlock, duration: 20 };
+        newBlock.exercises = [{ id: generateUniqueId(), name: '', duration: '20' }];
         break;
       default: break;
     }

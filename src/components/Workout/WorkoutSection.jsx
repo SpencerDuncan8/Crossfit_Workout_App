@@ -5,7 +5,6 @@ import { ChevronDown, Play } from 'lucide-react';
 import ExerciseCard from './ExerciseCard.jsx';
 import ConditioningCard from './ConditioningCard.jsx';
 
-// It now receives startTimer as a prop
 const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -28,8 +27,26 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
       </div>
       {!isCollapsed && (
         <div className="section-content">
-          {/* THE DEFINITIVE FIX: Pass startTimer down to ConditioningCard */}
           {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
+          
+          {block.type === 'Cardio' && (
+             <>
+                {block.exercises?.map((exercise, index) => (
+                    <div key={index} className="exercise-card-simple">
+                        <h4>{exercise.name || 'Cardio'}</h4>
+                        <div className="exercise-details">
+                            <span>{exercise.duration} MINS</span>
+                        </div>
+                    </div>
+                ))}
+                <button 
+                    className="start-wod-button warmup-button" 
+                    onClick={() => startTimer({ type: 'stopwatch' })}
+                >
+                    <Play size={20} /> Start Timer
+                </button>
+             </>
+          )}
           
           {isStrength && block.exercises?.map((exercise) => {
               const exerciseId = `${block.id}-${exercise.id}`;
@@ -46,7 +63,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
               );
           })}
 
-          {!isStrength && !isConditioning && block.exercises?.map((exercise, index) => (
+          {!isStrength && !isConditioning && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
              <div key={index} className="exercise-card-simple"><h4>{exercise.name}</h4></div>
           ))}
 
