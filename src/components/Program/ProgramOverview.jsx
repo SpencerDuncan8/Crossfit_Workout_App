@@ -1,93 +1,169 @@
 // src/components/Program/ProgramOverview.jsx
 
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { programTemplates } from '../../data/programTemplates.js';
-import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight } from 'lucide-react'; 
-// Import our new preview component
+import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy, Check } from 'lucide-react'; 
 import CompactWorkoutPreview from './CompactWorkoutPreview.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  const { appState, saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, loadProgramTemplate } = useContext(AppStateContext);
-
-  const handleCreateNewWorkout = () => {
-    const newWorkout = { id: Date.now(), name: 'My New Workout', blocks: [] };
-    openWorkoutEditor(newWorkout.id);
-    saveCustomWorkout(newWorkout);
-  };
+  const { appState, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate } = useContext(AppStateContext);
+  
+  const [viewingProgramId, setViewingProgramId] = useState(null);
+  const [editingProgramId, setEditingProgramId] = useState(null);
+  const [editingProgramName, setEditingProgramName] = useState('');
 
   const handleScheduleWorkout = (workoutId) => {
     selectWorkoutToSchedule(workoutId);
     setActiveView('calendar');
   };
 
+  const handleCreateProgram = () => {
+    const newName = prompt("Enter a name for your new program:", "My New Program");
+    if (newName) {
+        const newProgramId = createProgram(newName);
+        setViewingProgramId(newProgramId);
+    }
+  };
+  
+  const handleStartEditName = (program) => {
+    setEditingProgramId(program.id);
+    setEditingProgramName(program.name);
+  };
+
+  const handleSaveName = (e) => {
+    e.preventDefault();
+    updateProgram(editingProgramId, { name: editingProgramName });
+    setEditingProgramId(null);
+  };
+
+  const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
+  const userPrograms = appState.programs.filter(p => !p.isTemplate);
+
+  // --- THIS IS THE RESTORED LOGIC FOR THE "PROGRAM DETAIL" VIEW ---
+  if (viewingProgram) {
+    const isEditingThisProgram = editingProgramId === viewingProgram.id;
+    return (
+      <div className="program-view-container">
+        <div className="page-header">
+          <button className="back-to-programs-btn" onClick={() => setViewingProgramId(null)}>
+            <ArrowLeft size={20}/> All Programs
+          </button>
+          
+          {isEditingThisProgram ? (
+            <form onSubmit={handleSaveName} className="program-name-edit-form">
+              <input type="text" value={editingProgramName} onChange={(e) => setEditingProgramName(e.target.value)} autoFocus onBlur={handleSaveName}/>
+              <button type="submit">Save</button>
+            </form>
+          ) : (
+            <div className="program-title-header">
+                <h1>{viewingProgram.name}</h1>
+                {!viewingProgram.isTemplate && <button className="icon-btn" onClick={() => handleStartEditName(viewingProgram)}><Edit size={20}/></button>}
+            </div>
+          )}
+
+          <p>{viewingProgram.description}</p>
+        </div>
+        <div className="custom-workouts-list">
+          {viewingProgram.workouts.map(workout => (
+            <div key={workout.id} className="custom-workout-card">
+              <div className="workout-card-header">
+                <h3 className="workout-card-title">{workout.name}</h3>
+                <CompactWorkoutPreview blocks={workout.blocks} />
+              </div>
+              <div className="workout-card-actions">
+                <button className="action-btn schedule-btn" onClick={() => handleScheduleWorkout(workout.id)}>
+                  <CalendarPlus size={18} /> Schedule
+                </button>
+                {!viewingProgram.isTemplate && (
+                  <>
+                    <button className="action-btn edit-btn" onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
+                      <Edit size={18} /> Edit
+                    </button>
+                    <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(viewingProgram.id, workout.id)}>
+                      <Trash2 size={18} />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+          {!viewingProgram.isTemplate && (
+             <button className="create-workout-card" onClick={() => openWorkoutEditor(viewingProgram.id, null)}>
+                <PlusCircle size={32} />
+                <span>Create New Workout</span>
+            </button>
+          )}
+        </div>
+        {!viewingProgram.isTemplate && (
+            <button className="delete-program-btn" onClick={() => {deleteProgram(viewingProgram.id); setViewingProgramId(null);}}>
+                <Trash2 size={16}/> Delete Program
+            </button>
+        )}
+      </div>
+    );
+  }
+  // --- END OF RESTORED LOGIC ---
+
+  // RENDER LOGIC FOR MAIN "PROGRAMS LIST" VIEW
   return (
     <div className="program-view-container">
-      {appState.customWorkouts.length === 0 ? (
-        <div className="templates-container">
-            <div className="page-header" style={{textAlign: 'center', marginBottom: '16px'}}>
-                <h1>Welcome to Your Fitness Journey!</h1>
-                <p>Get started instantly by choosing a guided program.</p>
-            </div>
-            {programTemplates.map(template => (
-                <div key={template.id} className="template-card">
-                    <div className="template-card-header">
-                        <h3 className="template-card-title">{template.name}</h3>
-                        <p className="template-card-description">{template.description}</p>
-                    </div>
-                    <button className="load-program-btn" onClick={() => loadProgramTemplate(template)}>
-                        <span>Load This Program</span>
-                        <ChevronsRight size={20} />
-                    </button>
-                </div>
-            ))}
-            <div className="divider-or">OR</div>
-            <button className="create-workout-btn-secondary" onClick={handleCreateNewWorkout}>
-                <PlusCircle size={20} />
-                Build a Workout From Scratch
-            </button>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>My Programs</h1>
+          <p>Select a program to view its workouts.</p>
         </div>
-      ) : (
-        <>
-          <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1>My Workouts</h1>
-              <p>Create, edit, and manage your custom workout routines.</p>
-            </div>
-            <button className="create-workout-btn" onClick={handleCreateNewWorkout}>
-              <PlusCircle size={20} />
-              <span>Create Workout</span>
-            </button>
-          </div>
-          <div className="custom-workouts-list">
-            {appState.customWorkouts.map(workout => (
-              <div key={workout.id} className="custom-workout-card">
-                <div className="workout-card-header">
-                  <h3 className="workout-card-title">{workout.name}</h3>
-                  
-                  {/* We now use the new component here instead of the block tags */}
-                  <CompactWorkoutPreview blocks={workout.blocks} />
-
-                </div>
-                <div className="workout-card-actions">
-                  <button className="action-btn schedule-btn" onClick={() => handleScheduleWorkout(workout.id)}>
-                    <CalendarPlus size={18} />
-                    Schedule
-                  </button>
-                  <button className="action-btn edit-btn" onClick={() => openWorkoutEditor(workout.id)}>
-                    <Edit size={18} />
-                    Edit
-                  </button>
-                  <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(workout.id)}>
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+          <button className="create-workout-btn" onClick={handleCreateProgram}>
+          <PlusCircle size={20} />
+          <span>Create Program</span>
+        </button>
+      </div>
+      
+      {userPrograms.length > 0 ? (
+          <div className="programs-list">
+            {userPrograms.map(program => (
+              <div key={program.id} className="program-card" onClick={() => setViewingProgramId(program.id)}>
+                <h3 className="program-card-title">{program.name}</h3>
+                <p className="program-card-description">{program.workouts.length} workout{program.workouts.length !== 1 ? 's' : ''}</p>
+                <span className="program-card-view-btn">View Program <ChevronsRight size={16}/></span>
               </div>
             ))}
           </div>
-        </>
+      ) : (
+        <div className="program-empty-state">
+            <p>You haven't created or loaded any programs yet. Create a new one or load a template below to get started.</p>
+        </div>
       )}
+
+      <div className="page-header" style={{marginTop: '24px'}}>
+        <h2>Template Programs</h2>
+        <p>Load a pre-built program to get started or for new ideas.</p>
+      </div>
+      <div className="programs-list">
+        {programTemplates.map(template => {
+            const isLoaded = appState.programs.some(p => p.id === template.id);
+
+            return (
+                <div key={template.id} className="program-card template">
+                    <h3 className="program-card-title">{template.name}</h3>
+                    <p className="program-card-description">{template.description}</p>
+                    <div className="template-actions">
+                        <button 
+                            className={`action-btn load-btn ${isLoaded ? 'disabled' : ''}`}
+                            onClick={() => !isLoaded && loadProgramTemplate(template)}
+                            disabled={isLoaded}
+                        >
+                            {isLoaded ? <><Check size={16}/> Added</> : 'Load'}
+                        </button>
+                        <button className="action-btn copy-btn" onClick={() => copyProgram(template)}>
+                            <Copy size={16} /> Copy & Edit
+                        </button>
+                    </div>
+                </div>
+            )
+        })}
+      </div>
     </div>
   );
 };

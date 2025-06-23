@@ -27,6 +27,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
       </div>
       {!isCollapsed && (
         <div className="section-content">
+          
           {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
           
           {block.type === 'Cardio' && (

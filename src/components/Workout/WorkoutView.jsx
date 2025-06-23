@@ -1,21 +1,25 @@
 // src/components/Workout/WorkoutView.jsx
 
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { TimerContext } from '../../context/TimerContext.jsx'; // <-- Import the TimerContext
+import { TimerContext } from '../../context/TimerContext.jsx';
 import WorkoutSection from './WorkoutSection.jsx';
 import { CheckCircle, AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import './Workout.css';
 
 const WorkoutView = ({ setActiveView }) => {
-  const { appState, completeWorkout, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates } = useContext(AppStateContext);
-  const { startTimer } = useContext(TimerContext); // <-- Get startTimer from the correct context
+  const { appState, allWorkouts, completeWorkout, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates } = useContext(AppStateContext);
+  const { startTimer } = useContext(TimerContext);
   const [exerciseProgress, setExerciseProgress] = useState({});
 
   const scheduleEntry = appState.workoutSchedule[appState.viewingDate];
   const workoutId = scheduleEntry?.workoutId;
-  const activeWorkout = appState.customWorkouts.find(w => w.id === workoutId);
+  const activeWorkout = allWorkouts.find(w => w.id === workoutId);
 
+  // --- THE DEFINITIVE FIX IS HERE ---
+  // This useEffect now correctly listens for changes to `activeWorkout.id`.
+  // This ensures the progress state is ONLY reset when you navigate to a completely different workout.
+  // It will no longer be reset by simple re-renders caused by the timer.
   useEffect(() => {
     if (activeWorkout) {
       const initialProgress = {};
@@ -31,9 +35,9 @@ const WorkoutView = ({ setActiveView }) => {
     } else {
       setExerciseProgress({});
     }
-  }, [workoutId, appState.customWorkouts]);
+  }, [activeWorkout?.id]); // The dependency is now the ID of the workout itself.
 
-  const handleSetUpdate = useCallback((exerciseId, setIndex, field, value) => {
+  const handleSetUpdate = (exerciseId, setIndex, field, value) => {
     setExerciseProgress(currentProgress => {
       const newProgress = { ...currentProgress };
       if (newProgress[exerciseId] && newProgress[exerciseId].sets[setIndex]) {
@@ -43,7 +47,7 @@ const WorkoutView = ({ setActiveView }) => {
       }
       return newProgress;
     });
-  }, []);
+  };
   
   const handleFinishWorkout = () => {
     let sessionStats = { sets: 0, reps: 0, weight: 0 };
@@ -88,7 +92,15 @@ const WorkoutView = ({ setActiveView }) => {
   return (
     <div className="workout-view-container">
       <div className="workout-header"><div className="workout-header-nav"><button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn"><ChevronLeft size={28} /></button><div className="workout-header-title"><span className="workout-day-badge">{formattedDate}</span><h1>{activeWorkout.name}</h1></div><button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn"><ChevronRight size={28} /></button></div></div>
-      {activeWorkout.blocks.map(block => (<WorkoutSection key={block.id} block={block} progress={exerciseProgress} onSetUpdate={handleSetUpdate} startTimer={startTimer} />))}
+      {activeWorkout.blocks.map(block => (
+          <WorkoutSection 
+            key={block.id} 
+            block={block} 
+            progress={exerciseProgress} 
+            onSetUpdate={handleSetUpdate} 
+            startTimer={startTimer}
+          />
+      ))}
       <div className="finish-workout-container"><button className="finish-workout-button" onClick={handleFinishWorkout}><CheckCircle size={24} /> Finish Workout & Log</button></div>
     </div>
   );

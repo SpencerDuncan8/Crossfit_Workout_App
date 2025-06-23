@@ -1,14 +1,14 @@
 // src/components/Workout/ConditioningCard.jsx
 
 import React, { useContext } from 'react';
-import { AppStateContext } from '../../context/AppContext.jsx'; // Still needed for openExerciseModal
+import { AppStateContext } from '../../context/AppContext.jsx';
+import { TimerContext } from '../../context/TimerContext.jsx';
 import { Play, HelpCircle } from 'lucide-react';
 
-// THE DEFINITIVE FIX: Accept `startTimer` as a prop, not from context.
-const ConditioningCard = ({ block, startTimer }) => {
+const ConditioningCard = ({ block }) => {
   const { openExerciseModal } = useContext(AppStateContext);
+  const { startTimer } = useContext(TimerContext);
   
-  // Destructure all possible properties from the 'block' prop
   const { type, exercises, duration, rounds, work, rest, minutes } = block;
 
   const handleStartWOD = () => {

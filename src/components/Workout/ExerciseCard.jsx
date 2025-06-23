@@ -25,14 +25,13 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
   );
 };
 
-// It now receives startTimer as a prop
 const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer }) => {
   const { openExerciseModal } = useContext(AppStateContext);
   const { name, sets, note, id } = exercise;
 
   const handleRestClick = () => {
     const restSeconds = parseInt(restDuration, 10);
-    if (!isNaN(restSeconds)) {
+    if (startTimer && !isNaN(restSeconds)) {
       startTimer({ type: 'countdown', duration: restSeconds });
     }
   };
@@ -47,7 +46,15 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
         {note && <p className="exercise-note">Note: {note}</p>}
         <div className="sets-container">
           {progress && progress.sets.map((set, index) => (
-            <SetRow key={set.id} setIndex={index} exerciseId={exerciseId} onSetUpdate={onSetUpdate} progressData={set} targetReps={sets[index].reps} onRestClick={handleRestClick}/>
+            <SetRow 
+              key={set.id} 
+              setIndex={index} 
+              exerciseId={exerciseId} 
+              onSetUpdate={onSetUpdate} 
+              progressData={set} 
+              targetReps={sets[index].reps} 
+              onRestClick={handleRestClick}
+            />
           ))}
         </div>
       </div>

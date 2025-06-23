@@ -4,6 +4,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { getExerciseByName } from '../data/exerciseDatabase.js';
 import { usePersistentState } from '../hooks/usePersistentState.jsx';
 import { TimerProvider, TimerContext } from './TimerContext.jsx';
+import { generateUniqueId } from '../utils/idUtils.js';
 
 export const AppStateContext = createContext();
 export const ThemeContext = createContext();
@@ -11,18 +12,122 @@ export const ThemeContext = createContext();
 const initialAppState = {
   startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
   weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
-  customWorkouts: [], workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
+  programs: [], 
+  workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
   isModalOpen: false, modalContent: null, showConfetti: false,
-  isWorkoutEditorOpen: false, editingWorkoutId: null,
+  isWorkoutEditorOpen: false, editingInfo: null, 
   workoutToScheduleId: null,
 };
 
 const AppStateProviderComponent = ({ children }) => {
-  const [appState, setAppState, clearAppState] = usePersistentState('crossfitTrackerState_v2', initialAppState);
+  const [appState, setAppState, clearAppState] = usePersistentState('crossfitTrackerState_v3', initialAppState);
   const { clearTimer } = useContext(TimerContext);
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
+  
+  const allWorkouts = appState.programs.flatMap(p => p.workouts);
 
+  const createProgram = (name) => {
+    const newProgram = {
+        id: generateUniqueId(),
+        name: name,
+        description: "A collection of your custom workouts.",
+        workouts: [],
+        isTemplate: false
+    };
+    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
+    return newProgram.id;
+  };
+
+  const copyProgram = (programToCopy) => {
+    const newProgram = {
+      ...JSON.parse(JSON.stringify(programToCopy)),
+      id: generateUniqueId(),
+      name: `${programToCopy.name} (Copy)`,
+      isTemplate: false
+    };
+    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
+    alert(`"${programToCopy.name}" was copied to your programs.`);
+  };
+
+  const deleteProgram = (programId) => {
+    if (window.confirm("Are you sure you want to delete this entire program and all of its workouts? This cannot be undone.")) {
+        setAppState(prev => ({
+            ...prev,
+            programs: prev.programs.filter(p => p.id !== programId)
+        }));
+    }
+  };
+
+  const updateProgram = (programId, updates) => {
+    setAppState(prev => ({
+      ...prev,
+      programs: prev.programs.map(p => p.id === programId ? { ...p, ...updates } : p)
+    }));
+  };
+
+  const saveCustomWorkout = (programId, workoutToSave) => {
+    setAppState(prev => {
+        const updatedPrograms = prev.programs.map(program => {
+            if (program.id === programId) {
+                const newProgram = { ...program };
+                const workoutIndex = newProgram.workouts.findIndex(w => w.id === workoutToSave.id);
+                if (workoutIndex > -1) {
+                    newProgram.workouts[workoutIndex] = workoutToSave;
+                } else {
+                    newProgram.workouts.push(workoutToSave);
+                }
+                return newProgram;
+            }
+            return program;
+        });
+        return { ...prev, programs: updatedPrograms };
+    });
+  };
+
+  const loadProgramTemplate = (template) => {
+    if (appState.programs.some(p => p.id === template.id)) {
+        alert(`"${template.name}" has already been added to your programs. You can copy it again to create another version.`);
+        return;
+    }
+
+    const newProgram = {
+        id: template.id, // Keep the original template ID to prevent duplicates
+        name: template.name,
+        description: template.description,
+        workouts: template.workouts,
+        isTemplate: false // This makes it appear in the user's "My Programs" list
+    };
+    
+    const updatedPrograms = [...appState.programs, newProgram];
+    updateAppState({ programs: updatedPrograms });
+    
+    if (window.confirm(`"${template.name}" has been added to My Programs.\n\nWould you like to automatically schedule it now?`)) {
+        autoScheduleProgram(template.workouts);
+    }
+  };
+
+  const deleteCustomWorkout = (programId, workoutId) => {
+    setAppState(prev => {
+        const updatedPrograms = prev.programs.map(program => {
+            if (program.id === programId) {
+                const updatedWorkouts = program.workouts.filter(w => w.id !== workoutId);
+                return { ...program, workouts: updatedWorkouts };
+            }
+            return program;
+        });
+        return { ...prev, programs: updatedPrograms };
+    });
+  };
+
+  const openWorkoutEditor = (programId, workoutId) => {
+    updateAppState({ isWorkoutEditorOpen: true, editingInfo: { programId, workoutId } });
+  };
+
+  const closeWorkoutEditor = () => {
+    updateAppState({ isWorkoutEditorOpen: false, editingInfo: null });
+  };
+  
   const autoScheduleProgram = (workoutsToSchedule) => {
     let currentSchedule = { ...appState.workoutSchedule };
     let currentDate = new Date();
@@ -44,15 +149,6 @@ const AppStateProviderComponent = ({ children }) => {
     
     updateAppState({ workoutSchedule: currentSchedule });
     alert('Your program has been scheduled! Check the Calendar tab to see your plan.');
-  };
-
-  const loadProgramTemplate = (template) => {
-    const newWorkouts = [...appState.customWorkouts, ...template.workouts];
-    updateAppState({ customWorkouts: newWorkouts });
-    
-    if (window.confirm(`Successfully loaded "${template.name}".\n\nWould you like to automatically schedule these workouts on your calendar?`)) {
-        autoScheduleProgram(template.workouts);
-    }
   };
   
   const resetAllData = () => {
@@ -88,10 +184,6 @@ const AppStateProviderComponent = ({ children }) => {
   const getScheduledDates = () => Object.keys(appState.workoutSchedule).sort((a,b) => new Date(a) - new Date(b));
   const navigateToPrevScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > 0) navigateToDate(dates[i - 1]); };
   const navigateToNextScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > -1 && i < dates.length - 1) navigateToDate(dates[i + 1]); };
-  const saveCustomWorkout = (workout) => { setAppState(prev => { const i = prev.customWorkouts.findIndex(w => w.id === workout.id); let u; if (i > -1) { u = [...prev.customWorkouts]; u[i] = workout; } else { u = [...prev.customWorkouts, workout]; } return { ...prev, customWorkouts: u }; }); };
-  const deleteCustomWorkout = (workoutId) => updateAppState({ customWorkouts: appState.customWorkouts.filter(w => w.id !== workoutId) });
-  const openWorkoutEditor = (workoutId) => updateAppState({ isWorkoutEditorOpen: true, editingWorkoutId: workoutId });
-  const closeWorkoutEditor = () => updateAppState({ isWorkoutEditorOpen: false, editingWorkoutId: null });
   const openExerciseModal = (exerciseId) => { const details = getExerciseByName(exerciseId); if(details) updateAppState({isModalOpen: true, modalContent: details})};
   const closeModal = () => updateAppState({ isModalOpen: false });
   const addWeightEntry = (newWeight) => { const today = new Date().toLocaleDateString(); const entry = { date: today, weight: newWeight }; const hist = appState.weightHistory.filter(e => e.date !== today); const updated = [...hist, entry].sort((a,b) => new Date(a.date) - new Date(b.date)); const start = appState.startingWeight === 0 ? newWeight : appState.startingWeight; updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated }); };
@@ -112,13 +204,13 @@ const AppStateProviderComponent = ({ children }) => {
   
   return (
     <AppStateContext.Provider value={{ 
-      appState, updateAppState,
-      openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
-      completeWorkout, resetAllData,
-      saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, closeWorkoutEditor,
-      scheduleWorkoutForDate, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates,
+      appState, allWorkouts, updateAppState,
+      createProgram, copyProgram, deleteProgram, updateProgram,
+      saveCustomWorkout, deleteCustomWorkout, openWorkoutEditor, loadProgramTemplate,
+      closeWorkoutEditor, openExerciseModal, closeModal, addWeightEntry, addPhotoEntry, 
+      completeWorkout, resetAllData, scheduleWorkoutForDate, navigateToDate, 
+      navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, 
       selectWorkoutToSchedule, clearWorkoutToSchedule,
-      loadProgramTemplate
     }}>
       {children}
     </AppStateContext.Provider>

@@ -10,7 +10,7 @@ import WorkoutDetailView from '../Program/WorkoutDetailView.jsx';
 import './Calendar.css';
 
 const CalendarView = ({ setActiveView }) => {
-  const { appState, scheduleWorkoutForDate, navigateToDate, clearWorkoutToSchedule } = useContext(AppStateContext);
+  const { appState, allWorkouts, scheduleWorkoutForDate, navigateToDate, clearWorkoutToSchedule } = useContext(AppStateContext);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modalContent, setModalContent] = useState(null);
   const [previewWorkoutId, setPreviewWorkoutId] = useState(null);
@@ -45,15 +45,15 @@ const CalendarView = ({ setActiveView }) => {
   const handleNextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   
   const scheduledWorkoutId = modalContent?.date ? appState.workoutSchedule[modalContent.date.toISOString().split('T')[0]]?.workoutId : null;
-  const previewWorkout = previewWorkoutId ? appState.customWorkouts.find(w => w.id === previewWorkoutId) : null;
-  const workoutToSchedule = appState.workoutToScheduleId ? appState.customWorkouts.find(w => w.id === appState.workoutToScheduleId) : null;
+  const previewWorkout = previewWorkoutId ? allWorkouts.find(w => w.id === previewWorkoutId) : null;
+  const workoutToSchedule = appState.workoutToScheduleId ? allWorkouts.find(w => w.id === appState.workoutToScheduleId) : null;
 
   const renderModalContent = () => {
     if (!modalContent) return null;
 
     if (modalContent.type === 'action-select') {
       const schedule = appState.workoutSchedule[modalContent.date.toISOString().split('T')[0]];
-      const workout = appState.customWorkouts.find(w => w.id === schedule.workoutId);
+      const workout = allWorkouts.find(w => w.id === schedule.workoutId);
       
       const handleActionStart = () => {
         navigateToDate(modalContent.date.toISOString().split('T')[0]);
@@ -81,7 +81,7 @@ const CalendarView = ({ setActiveView }) => {
     
     if (modalContent.type === 'review') {
       const schedule = appState.workoutSchedule[modalContent.date.toISOString().split('T')[0]];
-      const workout = appState.customWorkouts.find(w => w.id === schedule.workoutId);
+      const workout = allWorkouts.find(w => w.id === schedule.workoutId);
       return <WorkoutDetailView workout={workout} completedData={schedule.completedData} />;
     }
     
@@ -98,7 +98,7 @@ const CalendarView = ({ setActiveView }) => {
         );
       }
       
-      if (appState.customWorkouts.length === 0) {
+      if (allWorkouts.length === 0) {
         return (
           <div className="modal-empty-state">
             <h4>No Workouts Found</h4>
@@ -112,7 +112,7 @@ const CalendarView = ({ setActiveView }) => {
 
       return (
         <div className="assign-workout-list">
-          {appState.customWorkouts.map(workout => (
+          {allWorkouts.map(workout => (
             <div key={workout.id} className={`assign-workout-item ${workout.id === scheduledWorkoutId ? 'active' : ''}`}>
               <span className="assign-workout-name" onClick={() => setPreviewWorkoutId(workout.id)}><Eye size={16} /> {workout.name}</span>
               <button className="assign-btn" onClick={() => handleWorkoutSelect(workout.id)}>
@@ -150,9 +150,9 @@ const CalendarView = ({ setActiveView }) => {
       )}
       <div className={`calendar-container ${workoutToSchedule ? 'is-scheduling' : ''}`}>
         <div className="calendar-header">
-            <button className="month-nav-btn" onClick={handlePrevMonth}><ChevronLeft size={24} /></button>
-            <h2 className="current-month-label">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
-            <button className="month-nav-btn" onClick={handleNextMonth}><ChevronRight size={24} /></button>
+          <button className="month-nav-btn" onClick={handlePrevMonth}><ChevronLeft size={24} /></button>
+          <h2 className="current-month-label">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+          <button className="month-nav-btn" onClick={handleNextMonth}><ChevronRight size={24} /></button>
         </div>
         <div className="calendar-grid">
           {daysOfWeek.map(day => (<div key={day} className="day-of-week-header">{day}</div>))}
