@@ -5,6 +5,7 @@ import { AppStateContext } from '../../context/AppContext.jsx';
 import { programTemplates } from '../../data/programTemplates.js';
 import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy, Check } from 'lucide-react'; 
 import CompactWorkoutPreview from './CompactWorkoutPreview.jsx';
+import Modal from '../Common/Modal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
@@ -14,16 +15,25 @@ const ProgramOverview = ({ setActiveView }) => {
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [editingProgramName, setEditingProgramName] = useState('');
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newProgramName, setNewProgramName] = useState('My New Program');
+
   const handleScheduleWorkout = (workoutId) => {
     selectWorkoutToSchedule(workoutId);
     setActiveView('calendar');
   };
 
   const handleCreateProgram = () => {
-    const newName = prompt("Enter a name for your new program:", "My New Program");
-    if (newName) {
-        const newProgramId = createProgram(newName);
+    setNewProgramName('My New Program');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleConfirmCreateProgram = (e) => {
+    e.preventDefault();
+    if (newProgramName.trim()) {
+        const newProgramId = createProgram(newProgramName.trim());
         setViewingProgramId(newProgramId);
+        setIsCreateModalOpen(false);
     }
   };
   
@@ -41,7 +51,6 @@ const ProgramOverview = ({ setActiveView }) => {
   const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
 
-  // --- THIS IS THE RESTORED LOGIC FOR THE "PROGRAM DETAIL" VIEW ---
   if (viewingProgram) {
     const isEditingThisProgram = editingProgramId === viewingProgram.id;
     return (
@@ -104,9 +113,7 @@ const ProgramOverview = ({ setActiveView }) => {
       </div>
     );
   }
-  // --- END OF RESTORED LOGIC ---
 
-  // RENDER LOGIC FOR MAIN "PROGRAMS LIST" VIEW
   return (
     <div className="program-view-container">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -114,14 +121,14 @@ const ProgramOverview = ({ setActiveView }) => {
           <h1>My Programs</h1>
           <p>Select a program to view its workouts.</p>
         </div>
-          <button className="create-workout-btn" onClick={handleCreateProgram}>
+        <button className="create-workout-btn" onClick={handleCreateProgram}>
           <PlusCircle size={20} />
           <span>Create Program</span>
         </button>
       </div>
       
       {userPrograms.length > 0 ? (
-          <div className="programs-list">
+        <div className="programs-list">
             {userPrograms.map(program => (
               <div key={program.id} className="program-card" onClick={() => setViewingProgramId(program.id)}>
                 <h3 className="program-card-title">{program.name}</h3>
@@ -129,7 +136,7 @@ const ProgramOverview = ({ setActiveView }) => {
                 <span className="program-card-view-btn">View Program <ChevronsRight size={16}/></span>
               </div>
             ))}
-          </div>
+        </div>
       ) : (
         <div className="program-empty-state">
             <p>You haven't created or loaded any programs yet. Create a new one or load a template below to get started.</p>
@@ -143,9 +150,8 @@ const ProgramOverview = ({ setActiveView }) => {
       <div className="programs-list">
         {programTemplates.map(template => {
             const isLoaded = appState.programs.some(p => p.id === template.id);
-
             return (
-                <div key={template.id} className="program-card template">
+              <div key={template.id} className="program-card template">
                     <h3 className="program-card-title">{template.name}</h3>
                     <p className="program-card-description">{template.description}</p>
                     <div className="template-actions">
@@ -160,10 +166,32 @@ const ProgramOverview = ({ setActiveView }) => {
                             <Copy size={16} /> Copy & Edit
                         </button>
                     </div>
-                </div>
+              </div>
             )
         })}
       </div>
+
+      <Modal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        title="Create New Program"
+      >
+        <form onSubmit={handleConfirmCreateProgram} className="modal-form-container">
+          <label htmlFor="newProgramName" className="modal-label">Program Name</label>
+          <input
+            id="newProgramName"
+            type="text"
+            className="modal-input"
+            value={newProgramName}
+            onChange={(e) => setNewProgramName(e.target.value)}
+            autoFocus
+          />
+          <div className="modal-actions">
+            <button type="button" className="action-btn" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+            <button type="submit" className="action-btn schedule-btn">Create Program</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
