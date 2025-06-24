@@ -7,18 +7,21 @@ import { generateUniqueId } from '../../utils/idUtils.js';
 const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const updateBlockField = (field, value) => onUpdate({ ...block, [field]: value });
   const updateExerciseField = (exIndex, field, value) => { const n = { ...block }; n.exercises[exIndex][field] = value; onUpdate(n); };
-  const addSet = (exIndex) => { const n = { ...block }; n.exercises[exIndex].sets.push({ id: generateUniqueId(), reps: '5' }); onUpdate(n); };
+  
+  // --- THE FIX: Add a handler for the new 'load' property and update addSet ---
+  const addSet = (exIndex) => { const n = { ...block }; n.exercises[exIndex].sets.push({ id: generateUniqueId(), reps: '5', load: '' }); onUpdate(n); };
   const updateSetReps = (exIndex, setIndex, reps) => { const n = { ...block }; n.exercises[exIndex].sets[setIndex].reps = reps; onUpdate(n); };
+  const updateSetLoad = (exIndex, setIndex, load) => { const n = { ...block }; n.exercises[exIndex].sets[setIndex].load = load; onUpdate(n); };
   const removeSet = (exIndex, setId) => { const n = { ...block }; n.exercises[exIndex].sets = n.exercises[exIndex].sets.filter(s => s.id !== setId); onUpdate(n); };
+
   const addMinute = () => { const n = [...(block.minutes || []), { id: generateUniqueId(), task: '' }]; onUpdate({ ...block, minutes: n }); };
   const updateMinuteTask = (index, task) => { const n = [...block.minutes]; n[index] = { ...n[index], task: task }; onUpdate({ ...block, minutes: n }); };
   const removeMinute = (minuteId) => { const n = block.minutes.filter(m => m.id !== minuteId); onUpdate({ ...block, minutes: n }); };
 
   const addExercise = () => {
     let newExercise = { id: generateUniqueId(), name: '' };
-    if (block.type === 'Strength') newExercise.sets = [{ id: generateUniqueId(), reps: '10' }];
+    if (block.type === 'Strength') newExercise.sets = [{ id: generateUniqueId(), reps: '10', load: '' }];
     if (block.type === 'Bodyweight') newExercise = { ...newExercise, trackingType: 'reps', value: '15' };
-    // --- THE FIX: Define the default structure, including sets ---
     if (block.type === 'Accessory / Carry') newExercise = { ...newExercise, sets: '3', weight: '', value: '', unit: '' };
     if (block.type === 'Conditioning: Chipper' || block.type === 'Conditioning: RFT') newExercise.reps = '15';
     const newExercises = [...(block.exercises || []), newExercise];
@@ -30,8 +33,9 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const renderBlockContent = () => {
     let placeholder = block.type === 'Conditioning: AMRAP' || block.type === 'Warm-up' ? "e.g., 10 Dumbbell Thrusters" : "Exercise Name";
     switch (block.type) {
+      // --- THE FIX: The Strength block editor now includes the 'load' input field ---
       case 'Strength': return (
-        <><div className="block-form-grid" style={{gridTemplateColumns: '1fr'}}><div className="block-input-group"><label>Rest Between Sets</label><input type="text" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} placeholder="e.g., 60s" /></div></div><div className="exercise-editor-list">{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="strength-exercise-editor"><div className="exercise-editor-item"><input type="text" placeholder="e.g., Bench Press" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div><div className="sets-list">{(ex.sets || []).map((set, setIndex) => (<div key={set.id} className="set-editor-row"><span className="set-label">Set {setIndex + 1}</span><input type="text" className="reps-input" placeholder="Reps" value={set.reps} onChange={(e) => updateSetReps(exIndex, setIndex, e.target.value)} /><span className="reps-label">reps</span><button className="remove-set-btn" onClick={() => removeSet(exIndex, set.id)}><Trash2 size={14}/></button></div>))}<button className="add-set-btn" onClick={() => addSet(exIndex)}><PlusCircle size={14} /> Add Set</button></div></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
+        <><div className="block-form-grid" style={{gridTemplateColumns: '1fr'}}><div className="block-input-group"><label>Rest Between Sets</label><input type="text" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} placeholder="e.g., 60s" /></div></div><div className="exercise-editor-list">{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="strength-exercise-editor"><div className="exercise-editor-item"><input type="text" placeholder="e.g., Bench Press" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div><div className="sets-list">{(ex.sets || []).map((set, setIndex) => (<div key={set.id} className="set-editor-row"><span className="set-label">Set {setIndex + 1}</span><input type="text" className="reps-input" placeholder="Reps" value={set.reps} onChange={(e) => updateSetReps(exIndex, setIndex, e.target.value)} /><span className="reps-label">reps</span><span className="reps-label" style={{margin: '0 4px'}}>x</span><input type="text" className="load-input" placeholder="Load" value={set.load || ''} onChange={(e) => updateSetLoad(exIndex, setIndex, e.target.value)} /><span className="reps-label">(lbs or %)</span><button className="remove-set-btn" onClick={() => removeSet(exIndex, set.id)}><Trash2 size={14}/></button></div>))}<button className="add-set-btn" onClick={() => addSet(exIndex)}><PlusCircle size={14} /> Add Set</button></div></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
       );
       case 'Bodyweight': return (
         <div className="exercise-editor-list">
@@ -49,7 +53,6 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
             <button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button>
         </div>
       );
-      // --- THE FIX: Added a "Sets" input field to the editor ---
       case 'Accessory / Carry': return (
         <div className="exercise-editor-list">
             {(block.exercises || []).map((ex, exIndex) => (

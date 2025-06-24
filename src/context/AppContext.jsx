@@ -14,6 +14,7 @@ const initialAppState = {
   weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
   programs: [], 
   workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
+  oneRepMaxes: {}, // --- THE FIX: State to store 1RM values ---
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingInfo: null, 
   workoutToScheduleId: null,
@@ -26,6 +27,20 @@ const AppStateProviderComponent = ({ children }) => {
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
   
   const allWorkouts = appState.programs.flatMap(p => p.workouts);
+
+  // --- THE FIX: New function to update a 1RM value ---
+  const updateOneRepMax = (exerciseId, weight) => {
+    const numericWeight = parseFloat(weight);
+    if (isNaN(numericWeight)) return;
+    
+    setAppState(prev => ({
+      ...prev,
+      oneRepMaxes: {
+        ...prev.oneRepMaxes,
+        [exerciseId]: numericWeight,
+      }
+    }));
+  };
 
   const createProgram = (name) => {
     const newProgram = {
@@ -170,12 +185,9 @@ const AppStateProviderComponent = ({ children }) => {
       const dateString = currentDate.toISOString().split('T')[0];
       currentSchedule[dateString] = { workoutId: workout.id, completedData: null };
 
-      // --- THE FIX: This is the new logic for adding a rest day ---
       if (daysPerWeek <= 3) {
-        // For low-frequency programs, add a rest day by skipping ahead 2 days.
         currentDate.setDate(currentDate.getDate() + 2);
       } else {
-        // For dense programs (4-5 days), just go to the next day.
         currentDate.setDate(currentDate.getDate() + 1);
       }
     }
@@ -242,7 +254,8 @@ const AppStateProviderComponent = ({ children }) => {
       completeWorkout, resetAllData, scheduleWorkoutForDate, navigateToDate, 
       navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, 
       selectWorkoutToSchedule, clearWorkoutToSchedule,
-      autoScheduleProgram
+      autoScheduleProgram,
+      updateOneRepMax, // --- THE FIX: Expose the new function ---
     }}>
       {children}
     </AppStateContext.Provider>

@@ -16,6 +16,7 @@ const WorkoutView = ({ setActiveView }) => {
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
 
+  // --- THE FIX: This hook now calculates percentage-based weights ---
   useEffect(() => {
     if (activeWorkout) {
       const initialProgress = {};
@@ -23,7 +24,32 @@ const WorkoutView = ({ setActiveView }) => {
         if (block.type === 'Strength' && block.exercises) {
           block.exercises.forEach(exercise => {
             const exerciseId = `${block.id}-${exercise.id}`;
-            initialProgress[exerciseId] = { sets: exercise.sets.map(set => ({ id: set.id, completed: false, weight: '', reps: set.reps })) };
+            const oneRepMax = appState.oneRepMaxes[exercise.id] || 0;
+
+            initialProgress[exerciseId] = { 
+              sets: exercise.sets.map(set => {
+                let targetWeight = '';
+                const loadStr = String(set.load || '');
+
+                if (loadStr.includes('%')) {
+                  const percentage = parseFloat(loadStr.replace('%', '')) / 100;
+                  if (!isNaN(percentage) && oneRepMax > 0) {
+                    const calculatedWeight = oneRepMax * percentage;
+                    // Round to nearest 5 for practical plating
+                    targetWeight = String(Math.round(calculatedWeight / 5) * 5);
+                  }
+                } else {
+                  targetWeight = loadStr;
+                }
+                
+                return { 
+                  id: set.id, 
+                  completed: false, 
+                  weight: targetWeight, 
+                  reps: set.reps 
+                };
+              }) 
+            };
           });
         }
         if (block.type === 'Bodyweight' && block.exercises) {
@@ -32,7 +58,6 @@ const WorkoutView = ({ setActiveView }) => {
             initialProgress[exerciseId] = { completed: false };
           });
         }
-        // --- THE FIX: Initialize progress tracking for the Accessory block ---
         if (block.type === 'Accessory / Carry' && block.exercises) {
           block.exercises.forEach(exercise => {
             const exerciseId = `${block.id}-${exercise.id}`;
@@ -47,7 +72,7 @@ const WorkoutView = ({ setActiveView }) => {
     } else {
       setExerciseProgress({});
     }
-  }, [activeWorkout?.id]);
+  }, [activeWorkout?.id, appState.oneRepMaxes]); // Also re-run if 1RMs change
 
   const handleSetUpdate = (exerciseId, setIndex, field, value) => {
     setExerciseProgress(currentProgress => {
@@ -72,7 +97,6 @@ const WorkoutView = ({ setActiveView }) => {
         progress.sets.forEach(set => {
           if (set.completed) {
             sessionStats.sets++;
-            // Only add to reps/weight stats if they exist (i.e., for Strength blocks)
             if (set.reps && set.weight) {
               const reps = parseInt(set.reps, 10) || 0;
               const weight = parseInt(set.weight, 10) || 0;

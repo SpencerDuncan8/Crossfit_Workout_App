@@ -133,11 +133,43 @@
 .add-exercise-btn:hover { border-color: #10b981; color: #10b981; background-color: rgba(16, 185, 129, 0.05); }
 
 .sets-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-.set-editor-row { display: flex; align-items: center; gap: 8px; padding: 8px; background-color: var(--bg-primary); border-radius: 6px; }
-.set-label { font-size: 14px; font-weight: 600; color: var(--text-secondary); min-width: 40px; }
-.reps-input { width: 60px; text-align: center; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background-color: var(--bg-secondary); color: var(--text-primary); }
-.reps-label { font-size: 14px; color: var(--text-tertiary); flex-grow: 1; text-transform: lowercase; }
-.remove-set-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; padding: 2px; }
+
+/* --- THE FIX: Updated styling for Strength block sets --- */
+.set-editor-row { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  padding: 8px; 
+  background-color: var(--bg-primary); 
+  border-radius: 6px; 
+}
+.set-label { 
+  font-size: 14px; 
+  font-weight: 600; 
+  color: var(--text-secondary); 
+  min-width: 40px; 
+}
+.reps-input, .load-input { 
+  width: 70px; /* Adjusted width */
+  text-align: center; 
+  padding: 6px; 
+  border-radius: 4px; 
+  border: 1px solid var(--border-color); 
+  background-color: var(--bg-secondary); 
+  color: var(--text-primary); 
+}
+.reps-label { 
+  font-size: 14px; 
+  color: var(--text-tertiary); 
+}
+.remove-set-btn { 
+  background: none; 
+  border: none; 
+  color: var(--text-tertiary); 
+  cursor: pointer; 
+  padding: 2px; 
+  margin-left: auto; /* Push to the far right */
+}
 .remove-set-btn:hover { color: #ef4444; }
 
 .add-set-btn { background: none; border: none; color: #3b82f6; font-weight: 600; cursor: pointer; padding: 8px; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -173,7 +205,7 @@
   flex-wrap: wrap;
   gap: 8px;
   background-color: var(--bg-tertiary);
-  padding: 8px;
+  padding: 12px;
   border-radius: 8px;
   align-items: center;
 }
@@ -186,11 +218,13 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
+  margin-bottom: 4px; /* Space between name and inputs */
 }
 
 .accessory-inputs {
   display: flex;
   gap: 8px;
+  width: 100%; /* Take full width */
   flex-grow: 1;
   align-items: center;
 }
@@ -201,7 +235,7 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  width: 70px;
+  flex: 1; /* Allow inputs to grow */
 }
 
 .accessory-label {
