@@ -16,10 +16,8 @@ const WorkoutView = ({ setActiveView }) => {
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
 
-  // --- THE DEFINITIVE FIX IS HERE ---
-  // This useEffect now correctly listens for changes to `activeWorkout.id`.
-  // This ensures the progress state is ONLY reset when you navigate to a completely different workout.
-  // It will no longer be reset by simple re-renders caused by the timer.
+  // --- THE FIX IS HERE ---
+  // The useEffect now also initializes state for Bodyweight blocks.
   useEffect(() => {
     if (activeWorkout) {
       const initialProgress = {};
@@ -30,20 +28,32 @@ const WorkoutView = ({ setActiveView }) => {
             initialProgress[exerciseId] = { sets: exercise.sets.map(set => ({ id: set.id, completed: false, weight: '', reps: set.reps })) };
           });
         }
+        // --- THIS IS THE NEW PART ---
+        if (block.type === 'Bodyweight' && block.exercises) {
+          block.exercises.forEach(exercise => {
+            const exerciseId = `${block.id}-${exercise.id}`;
+            initialProgress[exerciseId] = { completed: false };
+          });
+        }
+        // --- END OF NEW PART ---
       });
       setExerciseProgress(initialProgress);
     } else {
       setExerciseProgress({});
     }
-  }, [activeWorkout?.id]); // The dependency is now the ID of the workout itself.
+  }, [activeWorkout?.id]);
 
   const handleSetUpdate = (exerciseId, setIndex, field, value) => {
     setExerciseProgress(currentProgress => {
       const newProgress = { ...currentProgress };
-      if (newProgress[exerciseId] && newProgress[exerciseId].sets[setIndex]) {
+      if (newProgress[exerciseId] && newProgress[exerciseId].sets && newProgress[exerciseId].sets[setIndex]) {
         const newSets = [...newProgress[exerciseId].sets];
         newSets[setIndex] = { ...newSets[setIndex], [field]: value };
         newProgress[exerciseId] = { ...newProgress[exerciseId], sets: newSets };
+      }
+      // --- THE FIX: Handle completion for Bodyweight exercises ---
+      else if (newProgress[exerciseId] && field === 'completed') {
+        newProgress[exerciseId] = { ...newProgress[exerciseId], completed: value };
       }
       return newProgress;
     });
@@ -51,8 +61,10 @@ const WorkoutView = ({ setActiveView }) => {
   
   const handleFinishWorkout = () => {
     let sessionStats = { sets: 0, reps: 0, weight: 0 };
-    Object.values(exerciseProgress).forEach(progress => {
-      if(progress && progress.sets){
+    Object.keys(exerciseProgress).forEach(exerciseId => {
+      const progress = exerciseProgress[exerciseId];
+      // Strength block calculation
+      if (progress && progress.sets) {
         progress.sets.forEach(set => {
           if (set.completed) {
             sessionStats.sets++;
@@ -62,6 +74,11 @@ const WorkoutView = ({ setActiveView }) => {
             sessionStats.weight += reps * weight;
           }
         });
+      }
+      // Bodyweight block calculation
+      else if (progress && progress.completed) {
+          // You might want to define how to count these for stats, e.g., each is 1 set.
+          sessionStats.sets++; 
       }
     });
     completeWorkout(appState.viewingDate, sessionStats);

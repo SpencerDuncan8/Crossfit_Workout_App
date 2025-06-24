@@ -7,7 +7,8 @@ import WorkoutBlockEditor from './WorkoutBlockEditor.jsx';
 import { generateUniqueId } from '../../utils/idUtils.js';
 import './WorkoutEditor.css';
 
-const blockTypes = [ 'Warm-up', 'Strength', 'Conditioning: AMRAP', 'Conditioning: RFT', 'Conditioning: Chipper', 'Conditioning: EMOM', 'Conditioning: Tabata', 'Cardio', 'Cool-down' ];
+// THE FIX: Added 'Bodyweight' to the list of available block types.
+const blockTypes = [ 'Warm-up', 'Strength', 'Bodyweight', 'Conditioning: AMRAP', 'Conditioning: RFT', 'Conditioning: Chipper', 'Conditioning: EMOM', 'Conditioning: Tabata', 'Cardio', 'Cool-down' ];
 
 const WorkoutEditor = () => {
   const { appState, allWorkouts, closeWorkoutEditor, saveCustomWorkout } = useContext(AppStateContext);
@@ -32,9 +33,7 @@ const WorkoutEditor = () => {
 
   const handleNameChange = (e) => setWorkout(prev => ({ ...prev, name: e.target.value }));
   
-  // --- THE FIX IS HERE ---
   const handleSave = () => {
-    // We now correctly pass the programId from the editingInfo state object.
     saveCustomWorkout(appState.editingInfo.programId, workout);
     closeWorkoutEditor();
   };
@@ -49,6 +48,10 @@ const WorkoutEditor = () => {
           rest: '60s',
           exercises: [{ id: generateUniqueId(), name: '', sets: [{ id: generateUniqueId(), reps: '10' }] }]
         };
+        break;
+      // THE FIX: Added a case for the new 'Bodyweight' block type.
+      case 'Bodyweight':
+        newBlock.exercises = [{ id: generateUniqueId(), name: '', trackingType: 'reps', value: '15' }];
         break;
       case 'Conditioning: AMRAP':
         newBlock = { ...newBlock, duration: 15 };

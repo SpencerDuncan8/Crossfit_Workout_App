@@ -18,6 +18,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
 
   const isConditioning = block.type.startsWith('Conditioning:');
   const isStrength = block.type === 'Strength';
+  const isBodyweight = block.type === 'Bodyweight';
 
   return (
     <div className={`workout-section ${isCollapsed ? 'collapsed' : ''}`}>
@@ -60,11 +61,39 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
                   onSetUpdate={onSetUpdate}
                   restDuration={block.rest}
                   startTimer={startTimer}
+                  blockType={block.type} 
                 />
               );
           })}
+          
+          {/* --- THE FIX: Logic moved from ExerciseCard to here --- */}
+          {isBodyweight && (
+            <>
+              {block.exercises?.map((exercise) => {
+                const exerciseId = `${block.id}-${exercise.id}`;
+                return (
+                  <ExerciseCard 
+                    key={exerciseId} 
+                    exerciseId={exerciseId}
+                    exercise={exercise} 
+                    progress={progress[exerciseId]}
+                    onSetUpdate={onSetUpdate}
+                    startTimer={startTimer}
+                    blockType={block.type} 
+                  />
+                );
+              })}
+              {/* --- The new WOD timer button for the entire block --- */}
+              <button 
+                  className="start-wod-button bodyweight-button" 
+                  onClick={() => startTimer({ type: 'stopwatch' })}
+              >
+                  <Play size={20} /> Start WOD Timer
+              </button>
+            </>
+          )}
 
-          {!isStrength && !isConditioning && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
+          {!isStrength && !isBodyweight && !isConditioning && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
              <div key={index} className="exercise-card-simple"><h4>{exercise.name}</h4></div>
           ))}
 

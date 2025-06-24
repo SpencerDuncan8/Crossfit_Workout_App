@@ -65,10 +65,93 @@
   }
 }
 
-/* THE NEW STYLES */
 .warmup-button {
   background: linear-gradient(90deg, #FF6B35, #f74d0e);
 }
 .warmup-button:hover {
   box-shadow: 0 10px 20px -5px #ff6b3550;
+}
+
+/* --- THE FIX: Add a new style for the bodyweight block's main timer button --- */
+.bodyweight-button {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+.bodyweight-button:hover {
+  box-shadow: 0 10px 20px -5px #3b82f650;
+}
+
+/* --- BODYWEIGHT CARD STYLES --- */
+.exercise-card-bw {
+  background-color: var(--bg-tertiary);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background-color 0.3s ease;
+}
+.exercise-card-bw.completed {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.bw-main-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bw-checkbox {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.exercise-card-bw.completed .bw-checkbox {
+  color: #10b981;
+}
+
+.bw-info {
+  flex-grow: 1;
+}
+
+.bw-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+.exercise-card-bw.completed .bw-name {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.bw-target {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.exercise-card-bw.completed .bw-target {
+  color: var(--text-tertiary);
+}
+
+.bw-timer-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #FF6B35, #f74d0e);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.bw-timer-btn:hover {
+  transform: scale(1.02);
 }

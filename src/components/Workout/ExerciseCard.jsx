@@ -25,9 +25,9 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
   );
 };
 
-const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer }) => {
+const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType }) => {
   const { openExerciseModal } = useContext(AppStateContext);
-  const { name, sets, note, id } = exercise;
+  const { name, sets, note, id, trackingType, value } = exercise;
 
   const handleRestClick = () => {
     const restSeconds = parseInt(restDuration, 10);
@@ -37,6 +37,31 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
   };
 
   const handleExerciseClick = () => { if (id) { openExerciseModal(id); } };
+  
+  if (blockType === 'Bodyweight') {
+    const isCompleted = progress?.completed || false;
+    const unit = trackingType === 'duration' ? 'SECS' : 'REPS';
+
+    const handleCheckboxClick = () => {
+      onSetUpdate(exerciseId, null, 'completed', !isCompleted);
+    };
+
+    return (
+      <div className={`exercise-card-bw ${isCompleted ? 'completed' : ''}`}>
+        <div className="bw-main-row">
+          <button className="bw-checkbox" onClick={handleCheckboxClick}>
+            {isCompleted ? <Check size={24} /> : <Square size={24} />}
+          </button>
+          <div className="bw-info">
+            <h4 className="bw-name clickable" onClick={handleExerciseClick}>{name}</h4>
+            <p className="bw-target">{value} {unit}</p>
+          </div>
+          {id && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
+        </div>
+        {/* --- THE FIX: The individual rest timer button has been removed from here --- */}
+      </div>
+    );
+  }
 
   if (sets) {
     return (
