@@ -51,7 +51,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
              </>
           )}
           
-          {(isStrength || isBodyweight || isAccessory) && ( // --- THE FIX: Grouped accessory with other interactive types
+          {(isStrength || isBodyweight || isAccessory) && (
             <>
               {block.exercises?.map((exercise) => {
                 const exerciseId = `${block.id}-${exercise.id}`;
@@ -62,12 +62,13 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
                     exercise={exercise} 
                     progress={progress[exerciseId]}
                     onSetUpdate={onSetUpdate}
+                    restDuration={block.rest} // --- THE FIX: This prop was missing ---
                     startTimer={startTimer}
                     blockType={block.type} 
                   />
                 );
               })}
-              {(isBodyweight || isAccessory) && ( // Add timer for bodyweight and accessory
+              {(isBodyweight || isAccessory) && (
                 <button 
                     className="start-wod-button bodyweight-button" 
                     onClick={() => startTimer({ type: 'stopwatch' })}
