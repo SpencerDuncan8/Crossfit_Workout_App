@@ -58,9 +58,10 @@ const ProgramOverview = ({ setActiveView }) => {
     setScheduleConfirm(template); 
   };
   
+  // --- THE FIX: Pass the daysPerWeek property to the scheduling function ---
   const handleConfirmSchedule = () => {
     if (scheduleConfirm) {
-      autoScheduleProgram(scheduleConfirm.workouts);
+      autoScheduleProgram(scheduleConfirm.workouts, scheduleConfirm.daysPerWeek); // Pass the new property here
       setShowSuccessModal(true);
       setScheduleConfirm(null);
     }

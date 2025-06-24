@@ -94,7 +94,8 @@ const AppStateProviderComponent = ({ children }) => {
         name: template.name,
         description: template.description,
         workouts: template.workouts,
-        isTemplate: false
+        isTemplate: false,
+        daysPerWeek: template.daysPerWeek,
     };
     
     const updatedPrograms = [...appState.programs, newProgram];
@@ -122,30 +123,66 @@ const AppStateProviderComponent = ({ children }) => {
     updateAppState({ isWorkoutEditorOpen: false, editingInfo: null });
   };
   
-  const autoScheduleProgram = (workoutsToSchedule) => {
+  const autoScheduleProgram = (workoutsToSchedule, daysPerWeek = 5) => {
     let currentSchedule = { ...appState.workoutSchedule };
     let currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     for (const workout of workoutsToSchedule) {
-      while (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
+      while (true) {
+        const dayOfWeek = currentDate.getDay();
+
+        if (dayOfWeek === 6) { 
+          currentDate.setDate(currentDate.getDate() + 2);
+          continue;
+        }
+        if (dayOfWeek === 0) { 
+          currentDate.setDate(currentDate.getDate() + 1);
+          continue;
+        }
+
+        let daysScheduledThisWeek = 0;
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(currentDate.getDate() - dayOfWeek + 1);
+        for (let i = 0; i < 5; i++) {
+          const checkDate = new Date(startOfWeek);
+          checkDate.setDate(startOfWeek.getDate() + i);
+          const dateString = checkDate.toISOString().split('T')[0];
+          if (currentSchedule[dateString]) {
+            daysScheduledThisWeek++;
+          }
+        }
+
+        if (daysScheduledThisWeek >= daysPerWeek) {
+          const daysToNextMonday = 8 - dayOfWeek;
+          currentDate.setDate(currentDate.getDate() + daysToNextMonday);
+          continue;
+        }
+        
+        const dateString = currentDate.toISOString().split('T')[0];
+        if (currentSchedule[dateString]) {
+          currentDate.setDate(currentDate.getDate() + 1);
+          continue;
+        }
+        break;
+      }
+
+      const dateString = currentDate.toISOString().split('T')[0];
+      currentSchedule[dateString] = { workoutId: workout.id, completedData: null };
+
+      // --- THE FIX: This is the new logic for adding a rest day ---
+      if (daysPerWeek <= 3) {
+        // For low-frequency programs, add a rest day by skipping ahead 2 days.
+        currentDate.setDate(currentDate.getDate() + 2);
+      } else {
+        // For dense programs (4-5 days), just go to the next day.
         currentDate.setDate(currentDate.getDate() + 1);
       }
-      
-      const dateString = currentDate.toISOString().split('T')[0];
-      
-      if (!currentSchedule[dateString]) {
-        currentSchedule[dateString] = { workoutId: workout.id, completedData: null };
-      }
-      
-      currentDate.setDate(currentDate.getDate() + 1);
     }
     
     updateAppState({ workoutSchedule: currentSchedule });
   };
   
-  // --- THE FIX IS HERE ---
-  // The window.confirm call is removed. The confirmation is now handled in the ProgressView component.
   const resetAllData = () => {
     clearAppState();
     clearTimer();

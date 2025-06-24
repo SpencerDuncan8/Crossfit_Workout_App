@@ -2,12 +2,60 @@
 
 import { generateUniqueId } from '../utils/idUtils.js';
 
+const kettlebellWorkoutA = {
+  name: 'Squat & Press',
+  blocks: [
+    { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Kettlebell Halos (5 each way)'}, {name: 'Light Goblet Squats (10 reps)'}] },
+    { id: generateUniqueId(), type: 'Strength', rest: '90s', exercises: [
+        { id: 'goblet_squat', name: 'Goblet Squats', sets: [{id: generateUniqueId(), reps: '5'},{id: generateUniqueId(), reps: '5'},{id: generateUniqueId(), reps: '5'},{id: generateUniqueId(), reps: '5'},{id: generateUniqueId(), reps: '5'}] },
+        { id: generateUniqueId(), name: 'Single Arm Kettlebell Press', sets: [{id: generateUniqueId(), reps: '8'},{id: generateUniqueId(), reps: '8'},{id: generateUniqueId(), reps: '8'}] },
+    ]},
+    { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 8, exercises: [
+        { id: 'kettlebell_swing', name: 'Kettlebell Swings', reps: '15' }, { id: 'burpee', name: 'Burpees', reps: '5' }
+    ]},
+    { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Pigeon Pose (60s each side)'}] },
+  ]
+};
+
+const kettlebellWorkoutB = {
+  name: 'Hinge & Pull',
+  blocks: [
+    { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Kettlebell Halos (5 each way)'}, {name: 'Kettlebell Good Mornings (10 reps)'}] },
+    { id: generateUniqueId(), type: 'Strength', rest: '60s', exercises: [
+        { id: 'kettlebell_swing', name: 'Kettlebell Swings (Power)', sets: Array.from({ length: 10 }, () => ({ id: generateUniqueId(), reps: '10' }))},
+        { id: generateUniqueId(), name: 'Bent Over Kettlebell Rows', sets: [{id: generateUniqueId(), reps: '12'},{id: generateUniqueId(), reps: '12'},{id: generateUniqueId(), reps: '12'},{id: generateUniqueId(), reps: '12'}] },
+    ]},
+    { id: generateUniqueId(), type: 'Strength', rest: '60s', exercises: [
+        { id: generateUniqueId(), name: 'Farmer\'s Carry', sets: [{id: generateUniqueId(), reps: '50m'},{id: generateUniqueId(), reps: '50m'},{id: generateUniqueId(), reps: '50m'}] },
+    ]},
+    { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Hamstring Stretch (60s each side)'}] },
+  ]
+};
+
+const kettlebellWorkoutC = {
+  name: 'Total Body',
+  blocks: [
+    { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Kettlebell Halos (5 each way)'}, {name: 'Light Kettlebell Windmills (5 each side)'}] },
+    { id: generateUniqueId(), type: 'Strength', rest: '90s', exercises: [
+      { id: generateUniqueId(), name: 'Turkish Get-Up (or Half Get-Up)', sets: [{id: generateUniqueId(), reps: '3 (L)'},{id: generateUniqueId(), reps: '3 (R)'},{id: generateUniqueId(), reps: '2 (L)'},{id: generateUniqueId(), reps: '2 (R)'},{id: generateUniqueId(), reps: '1 (L)'},{id: generateUniqueId(), reps: '1 (R)'}] },
+    ]},
+    { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 5, exercises: [
+      { id: generateUniqueId(), name: 'Single Kettlebell Clean & Jerk (Right)', reps: '5'},
+      { id: generateUniqueId(), name: 'Single Kettlebell Clean & Jerk (Left)', reps: '5'},
+      { id: 'situp', name: 'Sit-ups', reps: '20'}
+    ]},
+    { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Childs Pose (90s)'}] },
+  ]
+};
+
+
 export const programTemplates = [
   {
     id: 'template_bodyweight_blast',
     name: 'Bodyweight Blast',
     description: 'A 4-week, 5-day-a-week program using only your bodyweight. Perfect for building foundational strength and endurance anywhere, anytime.',
     isTemplate: true,
+    daysPerWeek: 5, // --- THE FIX ---
     workouts: [
       // --- WEEK 1 ---
       { // Day 1
@@ -23,7 +71,6 @@ export const programTemplates = [
               { id: generateUniqueId(), name: 'Cat-Cow Stretch (10 reps)' },
             ],
           },
-          // --- THE FIX: Converted from 'Strength' to 'Bodyweight' blocks ---
           {
             id: generateUniqueId(), type: 'Bodyweight',
             exercises: [
@@ -67,7 +114,6 @@ export const programTemplates = [
             id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 5,
             exercises: [ { id: 'pushup', name: 'Push-ups', reps: '10' }, { id: 'dip', name: 'Dips (using chair/bench)', reps: '15' } ]
           },
-          // --- THE FIX: Converted from 'Strength' to 'Bodyweight' block ---
           {
             id: generateUniqueId(), type: 'Bodyweight',
             exercises: [ { id: 'plank', name: '2 Sets of Plank Shoulder Taps', trackingType: 'reps', value: '40' } ]
@@ -115,7 +161,6 @@ export const programTemplates = [
         name: 'W2D1: Strength & Stamina',
         blocks: [
             { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: 'Jumping Jacks (60s)' }, { id: generateUniqueId(), name: 'Torso Twists (30s)' } ] },
-            // --- THE FIX: Converted from 'Strength' to 'Bodyweight' block ---
             { id: generateUniqueId(), type: 'Bodyweight',
                 exercises: [
                     { id: 'lunge', name: '3 Sets of Bulgarian Split Squats (L)', trackingType: 'reps', value: '12' },
@@ -201,7 +246,6 @@ export const programTemplates = [
         name: 'W3D1: Power & Plyo',
         blocks: [
             { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: generateUniqueId(), name: 'Pogo Hops (60s)'}, {id: 'squat', name: 'Bodyweight Squats (20 reps)'}]},
-            // --- THE FIX: Converted from 'Strength' to 'Bodyweight' block ---
             { id: generateUniqueId(), type: 'Bodyweight',
                 exercises: [
                     { id: 'jumping_squat', name: '4 Sets of Jumping Squats', trackingType: 'reps', value: '15'},
@@ -229,7 +273,6 @@ export const programTemplates = [
         name: 'W3D3: Core Crusher',
         blocks: [
             { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: generateUniqueId(), name: 'Bird-dog (10 each side)'}, {id: generateUniqueId(), name: 'Dead-bug (10 each side)'}]},
-            // --- THE FIX: Converted from 'Strength' to 'Bodyweight' block ---
             { id: generateUniqueId(), type: 'Bodyweight',
                 exercises: [
                     {id: 'situp', name: '3 Sets of Sit-ups', trackingType: 'reps', value: '30'},
@@ -290,7 +333,6 @@ export const programTemplates = [
         id: generateUniqueId(),
         name: 'W4D2: Leg Inferno',
         blocks: [
-            // --- THE FIX: Converted from 'Strength' to 'Bodyweight' block ---
             { id: generateUniqueId(), type: 'Bodyweight',
                 exercises: [
                     {id: 'squat', name: '5 Sets of Pistol Squats (to a box, alternating)', trackingType: 'reps', value: '8'},
@@ -352,15 +394,29 @@ export const programTemplates = [
   {
     id: 'template_kettlebell_krusher',
     name: 'Kettlebell Krusher',
-    description: 'A strength-focused program using one or two kettlebells. Build power, stability, and raw strength.',
+    description: 'A 3-week, 3-day/week program using one or two kettlebells. Build power, stability, and raw strength with these classic full-body workouts.',
     isTemplate: true,
-    workouts: [] // To be built out later
+    daysPerWeek: 3, // --- THE FIX ---
+    workouts: [
+        // Week 1
+        { id: generateUniqueId(), name: 'W1D1: Squat & Press', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutA.blocks)) },
+        { id: generateUniqueId(), name: 'W1D2: Hinge & Pull', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutB.blocks)) },
+        { id: generateUniqueId(), name: 'W1D3: Total Body', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutC.blocks)) },
+        // Week 2
+        { id: generateUniqueId(), name: 'W2D1: Squat & Press', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutA.blocks)) },
+        { id: generateUniqueId(), name: 'W2D2: Hinge & Pull', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutB.blocks)) },
+        { id: generateUniqueId(), name: 'W2D3: Total Body', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutC.blocks)) },
+        // Week 3
+        { id: generateUniqueId(), name: 'W3D1: Squat & Press', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutA.blocks)) },
+        { id: generateUniqueId(), name: 'W3D2: Hinge & Pull', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutB.blocks)) },
+        { id: generateUniqueId(), name: 'W3D3: Total Body', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutC.blocks)) },
+    ]
   },
   {
     id: 'template_strength_focus',
     name: 'Strength Focus',
     description: 'A classic barbell program for developing maximum strength in the main lifts. Requires a barbell and rack.',
     isTemplate: true,
-    workouts: [] // To be built out later
+    workouts: []
   },
 ];
