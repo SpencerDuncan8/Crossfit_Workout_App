@@ -4,9 +4,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext';
 import { Target } from 'lucide-react';
 
-// Define the key lifts we want to track 1RMs for.
-// The `id` must match the id in the exerciseDatabase.
-const trackedLifts = [
+// --- THE FIX: Export this array so other components can use it. ---
+export const trackedLifts = [
   { id: 'squat', name: 'Squat' },
   { id: 'bench_press', name: 'Bench Press' },
   { id: 'deadlift', name: 'Deadlift' },
@@ -16,10 +15,8 @@ const trackedLifts = [
 const OneRepMaxEditor = () => {
   const { appState, updateOneRepMax } = useContext(AppStateContext);
   
-  // Use local state to manage input changes for better performance.
   const [localMaxes, setLocalMaxes] = useState(appState.oneRepMaxes || {});
 
-  // Keep local state in sync if the global state changes.
   useEffect(() => {
     setLocalMaxes(appState.oneRepMaxes || {});
   }, [appState.oneRepMaxes]);
@@ -31,7 +28,6 @@ const OneRepMaxEditor = () => {
     }));
   };
   
-  // Save the value to global state when the user clicks away.
   const handleBlur = (exerciseId) => {
     const value = localMaxes[exerciseId];
     updateOneRepMax(exerciseId, value);

@@ -16,7 +16,6 @@ const WorkoutView = ({ setActiveView }) => {
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
 
-  // --- THE FIX: This hook now calculates percentage-based weights ---
   useEffect(() => {
     if (activeWorkout) {
       const initialProgress = {};
@@ -29,14 +28,20 @@ const WorkoutView = ({ setActiveView }) => {
             initialProgress[exerciseId] = { 
               sets: exercise.sets.map(set => {
                 let targetWeight = '';
+                let percentageInfo = null;
                 const loadStr = String(set.load || '');
 
                 if (loadStr.includes('%')) {
                   const percentage = parseFloat(loadStr.replace('%', '')) / 100;
-                  if (!isNaN(percentage) && oneRepMax > 0) {
-                    const calculatedWeight = oneRepMax * percentage;
-                    // Round to nearest 5 for practical plating
-                    targetWeight = String(Math.round(calculatedWeight / 5) * 5);
+                  if (!isNaN(percentage)) {
+                    // --- THE FIX: Store calculation details ---
+                    percentageInfo = { percent: percentage * 100, oneRepMax: oneRepMax };
+                    if (oneRepMax > 0) {
+                      const calculatedWeight = oneRepMax * percentage;
+                      targetWeight = String(Math.round(calculatedWeight / 5) * 5);
+                    } else {
+                      targetWeight = '0';
+                    }
                   }
                 } else {
                   targetWeight = loadStr;
@@ -46,7 +51,8 @@ const WorkoutView = ({ setActiveView }) => {
                   id: set.id, 
                   completed: false, 
                   weight: targetWeight, 
-                  reps: set.reps 
+                  reps: set.reps,
+                  percentageInfo: percentageInfo, // Pass details down
                 };
               }) 
             };
@@ -72,7 +78,7 @@ const WorkoutView = ({ setActiveView }) => {
     } else {
       setExerciseProgress({});
     }
-  }, [activeWorkout?.id, appState.oneRepMaxes]); // Also re-run if 1RMs change
+  }, [activeWorkout?.id, appState.oneRepMaxes]);
 
   const handleSetUpdate = (exerciseId, setIndex, field, value) => {
     setExerciseProgress(currentProgress => {
@@ -145,6 +151,8 @@ const WorkoutView = ({ setActiveView }) => {
             progress={exerciseProgress} 
             onSetUpdate={handleSetUpdate} 
             startTimer={startTimer}
+            // --- THE FIX: Pass setActiveView down to be used by the button ---
+            setActiveView={setActiveView} 
           />
       ))}
       <div className="finish-workout-container"><button className="finish-workout-button" onClick={handleFinishWorkout}><CheckCircle size={24} /> Finish Workout & Log</button></div>

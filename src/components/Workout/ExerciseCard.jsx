@@ -3,6 +3,7 @@
 import React, { useContext } from 'react';
 import { Check, Square, Plus, Minus, Timer, HelpCircle } from 'lucide-react';
 import { AppStateContext } from '../../context/AppContext.jsx';
+import { trackedLifts } from '../Progress/OneRepMaxEditor.jsx'; // --- THE FIX: Import the list ---
 
 const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, onRestClick }) => {
   const { completed, weight, reps } = progressData;
@@ -25,7 +26,7 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
   );
 };
 
-const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType }) => {
+const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType, setActiveView }) => {
   const { openExerciseModal } = useContext(AppStateContext);
   const { name, sets, note, id, trackingType, value, weight, unit } = exercise;
 
@@ -62,7 +63,6 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
     );
   }
   
-  // --- THE FIX: Added a new renderer for the interactive Accessory card ---
   if (blockType === 'Accessory / Carry') {
     return (
       <div className="exercise-card-accessory">
@@ -92,11 +92,35 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
   }
 
   if (sets) {
+    const percentageNoteInfo = progress?.sets?.[0]?.percentageInfo;
+    // --- THE FIX: Check if the exercise is in our trackedLifts array ---
+    const isTrackedLift = trackedLifts.some(lift => lift.id === id);
+
     return (
       <div className="exercise-card-interactive">
         <div className="exercise-info clickable" onClick={handleExerciseClick}><h4>{name}</h4><HelpCircle size={18} className="help-icon" /></div>
         <div className="exercise-details"><span>{sets.length} SETS</span>{restDuration && <span>{restDuration} REST</span>}</div>
+        
         {note && <p className="exercise-note">Note: {note}</p>}
+        
+        {/* --- THE FIX: Only show the note if the lift is tracked --- */}
+        {percentageNoteInfo && isTrackedLift && (
+          <div className="percentage-note">
+            {percentageNoteInfo.oneRepMax > 0 ? (
+              <>
+                Target weight is <strong>{percentageNoteInfo.percent}%</strong> of your saved 1RM of <strong>{percentageNoteInfo.oneRepMax} lbs</strong>.
+              </>
+            ) : (
+              <>
+                Target weight is based on a percentage, but your 1RM for this lift is not set.
+                <button className="set-1rm-button" onClick={() => setActiveView('progress')}>
+                  Set 1RM
+                </button>
+              </>
+            )}
+          </div>
+        )}
+        
         <div className="sets-container">
           {progress && progress.sets.map((set, index) => (
             <SetRow 

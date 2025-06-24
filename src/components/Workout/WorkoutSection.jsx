@@ -5,7 +5,7 @@ import { ChevronDown, Play } from 'lucide-react';
 import ExerciseCard from './ExerciseCard.jsx';
 import ConditioningCard from './ConditioningCard.jsx';
 
-const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
+const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveView }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -62,9 +62,10 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
                     exercise={exercise} 
                     progress={progress[exerciseId]}
                     onSetUpdate={onSetUpdate}
-                    restDuration={block.rest} // --- THE FIX: This prop was missing ---
+                    restDuration={block.rest}
                     startTimer={startTimer}
-                    blockType={block.type} 
+                    blockType={block.type}
+                    setActiveView={setActiveView} // --- THE FIX: Pass the function down ---
                   />
                 );
               })}
