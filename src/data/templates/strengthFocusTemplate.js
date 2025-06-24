@@ -2,25 +2,26 @@
 
 import { generateUniqueId } from '../../utils/idUtils.js';
 
-// --- THE FIX: Updated workouts to use percentage-based loading ---
+// --- THE FIX: Updated rest to be in seconds ---
 const strengthWorkoutA = {
   name: 'Workout A',
   blocks: [
     { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Jumping Jacks (60s)'}, {name: 'Cat-Cow Stretch (10 reps)'}, {name: 'Empty Barbell Squats (2x10)'}] },
-    { id: generateUniqueId(), type: 'Strength', rest: '2-3 min', exercises: [
+    { id: generateUniqueId(), type: 'Strength', rest: '150s', exercises: [
       { id: 'squat', name: 'Squat', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
       { id: 'bench_press', name: 'Bench Press', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
-      { id: generateUniqueId(), name: 'Barbell Row', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '' })) }, // Keep this as absolute weight
+      { id: generateUniqueId(), name: 'Barbell Row', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '' })) },
     ]},
     { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Couch Stretch (60s each side)'}] },
   ]
 };
 
+// --- THE FIX: Updated rest to be in seconds ---
 const strengthWorkoutB = {
   name: 'Workout B',
   blocks: [
     { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Jumping Jacks (60s)'}, {name: 'Band Pull-Aparts (2x15)'}, {name: 'Empty Barbell OHP (2x10)'}] },
-    { id: generateUniqueId(), type: 'Strength', rest: '2-3 min', exercises: [
+    { id: generateUniqueId(), type: 'Strength', rest: '150s', exercises: [
       { id: 'squat', name: 'Squat', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
       { id: 'overhead_press', name: 'Overhead Press', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
       { id: 'deadlift', name: 'Deadlift', sets: [{ id: generateUniqueId(), reps: '5', load: '85%' }] },
