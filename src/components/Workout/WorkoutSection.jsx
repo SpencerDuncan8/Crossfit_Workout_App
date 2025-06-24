@@ -19,6 +19,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
   const isConditioning = block.type.startsWith('Conditioning:');
   const isStrength = block.type === 'Strength';
   const isBodyweight = block.type === 'Bodyweight';
+  const isAccessory = block.type === 'Accessory / Carry';
 
   return (
     <div className={`workout-section ${isCollapsed ? 'collapsed' : ''}`}>
@@ -50,24 +51,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
              </>
           )}
           
-          {isStrength && block.exercises?.map((exercise) => {
-              const exerciseId = `${block.id}-${exercise.id}`;
-              return (
-                <ExerciseCard 
-                  key={exerciseId} 
-                  exerciseId={exerciseId}
-                  exercise={exercise} 
-                  progress={progress[exerciseId]}
-                  onSetUpdate={onSetUpdate}
-                  restDuration={block.rest}
-                  startTimer={startTimer}
-                  blockType={block.type} 
-                />
-              );
-          })}
-          
-          {/* --- THE FIX: Logic moved from ExerciseCard to here --- */}
-          {isBodyweight && (
+          {(isStrength || isBodyweight || isAccessory) && ( // --- THE FIX: Grouped accessory with other interactive types
             <>
               {block.exercises?.map((exercise) => {
                 const exerciseId = `${block.id}-${exercise.id}`;
@@ -83,17 +67,18 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
                   />
                 );
               })}
-              {/* --- The new WOD timer button for the entire block --- */}
-              <button 
-                  className="start-wod-button bodyweight-button" 
-                  onClick={() => startTimer({ type: 'stopwatch' })}
-              >
-                  <Play size={20} /> Start WOD Timer
-              </button>
+              {(isBodyweight || isAccessory) && ( // Add timer for bodyweight and accessory
+                <button 
+                    className="start-wod-button bodyweight-button" 
+                    onClick={() => startTimer({ type: 'stopwatch' })}
+                >
+                    <Play size={20} /> Start Timer
+                </button>
+              )}
             </>
           )}
-
-          {!isStrength && !isBodyweight && !isConditioning && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
+          
+          {!isStrength && !isBodyweight && !isConditioning && !isAccessory && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
              <div key={index} className="exercise-card-simple"><h4>{exercise.name}</h4></div>
           ))}
 
@@ -104,6 +89,16 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer }) => {
               >
                 <Play size={20} />
                 Start Warm-up Timer
+              </button>
+          )}
+
+          {block.type === 'Cool-down' && (
+             <button 
+                className="start-wod-button cooldown-button" 
+                onClick={() => startTimer({ type: 'stopwatch' })}
+              >
+                <Play size={20} />
+                Start Cool-down Timer
               </button>
           )}
         </div>

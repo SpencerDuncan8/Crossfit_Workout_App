@@ -17,8 +17,9 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const addExercise = () => {
     let newExercise = { id: generateUniqueId(), name: '' };
     if (block.type === 'Strength') newExercise.sets = [{ id: generateUniqueId(), reps: '10' }];
-    // THE FIX: Add the default structure for a new Bodyweight exercise
     if (block.type === 'Bodyweight') newExercise = { ...newExercise, trackingType: 'reps', value: '15' };
+    // --- THE FIX: Define the default structure, including sets ---
+    if (block.type === 'Accessory / Carry') newExercise = { ...newExercise, sets: '3', weight: '', value: '', unit: '' };
     if (block.type === 'Conditioning: Chipper' || block.type === 'Conditioning: RFT') newExercise.reps = '15';
     const newExercises = [...(block.exercises || []), newExercise];
     onUpdate({ ...block, exercises: newExercises });
@@ -32,7 +33,6 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
       case 'Strength': return (
         <><div className="block-form-grid" style={{gridTemplateColumns: '1fr'}}><div className="block-input-group"><label>Rest Between Sets</label><input type="text" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} placeholder="e.g., 60s" /></div></div><div className="exercise-editor-list">{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="strength-exercise-editor"><div className="exercise-editor-item"><input type="text" placeholder="e.g., Bench Press" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div><div className="sets-list">{(ex.sets || []).map((set, setIndex) => (<div key={set.id} className="set-editor-row"><span className="set-label">Set {setIndex + 1}</span><input type="text" className="reps-input" placeholder="Reps" value={set.reps} onChange={(e) => updateSetReps(exIndex, setIndex, e.target.value)} /><span className="reps-label">reps</span><button className="remove-set-btn" onClick={() => removeSet(exIndex, set.id)}><Trash2 size={14}/></button></div>))}<button className="add-set-btn" onClick={() => addSet(exIndex)}><PlusCircle size={14} /> Add Set</button></div></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
       );
-      // --- THE FIX: The full implementation for the 'Bodyweight' block editor ---
       case 'Bodyweight': return (
         <div className="exercise-editor-list">
             {(block.exercises || []).map((ex, exIndex) => (
@@ -49,6 +49,24 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
             <button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button>
         </div>
       );
+      // --- THE FIX: Added a "Sets" input field to the editor ---
+      case 'Accessory / Carry': return (
+        <div className="exercise-editor-list">
+            {(block.exercises || []).map((ex, exIndex) => (
+                <div key={ex.id} className="accessory-exercise-editor">
+                  <input type="text" className="accessory-name" placeholder="Exercise Name" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} />
+                  <div className="accessory-inputs">
+                    <input type="number" placeholder="Sets" value={ex.sets || ''} onChange={(e) => updateExerciseField(exIndex, 'sets', e.target.value)} /><span className="accessory-label">sets</span>
+                    <input type="number" placeholder="Weight" value={ex.weight || ''} onChange={(e) => updateExerciseField(exIndex, 'weight', e.target.value)} /><span className="accessory-label">lbs</span>
+                    <input type="number" placeholder="Value" value={ex.value || ''} onChange={(e) => updateExerciseField(exIndex, 'value', e.target.value)} />
+                    <input type="text" placeholder="Unit" value={ex.unit || ''} onChange={(e) => updateExerciseField(exIndex, 'unit', e.target.value)} />
+                  </div>
+                  <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button>
+                </div>
+            ))}
+            <button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button>
+        </div>
+      );
       case 'Conditioning: EMOM': return ( <div className="minute-editor-list"><label className="editor-label">Tasks per minute</label>{(block.minutes || []).map((min, index) => (<div key={min.id} className="minute-editor-row"><span className="minute-label">Min {index + 1}</span><input type="text" placeholder="e.g., 10 Cal Row, 12 Burpees" value={min.task} onChange={(e) => updateMinuteTask(index, e.target.value)} /><button className="remove-minute-btn" onClick={() => removeMinute(min.id)}><X size={16} /></button></div>))}<button className="add-minute-btn" onClick={addMinute}><PlusCircle size={16} /> Add Minute</button></div> );
       case 'Conditioning: RFT':
       case 'Conditioning: Chipper': return (
@@ -60,33 +78,13 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
             <label className="editor-label">Exercises</label>
             {(block.exercises || []).map((ex, exIndex) => (
                 <div key={ex.id} className="exercise-editor-item">
-                    <input 
-                        type="text" 
-                        placeholder="e.g., Rowing" 
-                        value={ex.name || ''} 
-                        onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} 
-                    />
-                    <input 
-                        type="number" 
-                        className="reps-input" 
-                        placeholder="Mins" 
-                        value={ex.duration || ''} 
-                        onChange={(e) => updateExerciseField(exIndex, 'duration', e.target.value)}
-                    />
+                    <input type="text" placeholder="e.g., Rowing" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} />
+                    <input type="number" className="reps-input" placeholder="Mins" value={ex.duration || ''} onChange={(e) => updateExerciseField(exIndex, 'duration', e.target.value)} />
                     <span className="reps-label">min</span>
-                    <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}>
-                        <X size={16} />
-                    </button>
+                    <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button>
                 </div>
             ))}
-            <button 
-                className="add-exercise-btn" 
-                onClick={() => {
-                    const newExercises = [...(block.exercises || []), { id: generateUniqueId(), name: '', duration: '10' }];
-                    onUpdate({ ...block, exercises: newExercises });
-                }}>
-                <PlusCircle size={16} /> Add Exercise
-            </button>
+            <button className="add-exercise-btn" onClick={() => { const newExercises = [...(block.exercises || []), { id: generateUniqueId(), name: '', duration: '10' }]; onUpdate({ ...block, exercises: newExercises });}}> <PlusCircle size={16} /> Add Exercise</button>
         </div>
       );
       default: return (

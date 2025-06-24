@@ -7,8 +7,8 @@ import WorkoutBlockEditor from './WorkoutBlockEditor.jsx';
 import { generateUniqueId } from '../../utils/idUtils.js';
 import './WorkoutEditor.css';
 
-// THE FIX: Added 'Bodyweight' to the list of available block types.
-const blockTypes = [ 'Warm-up', 'Strength', 'Bodyweight', 'Conditioning: AMRAP', 'Conditioning: RFT', 'Conditioning: Chipper', 'Conditioning: EMOM', 'Conditioning: Tabata', 'Cardio', 'Cool-down' ];
+// --- THE FIX: Added 'Accessory / Carry' to the list ---
+const blockTypes = [ 'Warm-up', 'Strength', 'Bodyweight', 'Accessory / Carry', 'Conditioning: AMRAP', 'Conditioning: RFT', 'Conditioning: Chipper', 'Conditioning: EMOM', 'Conditioning: Tabata', 'Cardio', 'Cool-down' ];
 
 const WorkoutEditor = () => {
   const { appState, allWorkouts, closeWorkoutEditor, saveCustomWorkout } = useContext(AppStateContext);
@@ -49,9 +49,12 @@ const WorkoutEditor = () => {
           exercises: [{ id: generateUniqueId(), name: '', sets: [{ id: generateUniqueId(), reps: '10' }] }]
         };
         break;
-      // THE FIX: Added a case for the new 'Bodyweight' block type.
       case 'Bodyweight':
         newBlock.exercises = [{ id: generateUniqueId(), name: '', trackingType: 'reps', value: '15' }];
+        break;
+      // --- THE FIX: Define the default structure for the new block type ---
+      case 'Accessory / Carry':
+        newBlock.exercises = [{ id: generateUniqueId(), name: 'Farmer\'s Carry', weight: '50', value: '100', unit: 'meters' }];
         break;
       case 'Conditioning: AMRAP':
         newBlock = { ...newBlock, duration: 15 };

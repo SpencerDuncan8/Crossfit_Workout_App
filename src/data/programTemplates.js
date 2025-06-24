@@ -17,6 +17,7 @@ const kettlebellWorkoutA = {
   ]
 };
 
+// --- THE FIX: Updated to use the new 'sets' property ---
 const kettlebellWorkoutB = {
   name: 'Hinge & Pull',
   blocks: [
@@ -25,9 +26,13 @@ const kettlebellWorkoutB = {
         { id: 'kettlebell_swing', name: 'Kettlebell Swings (Power)', sets: Array.from({ length: 10 }, () => ({ id: generateUniqueId(), reps: '10' }))},
         { id: generateUniqueId(), name: 'Bent Over Kettlebell Rows', sets: [{id: generateUniqueId(), reps: '12'},{id: generateUniqueId(), reps: '12'},{id: generateUniqueId(), reps: '12'},{id: generateUniqueId(), reps: '12'}] },
     ]},
-    { id: generateUniqueId(), type: 'Strength', rest: '60s', exercises: [
-        { id: generateUniqueId(), name: 'Farmer\'s Carry', sets: [{id: generateUniqueId(), reps: '50m'},{id: generateUniqueId(), reps: '50m'},{id: generateUniqueId(), reps: '50m'}] },
-    ]},
+    { 
+      id: generateUniqueId(), 
+      type: 'Accessory / Carry', 
+      exercises: [
+        { id: generateUniqueId(), name: 'Farmer\'s Carry', sets: '3', weight: '', value: '50', unit: 'm' },
+      ] 
+    },
     { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Hamstring Stretch (60s each side)'}] },
   ]
 };
@@ -55,7 +60,7 @@ export const programTemplates = [
     name: 'Bodyweight Blast',
     description: 'A 4-week, 5-day-a-week program using only your bodyweight. Perfect for building foundational strength and endurance anywhere, anytime.',
     isTemplate: true,
-    daysPerWeek: 5, // --- THE FIX ---
+    daysPerWeek: 5,
     workouts: [
       // --- WEEK 1 ---
       { // Day 1
@@ -324,7 +329,7 @@ export const programTemplates = [
                 exercises: [
                     {id: generateUniqueId(), name: 'Pull-ups (or Bodyweight Rows)', reps: '5'},
                     {id: 'pushup', name: 'Push-ups', reps: '10'},
-                    {id: 'squat', name: 'Squats', reps: '15'},
+                    {id: 'squat', 'name': 'Squats', reps: '15'},
                 ]
             }
         ]
@@ -396,7 +401,7 @@ export const programTemplates = [
     name: 'Kettlebell Krusher',
     description: 'A 3-week, 3-day/week program using one or two kettlebells. Build power, stability, and raw strength with these classic full-body workouts.',
     isTemplate: true,
-    daysPerWeek: 3, // --- THE FIX ---
+    daysPerWeek: 3,
     workouts: [
         // Week 1
         { id: generateUniqueId(), name: 'W1D1: Squat & Press', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutA.blocks)) },

@@ -27,7 +27,7 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
 
 const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType }) => {
   const { openExerciseModal } = useContext(AppStateContext);
-  const { name, sets, note, id, trackingType, value } = exercise;
+  const { name, sets, note, id, trackingType, value, weight, unit } = exercise;
 
   const handleRestClick = () => {
     const restSeconds = parseInt(restDuration, 10);
@@ -58,7 +58,35 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
           </div>
           {id && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
         </div>
-        {/* --- THE FIX: The individual rest timer button has been removed from here --- */}
+      </div>
+    );
+  }
+  
+  // --- THE FIX: Added a new renderer for the interactive Accessory card ---
+  if (blockType === 'Accessory / Carry') {
+    return (
+      <div className="exercise-card-accessory">
+        <div className="exercise-info clickable" onClick={handleExerciseClick}>
+          <h4>{name}</h4>
+          <HelpCircle size={18} className="help-icon" />
+        </div>
+        <div className="exercise-details">
+          {weight && <span>{weight}LBS</span>}
+          {value && <span>{value} {unit?.toUpperCase()}</span>}
+        </div>
+        <div className="sets-container">
+          {progress?.sets.map((set, index) => (
+            <div key={set.id} className={`accessory-set-row ${set.completed ? 'completed' : ''}`}>
+              <button 
+                className="accessory-set-checkbox"
+                onClick={() => onSetUpdate(exerciseId, index, 'completed', !set.completed)}
+              >
+                {set.completed ? <Check size={20} /> : <Square size={20} />}
+              </button>
+              <span className="set-number">Set {index + 1}</span>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

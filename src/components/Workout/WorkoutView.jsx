@@ -16,8 +16,6 @@ const WorkoutView = ({ setActiveView }) => {
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
 
-  // --- THE FIX IS HERE ---
-  // The useEffect now also initializes state for Bodyweight blocks.
   useEffect(() => {
     if (activeWorkout) {
       const initialProgress = {};
@@ -28,14 +26,22 @@ const WorkoutView = ({ setActiveView }) => {
             initialProgress[exerciseId] = { sets: exercise.sets.map(set => ({ id: set.id, completed: false, weight: '', reps: set.reps })) };
           });
         }
-        // --- THIS IS THE NEW PART ---
         if (block.type === 'Bodyweight' && block.exercises) {
           block.exercises.forEach(exercise => {
             const exerciseId = `${block.id}-${exercise.id}`;
             initialProgress[exerciseId] = { completed: false };
           });
         }
-        // --- END OF NEW PART ---
+        // --- THE FIX: Initialize progress tracking for the Accessory block ---
+        if (block.type === 'Accessory / Carry' && block.exercises) {
+          block.exercises.forEach(exercise => {
+            const exerciseId = `${block.id}-${exercise.id}`;
+            const numSets = parseInt(exercise.sets, 10) || 1;
+            initialProgress[exerciseId] = {
+              sets: Array.from({ length: numSets }, (_, i) => ({ id: `${exerciseId}-set-${i}`, completed: false }))
+            };
+          });
+        }
       });
       setExerciseProgress(initialProgress);
     } else {
@@ -46,12 +52,11 @@ const WorkoutView = ({ setActiveView }) => {
   const handleSetUpdate = (exerciseId, setIndex, field, value) => {
     setExerciseProgress(currentProgress => {
       const newProgress = { ...currentProgress };
-      if (newProgress[exerciseId] && newProgress[exerciseId].sets && newProgress[exerciseId].sets[setIndex]) {
+      if (newProgress[exerciseId] && newProgress[exerciseId].sets && newProgress[exerciseId].sets[setIndex] !== undefined) {
         const newSets = [...newProgress[exerciseId].sets];
         newSets[setIndex] = { ...newSets[setIndex], [field]: value };
         newProgress[exerciseId] = { ...newProgress[exerciseId], sets: newSets };
       }
-      // --- THE FIX: Handle completion for Bodyweight exercises ---
       else if (newProgress[exerciseId] && field === 'completed') {
         newProgress[exerciseId] = { ...newProgress[exerciseId], completed: value };
       }
@@ -63,21 +68,21 @@ const WorkoutView = ({ setActiveView }) => {
     let sessionStats = { sets: 0, reps: 0, weight: 0 };
     Object.keys(exerciseProgress).forEach(exerciseId => {
       const progress = exerciseProgress[exerciseId];
-      // Strength block calculation
       if (progress && progress.sets) {
         progress.sets.forEach(set => {
           if (set.completed) {
             sessionStats.sets++;
-            const reps = parseInt(set.reps, 10) || 0;
-            const weight = parseInt(set.weight, 10) || 0;
-            sessionStats.reps += reps;
-            sessionStats.weight += reps * weight;
+            // Only add to reps/weight stats if they exist (i.e., for Strength blocks)
+            if (set.reps && set.weight) {
+              const reps = parseInt(set.reps, 10) || 0;
+              const weight = parseInt(set.weight, 10) || 0;
+              sessionStats.reps += reps;
+              sessionStats.weight += reps * weight;
+            }
           }
         });
       }
-      // Bodyweight block calculation
       else if (progress && progress.completed) {
-          // You might want to define how to count these for stats, e.g., each is 1 set.
           sessionStats.sets++; 
       }
     });
