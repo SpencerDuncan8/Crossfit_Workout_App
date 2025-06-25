@@ -14,6 +14,7 @@ const ProgramOverview = ({ setActiveView }) => {
   const [viewingProgramId, setViewingProgramId] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [editingProgramName, setEditingProgramName] = useState('');
+  const [editingProgramDescription, setEditingProgramDescription] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newProgramName, setNewProgramName] = useState('My New Program');
   const [scheduleConfirm, setScheduleConfirm] = useState(null);
@@ -39,14 +40,15 @@ const ProgramOverview = ({ setActiveView }) => {
     }
   };
   
-  const handleStartEditName = (program) => {
+  const handleStartEditProgram = (program) => {
     setEditingProgramId(program.id);
     setEditingProgramName(program.name);
+    setEditingProgramDescription(program.description);
   };
 
-  const handleSaveName = (e) => {
+  const handleSaveProgram = (e) => {
     e.preventDefault();
-    updateProgram(editingProgramId, { name: editingProgramName });
+    updateProgram(editingProgramId, { name: editingProgramName, description: editingProgramDescription });
     setEditingProgramId(null);
   };
   
@@ -58,10 +60,9 @@ const ProgramOverview = ({ setActiveView }) => {
     setScheduleConfirm(template); 
   };
   
-  // --- THE FIX: Pass the daysPerWeek property to the scheduling function ---
   const handleConfirmSchedule = () => {
     if (scheduleConfirm) {
-      autoScheduleProgram(scheduleConfirm.workouts, scheduleConfirm.daysPerWeek); // Pass the new property here
+      autoScheduleProgram(scheduleConfirm.workouts, scheduleConfirm.daysPerWeek);
       setShowSuccessModal(true);
       setScheduleConfirm(null);
     }
@@ -90,18 +91,32 @@ const ProgramOverview = ({ setActiveView }) => {
           </button>
           
           {isEditingThisProgram ? (
-            <form onSubmit={handleSaveName} className="program-name-edit-form">
-              <input type="text" value={editingProgramName} onChange={(e) => setEditingProgramName(e.target.value)} autoFocus onBlur={handleSaveName}/>
-              <button type="submit">Save</button>
+            <form onSubmit={handleSaveProgram} className="program-edit-form">
+              <input
+                type="text"
+                className="program-name-edit-input"
+                value={editingProgramName}
+                onChange={(e) => setEditingProgramName(e.target.value)}
+                autoFocus
+              />
+              <textarea
+                value={editingProgramDescription}
+                onChange={(e) => setEditingProgramDescription(e.target.value)}
+                className="program-description-edit-textarea"
+                placeholder="Enter program description..."
+                rows="4"
+              />
+              <button type="submit" className="save-program-btn">Save</button>
             </form>
           ) : (
-            <div className="program-title-header">
-                <h1>{viewingProgram.name}</h1>
-                {!viewingProgram.isTemplate && <button className="icon-btn" onClick={() => handleStartEditName(viewingProgram)}><Edit size={20}/></button>}
-            </div>
+            <>
+              <div className="program-title-header">
+                  <h1>{viewingProgram.name}</h1>
+                  {!viewingProgram.isTemplate && <button className="icon-btn" onClick={() => handleStartEditProgram(viewingProgram)}><Edit size={20}/></button>}
+              </div>
+              <p>{viewingProgram.description}</p>
+            </>
           )}
-
-          <p>{viewingProgram.description}</p>
         </div>
         <div className="custom-workouts-list">
           {viewingProgram.workouts.map(workout => (
