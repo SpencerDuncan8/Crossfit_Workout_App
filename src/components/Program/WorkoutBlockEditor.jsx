@@ -8,7 +8,7 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const updateBlockField = (field, value) => onUpdate({ ...block, [field]: value });
   const updateExerciseField = (exIndex, field, value) => { const n = { ...block }; n.exercises[exIndex][field] = value; onUpdate(n); };
   
-  // --- THE FIX: Add a handler for the new 'load' property and update addSet ---
+  // THE FIX: Add a handler for the new 'load' property and update addSet
   const addSet = (exIndex) => { const n = { ...block }; n.exercises[exIndex].sets.push({ id: generateUniqueId(), reps: '5', load: '' }); onUpdate(n); };
   const updateSetReps = (exIndex, setIndex, reps) => { const n = { ...block }; n.exercises[exIndex].sets[setIndex].reps = reps; onUpdate(n); };
   const updateSetLoad = (exIndex, setIndex, load) => { const n = { ...block }; n.exercises[exIndex].sets[setIndex].load = load; onUpdate(n); };
@@ -41,13 +41,17 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
         <div className="exercise-editor-list">
             {(block.exercises || []).map((ex, exIndex) => (
                 <div key={ex.id} className="bodyweight-exercise-editor">
-                    <input type="text" placeholder="e.g., Plank" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} />
-                    <div className="tracking-type-toggle">
-                        <button className={ex.trackingType === 'reps' ? 'active' : ''} onClick={() => updateExerciseField(exIndex, 'trackingType', 'reps')}>Reps</button>
-                        <button className={ex.trackingType === 'duration' ? 'active' : ''} onClick={() => updateExerciseField(exIndex, 'trackingType', 'duration')}>Secs</button>
+                    <input type="text" className="bodyweight-name-input" placeholder="e.g., Plank" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} />
+                    <div className="bodyweight-controls">
+                        <div className="bodyweight-controls-left">
+                            <div className="tracking-type-toggle">
+                                <button className={ex.trackingType === 'reps' ? 'active' : ''} onClick={() => updateExerciseField(exIndex, 'trackingType', 'reps')}>Reps</button>
+                                <button className={ex.trackingType === 'duration' ? 'active' : ''} onClick={() => updateExerciseField(exIndex, 'trackingType', 'duration')}>Secs</button>
+                            </div>
+                            <input type="number" className="reps-input" value={ex.value || ''} onChange={(e) => updateExerciseField(exIndex, 'value', e.target.value)} />
+                        </div>
+                        <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button>
                     </div>
-                    <input type="number" className="reps-input" value={ex.value || ''} onChange={(e) => updateExerciseField(exIndex, 'value', e.target.value)} />
-                    <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button>
                 </div>
             ))}
             <button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button>
