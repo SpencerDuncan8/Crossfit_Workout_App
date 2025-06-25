@@ -21,7 +21,7 @@ const initialAppState = {
 };
 
 const AppStateProviderComponent = ({ children }) => {
-  const [appState, setAppState, clearAppState] = usePersistentState('crossfitTrackerState_v3', initialAppState);
+  const [appState, setAppState, clearAppState] = usePersistentState('blockfitState_v1', initialAppState);
   const { clearTimer } = useContext(TimerContext);
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));

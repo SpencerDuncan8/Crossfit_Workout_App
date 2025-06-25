@@ -6,7 +6,7 @@ import { usePersistentState } from '../hooks/usePersistentState.jsx';
 export const TimerContext = createContext();
 
 export const TimerProvider = ({ children }) => {
-  const [timer, setTimer, clearTimer] = usePersistentState('crossfitTimerState', {
+  const [timer, setTimer, clearTimer] = usePersistentState('blockfitTimerState', {
     isActive: false, type: null, key: 0, duration: 0, time: 0, 
     laps: [], totalLaps: 0, 
     recordedTime: null,

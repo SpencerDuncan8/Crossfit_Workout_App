@@ -75,13 +75,13 @@ export default function App() {
       {appState.showConfetti && <Confetti width={width} height={height} recycle={false} onConfettiComplete={(confetti) => confetti.reset()} />}
       {isMobile ? (
         <>
-          <div className="mobile-header"><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}><h1 style={{ fontSize: '20px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1><ThemeToggle isMobile={true} /></div></div>
+          <div className="mobile-header"><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}><h1 style={{ fontSize: '20px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>BlockFit</h1><ThemeToggle isMobile={true} /></div></div>
           <main className="main-content">{renderView()}</main>
           <div className="mobile-nav"><div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', padding: '8px' }}>{navItems.map(item => (<NavItem key={item.id} icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={true} />))}</div></div>
         </>
       ) : (
         <>
-          <div className="sidebar"><div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><div style={{ padding: '24px' }}><h1 style={{ fontSize: '24px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CrossFit Tracker</h1></div><nav style={{ flex: 1, padding: '0 16px' }}>{navItems.map(item => (<div key={item.id} style={{ marginBottom: '8px' }}> <NavItem icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={false} /> </div>))}</nav><div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}><ThemeToggle isMobile={false} /></div></div></div>
+          <div className="sidebar"><div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><div style={{ padding: '24px' }}><h1 style={{ fontSize: '24px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>BlockFit</h1></div><nav style={{ flex: 1, padding: '0 16px' }}>{navItems.map(item => (<div key={item.id} style={{ marginBottom: '8px' }}> <NavItem icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={false} /> </div>))}</nav><div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}><ThemeToggle isMobile={false} /></div></div></div>
           <main className="main-content">{renderView()}</main>
         </>
       )}

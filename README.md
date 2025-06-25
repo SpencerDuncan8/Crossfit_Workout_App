@@ -1,6 +1,6 @@
-# CrossFit Workout Tracker & Builder
+# BlockFit: Workout Tracker & Builder
 
-A premium web application to guide your fitness journey. Get started immediately with professionally designed programs or use the powerful editor to create, plan, and track your own custom CrossFit-style workouts.
+A premium web application to guide your fitness journey. Get started immediately with professionally designed programs or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
 
 ## 🎯 Current Status: Major Features Complete! 🚀
 
@@ -76,4 +76,4 @@ The application is now built on a flexible, program-based architecture that serv
   - `recharts` for progress charts
   - `lucide-react` for icons
   - `react-compare-slider` for photo comparison
-  - `react-confetti` for workout completion celebrations
+  - `react-confetti` for workout completion celebration

@@ -23,10 +23,9 @@ const WorkoutView = ({ setActiveView }) => {
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
 
-  // THE FIX: useEffect to listen for a recorded time from the context
+  // This effect listens for a recorded time from the context (for Chippers)
   useEffect(() => {
     if (timer.recordedTime !== null) {
-      // Find the chipper block that was likely active
       const chipperBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: Chipper');
       if (chipperBlock) {
         setBlockProgress(prev => ({
@@ -38,7 +37,7 @@ const WorkoutView = ({ setActiveView }) => {
         }));
       }
     }
-  }, [timer.recordedTime]); // This effect runs only when recordedTime changes
+  }, [timer.recordedTime]);
 
   useEffect(() => {
     if (activeWorkout) {
@@ -87,6 +86,16 @@ const WorkoutView = ({ setActiveView }) => {
     
     sessionStats.blockTimes = blockProgress;
 
+    // --- THE FIX: The RFT lap-saving logic is moved BEFORE the Chipper logic ---
+    // This ensures laps are saved before the timer might be stopped and cleared.
+    if (timer.laps && timer.laps.length > 0) {
+        sessionStats.laps = [...timer.laps]; // Create a copy of the array
+        const lastLapTime = timer.laps[timer.laps.length - 1];
+        if (typeof lastLapTime === 'number') { 
+            sessionStats.totalTime = formatTime(lastLapTime); 
+        }
+    }
+    
     // This handles the case where a chipper timer was running but not explicitly recorded before finishing
     const isChipperRunning = activeWorkout.blocks.some(b => b.type === 'Conditioning: Chipper') && timer.isActive && timer.type === 'stopwatch' && timer.totalLaps === 0;
     if (isChipperRunning) {
@@ -95,12 +104,6 @@ const WorkoutView = ({ setActiveView }) => {
           sessionStats.blockTimes[chipperBlock.id] = { recordedTime: formatTime(timer.time) };
         }
         stopTimer();
-    }
-    
-    if (timer.laps && timer.laps.length > 0) {
-        sessionStats.laps = timer.laps;
-        const lastLapTime = timer.laps[timer.laps.length - 1];
-        if (lastLapTime) { sessionStats.totalTime = formatTime(lastLapTime); }
     }
 
     completeWorkout(appState.viewingDate, sessionStats);
