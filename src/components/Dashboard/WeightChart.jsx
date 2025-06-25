@@ -4,11 +4,13 @@ import React, { useContext } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AppStateContext } from '../../context/AppContext.jsx';
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload }) => {
+  // THE FIX: The tooltip now shows the full, original date from the payload.
   if (active && payload && payload.length) {
+    const fullDate = payload[0].payload.date; // Access the original date string
     return (
       <div className="custom-tooltip">
-        <p className="tooltip-label">{`Entry ${label}`}</p>
+        <p className="tooltip-label">{`Date: ${fullDate}`}</p>
         <p className="tooltip-intro">{`Weight: ${payload[0].value.toFixed(1)} lbs`}</p>
       </div>
     );
@@ -18,12 +20,20 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const WeightChart = () => {
   const { appState } = useContext(AppStateContext);
-  
-  // THE FIX: Create a 'day' number for the chart's x-axis from the history index
-  const data = appState.weightHistory.map((entry, index) => ({
-      ...entry,
-      day: index + 1
-  }));
+
+  // THE FIX: The data is now mapped to include a formatted 'shortDate'.
+  const data = appState.weightHistory.map((entry) => {
+      const dateObj = new Date(entry.date);
+      const shortDate = dateObj.toLocaleDateString(undefined, { 
+          month: 'short', 
+          day: 'numeric',
+          timeZone: 'UTC' // Use UTC to prevent off-by-one day issues
+      });
+      return {
+          ...entry,
+          shortDate: shortDate
+      };
+  });
 
   const gridColor = 'var(--border-color)';
   const textColor = 'var(--text-tertiary)';
@@ -43,12 +53,13 @@ const WeightChart = () => {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          {/* THE FIX: The X-Axis now uses 'shortDate' and the 'Entry' label is removed. */}
           <XAxis 
-            dataKey="day" 
+            dataKey="shortDate" 
             tick={{ fill: textColor, fontSize: 12 }} 
             tickLine={{ stroke: textColor }}
             axisLine={{ stroke: gridColor }}
-            label={{ value: 'Entry', position: 'insideBottom', offset: -5, fill: textColor, fontSize: 12 }}
+            interval="preserveStartEnd" // Helps prevent label clutter
           />
           <YAxis 
             tick={{ fill: textColor, fontSize: 12 }}
@@ -56,6 +67,7 @@ const WeightChart = () => {
             axisLine={{ stroke: gridColor }}
             domain={['dataMin - 2', 'dataMax + 2']}
           />
+          {/* THE FIX: The tooltip component is updated to handle the new data. */}
           <Tooltip content={<CustomTooltip />} />
           <Area type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} fill="url(#colorWeight)" />
         </AreaChart>
