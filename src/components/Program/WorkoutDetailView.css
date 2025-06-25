@@ -25,6 +25,13 @@
   font-weight: 500;
 }
 
+.summary-total-time {
+    font-size: 28px;
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-variant-numeric: tabular-nums;
+}
 .detail-blocks-container {
   display: flex;
   flex-direction: column;
@@ -58,4 +65,16 @@
 
 .detail-exercise-list strong {
     color: var(--text-primary);
+}
+
+/* THE FIX: Styles for the completed laps section inside the modal */
+.completed-laps-section {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.completed-laps-section .sub-title {
+    color: #3b82f6; /* Blue to distinguish from the main block title */
+    font-size: 14px;
 }

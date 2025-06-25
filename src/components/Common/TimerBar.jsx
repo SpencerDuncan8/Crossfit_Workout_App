@@ -1,14 +1,12 @@
 // src/components/Common/TimerBar.jsx
 
 import React, { useContext } from 'react';
-// THE DEFINITIVE FIX: Import from the new, correct file path
 import { TimerContext } from '../../context/TimerContext.jsx'; 
-import { Timer, X } from 'lucide-react';
+import { Timer, X, Flag, CheckCircle } from 'lucide-react';
 import './TimerBar.css';
 
 const TimerBar = () => {
-  // Use the new TimerContext
-  const { timer, stopTimer } = useContext(TimerContext);
+  const { timer, stopTimer, lapTimer, recordAndStopTimer } = useContext(TimerContext);
 
   if (!timer.isActive) return null;
 
@@ -22,12 +20,50 @@ const TimerBar = () => {
     switch (timer.type) {
       case 'amrap': return 'AMRAP'; 
       case 'countdown': return 'REST';
-      case 'stopwatch': return 'WOD TIMER';
+      case 'stopwatch': 
+        if (timer.totalLaps > 0) {
+          return `Round ${timer.laps.length + 1} / ${timer.totalLaps}`;
+        }
+        // THE FIX: Make the title more specific for Chippers
+        if (timer.isRecordable) {
+            return 'CHIPPER';
+        }
+        return 'WOD TIMER';
       case 'emom': return `EMOM - MINUTE ${timer.emom.currentMinute} / ${timer.emom.totalMinutes}`;
       case 'tabata': return `TABATA - ROUND ${timer.tabata.currentRound} / ${timer.tabata.totalRounds}`;
       default: return 'TIMER';
     }
   };
+
+  const renderActionButton = () => {
+    if (timer.type !== 'stopwatch') return null;
+
+    if (timer.totalLaps > 0) { // RFT
+      const currentLap = timer.laps.length + 1;
+      const buttonText = currentLap < timer.totalLaps ? `Time Round ${currentLap}` : 'Finish Final Round';
+      return (
+        <button className="timer-lap-btn" onClick={lapTimer}>
+            <Flag size={20} />
+            {buttonText}
+        </button>
+      );
+    }
+    
+    // THE FIX: Change the condition to use the new `isRecordable` flag.
+    if (timer.isRecordable) { // Chipper
+        return (
+            <button className="timer-record-btn" onClick={recordAndStopTimer}>
+                <CheckCircle size={20} />
+                Record Time
+            </button>
+        );
+    }
+
+    return null;
+  };
+  
+  // THE FIX: The action button now shows for RFT (laps) or Chipper (recordable)
+  const hasActionButton = timer.type === 'stopwatch' && (timer.totalLaps > 0 || timer.isRecordable);
 
   return (
     <div className="timer-bar" key={timer.key}>
@@ -35,19 +71,21 @@ const TimerBar = () => {
         <div className="timer-progress" style={{ animationDuration: `${timer.duration}s` }}></div>
       )}
       
-      <div className="timer-content">
+      <div className={`timer-content ${hasActionButton ? 'has-action-btn' : ''}`}>
         <div className="timer-info">
           <Timer size={20} />
           <span>{getTitle()}</span>
         </div>
 
+        {renderActionButton()}
+        
         <div className="timer-time-cluster">
-          {timer.type === 'tabata' && (
-            <span className={`tabata-phase-badge ${timer.tabata.isWorkPhase ? 'work' : 'rest'}`}>
-              {timer.tabata.isWorkPhase ? 'WORK' : 'REST'}
-            </span>
-          )}
-          <div className="timer-time">{formatTime(timer.time)}</div>
+            {timer.type === 'tabata' && (
+                <span className={`tabata-phase-badge ${timer.tabata.isWorkPhase ? 'work' : 'rest'}`}>
+                {timer.tabata.isWorkPhase ? 'WORK' : 'REST'}
+                </span>
+            )}
+            <div className="timer-time">{formatTime(timer.time)}</div>
         </div>
 
         <button className="timer-close-btn" onClick={stopTimer}>

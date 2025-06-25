@@ -8,14 +8,21 @@ export const TimerContext = createContext();
 export const TimerProvider = ({ children }) => {
   const [timer, setTimer, clearTimer] = usePersistentState('crossfitTimerState', {
     isActive: false, type: null, key: 0, duration: 0, time: 0, 
+    laps: [], totalLaps: 0, 
+    recordedTime: null,
+    isRecordable: false, // THE FIX: Flag for Chipper-style timers
     tabata: { totalRounds: 0, currentRound: 0, isWorkPhase: true, work: 20, rest: 10 },
     emom: { totalMinutes: 0, currentMinute: 0 }
   });
 
-  const startTimer = ({ type, duration = 0, tabataRounds = 8, tabataWork = 20, tabataRest = 10 }) => {
+  // THE FIX: Add isRecordable to the function signature
+  const startTimer = ({ type, duration = 0, tabataRounds = 8, tabataWork = 20, tabataRest = 10, totalLaps = 0, isRecordable = false }) => {
     setTimer(prev => {
       let newTimerState = { 
         isActive: true, type, key: prev.key + 1, duration, time: 0, 
+        laps: [], totalLaps, 
+        recordedTime: null,
+        isRecordable, // THE FIX: Set the flag
         tabata: { totalRounds: tabataRounds, currentRound: 1, isWorkPhase: true, work: tabataWork, rest: tabataRest }, 
         emom: { totalMinutes: duration / 60, currentMinute: 1 } 
       };
@@ -25,8 +32,34 @@ export const TimerProvider = ({ children }) => {
       return newTimerState;
     });
   };
+  
+  const lapTimer = () => {
+    setTimer(prev => {
+      if (!prev.isActive || prev.laps.length >= prev.totalLaps) {
+        return prev;
+      }
+      const newLaps = [...prev.laps, prev.time];
+      const shouldDeactivate = newLaps.length === prev.totalLaps;
+      return {
+        ...prev,
+        laps: newLaps,
+        isActive: !shouldDeactivate,
+      };
+    });
+  };
 
-  const stopTimer = () => setTimer(prev => ({ ...prev, isActive: false }));
+  const recordAndStopTimer = () => {
+    setTimer(prev => {
+        if (!prev.isActive) return prev;
+        return {
+            ...prev,
+            isActive: false,
+            recordedTime: prev.time,
+        }
+    });
+  };
+
+  const stopTimer = () => setTimer(prev => ({ ...prev, isActive: false, laps: [], totalLaps: 0, recordedTime: null, isRecordable: false })); // THE FIX: Reset the flag
 
   useEffect(() => {
     if (!timer.isActive) return;
@@ -49,7 +82,7 @@ export const TimerProvider = ({ children }) => {
   }, [timer.isActive, timer.key, setTimer]);
 
   return (
-    <TimerContext.Provider value={{ timer, startTimer, stopTimer, clearTimer }}>
+    <TimerContext.Provider value={{ timer, startTimer, stopTimer, lapTimer, recordAndStopTimer, clearTimer }}>
       {children}
     </TimerContext.Provider>
   );

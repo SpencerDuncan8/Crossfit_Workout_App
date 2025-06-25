@@ -35,8 +35,8 @@ The application is now built on a flexible, program-based architecture that serv
 - **Accessory / Carry Blocks:** Specifically designed for accessory work, allowing you to define sets, weight, and distance or time (e.g., "3 sets of 50lb Farmer's Carry for 100 meters").
 - **Conditioning Blocks:**
   - **AMRAP:** Set a time and list the exercises to perform.
-  - **RFT (Rounds for Time):** Define a number of rounds and the exercises within each.
-  - **Chipper:** Create a high-rep list of exercises to be completed once for time.
+  - **RFT (Rounds for Time):** Define a number of rounds and the exercises within each, backed by a full-featured lap timer.
+  - **Chipper:** Create a high-rep list of exercises to be completed once for time, with a dedicated block timer to record your final score.
   - **EMOM (Every Minute On the Minute):** Define a unique task for every minute of the workout.
   - **Tabata:** Customize work/rest intervals and total rounds for high-intensity training.
 
@@ -44,12 +44,16 @@ The application is now built on a flexible, program-based architecture that serv
 - **Dynamic Display:** The workout view automatically renders any workout you've scheduled, presenting it in clear, actionable cards.
 - **Live Strength Tracking:** Log weight and reps for each set with easy +/- buttons. A checkbox marks the set as complete, providing visual progress.
 - **1RM Percentage Calculation:** For percentage-based sets, the app displays the calculated target weight based on your saved 1-Rep Max, taking the guesswork out of training.
-- **Integrated Timers:** The app automatically starts the correct timer (Stopwatch, Countdown, AMRAP, EMOM, Tabata) based on the workout block you're on. A dedicated rest timer can be started between sets.
+- **Context-Aware Integrated Timers:**
+  - **Smart Start:** The app automatically launches the correct timer (Stopwatch, Countdown, AMRAP, EMOM, Tabata) based on the workout block you're on. A dedicated rest timer can be started between sets.
+  - **Lap Timer for RFT:** For "Rounds for Time" workouts, a "Time Round" button appears on the timer bar, allowing you to log the time for each round.
+  - **Dedicated Chipper Timer:** Chippers get a simple stopwatch with a "Record Time" button on the timer bar, letting you log the block's total time independently before moving on.
+  - **Live Feedback:** Round times for RFTs and the final recorded time for Chippers are displayed in real-time directly within the relevant workout block.
 
 ### 4. Full-Featured Calendar & Logbook
 - **Visual Workout Planner:** Click on any future date to open a modal and assign a workout from any program in your library. An indicator shows which workout is currently assigned.
 - **Interactive Day Modal:** Click a scheduled day to either start the workout or change it.
-- **Detailed Logbook:** After completing a workout, the calendar entry is marked as complete. Clicking it opens a review modal showing a summary of your performance, including total sets, reps, volume, and any logged round times for timed workouts.
+- **Detailed Logbook:** After completing a workout, the calendar entry is marked as complete. Clicking it opens a review modal showing a summary of your performance, including total sets, reps, volume, and a detailed breakdown of any logged round times or final block scores.
 - **Direct Navigation:** Easily jump between your scheduled workouts directly from the main Workout View using previous/next day buttons.
 
 ### 5. Advanced Progress Tracking
@@ -65,7 +69,7 @@ The application is now built on a flexible, program-based architecture that serv
 
 ## 💻 Technical Stack
 - **Framework:** React
-- **State Management:** React Context API (with a custom hook for persistent state)
+- **State Management:** React Context API (with custom hooks for persistent state and timers)
 - **Bundler:** Vite
 - **Styling:** CSS with variables for theming
 - **Libraries:**

@@ -1,11 +1,17 @@
 // src/components/Workout/WorkoutSection.jsx
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Play } from 'lucide-react';
+import { ChevronDown, Play, Flag, CheckCircle } from 'lucide-react';
 import ExerciseCard from './ExerciseCard.jsx';
 import ConditioningCard from './ConditioningCard.jsx';
 
-const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveView }) => {
+const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+};
+
+const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveView, timer, blockProgress }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -20,6 +26,11 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
   const isStrength = block.type === 'Strength';
   const isBodyweight = block.type === 'Bodyweight';
   const isAccessory = block.type === 'Accessory / Carry';
+  
+  const shouldShowLaps = timer && timer.isActive && timer.laps.length > 0 && 
+                         (block.type === 'Conditioning: RFT');
+
+  const isChipperTimeRecorded = blockProgress?.recordedTime;
 
   return (
     <div className={`workout-section ${isCollapsed ? 'collapsed' : ''}`}>
@@ -31,6 +42,31 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
         <div className="section-content">
           
           {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
+
+          {isChipperTimeRecorded && (
+            <div className="recorded-time-display">
+              <CheckCircle size={24} className="recorded-time-icon" />
+              <div>
+                {/* THE FIX: Changed "Block Time" to "Chipper Time" */}
+                <span className="recorded-time-label">Chipper Time</span>
+                <span className="recorded-time-value">{blockProgress.recordedTime}</span>
+              </div>
+            </div>
+          )}
+          
+          {shouldShowLaps && (
+            <div className="lap-times-container section-laps">
+              <h3 className="lap-times-title"><Flag size={18}/> Round Times</h3>
+              <div className="lap-times-list">
+                  {timer.laps.map((lapTime, index) => (
+                      <div key={index} className="lap-time-item">
+                          <span>Round {index + 1}</span>
+                          <span className="lap-time-value">{formatTime(lapTime)}</span>
+                      </div>
+                  ))}
+              </div>
+            </div>
+          )}
           
           {block.type === 'Cardio' && (
              <>
@@ -65,7 +101,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
                     restDuration={block.rest}
                     startTimer={startTimer}
                     blockType={block.type}
-                    setActiveView={setActiveView} // --- THE FIX: Pass the function down ---
+                    setActiveView={setActiveView}
                   />
                 );
               })}

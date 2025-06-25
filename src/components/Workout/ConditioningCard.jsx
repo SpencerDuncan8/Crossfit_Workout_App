@@ -23,7 +23,14 @@ const ConditioningCard = ({ block }) => {
         startTimer({ type: 'tabata', tabataRounds: rounds, tabataWork: work, tabataRest: rest });
     } else if (type === 'Conditioning: EMOM') {
         startTimer({ type: 'emom', duration: (minutes?.length || 0) * 60 });
-    } else { // For RFT and Chipper
+    } else if (type === 'Conditioning: RFT') {
+        const numRounds = parseInt(rounds, 10);
+        const totalLaps = !isNaN(numRounds) && numRounds > 0 ? numRounds : 0;
+        startTimer({ type: 'stopwatch', totalLaps: totalLaps });
+    } else if (type === 'Conditioning: Chipper') {
+        // THE FIX: Set the isRecordable flag to true for Chippers
+        startTimer({ type: 'stopwatch', totalLaps: 0, isRecordable: true }); 
+    } else {
       startTimer({ type: 'stopwatch' });
     }
   };
@@ -37,8 +44,8 @@ const ConditioningCard = ({ block }) => {
   const getButtonInfo = () => {
     switch(type) {
       case 'Conditioning: AMRAP': return { text: "Start AMRAP", style: "amrap-button" };
-      case 'Conditioning: RFT':
-      case 'Conditioning: Chipper': return { text: "Start Timer", style: "fortime-button" };
+      case 'Conditioning: RFT': return { text: "Start Rounds Timer", style: "fortime-button" };
+      case 'Conditioning: Chipper': return { text: "Time Workout", style: "fortime-button" };
       case 'Conditioning: EMOM': return { text: "Start EMOM", style: "emom-button" };
       case 'Conditioning: Tabata': return { text: "Start Tabata", style: "tabata-button" };
       default: return { text: "Start Timer", style: "fortime-button" };
@@ -48,8 +55,14 @@ const ConditioningCard = ({ block }) => {
   const buttonInfo = getButtonInfo();
   
   const formatBadge = () => {
+      if (type === 'Conditioning: RFT') {
+          const numRounds = parseInt(rounds, 10);
+          if (!isNaN(numRounds) && numRounds > 0) {
+              return `${numRounds} Rounds For Time`;
+          }
+          return 'Rounds For Time';
+      }
       if (type === 'Conditioning: AMRAP') return `${duration || 0} Min AMRAP`;
-      if (type === 'Conditioning: RFT') return `${rounds || 0} Rounds For Time`;
       if (type === 'Conditioning: Chipper') return 'For Time';
       if (type === 'Conditioning: EMOM') return `EMOM for ${minutes?.length || 0} Mins`;
       if (type === 'Conditioning: Tabata') return `${rounds || 0} Rounds (${work || 0}s/${rest || 0}s)`;

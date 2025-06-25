@@ -85,34 +85,72 @@
 .accessory-set-checkbox { background: none; border: none; cursor: pointer; color: var(--text-tertiary); padding: 4px; display: flex; align-items: center; }
 .accessory-set-row.completed .accessory-set-checkbox { color: #10b981; }
 
-/* --- THE FIX: Styles for the new percentage note --- */
-.percentage-note {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin-top: 12px;
-  padding: 10px;
-  background-color: var(--bg-primary);
-  border-radius: 8px;
-  border: 1px dashed var(--border-color);
-  line-height: 1.5;
-}
-.percentage-note strong {
-  color: var(--text-secondary);
-}
-.set-1rm-button {
-  display: inline-block;
-  margin-left: 8px;
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
+.percentage-note { font-size: 12px; color: var(--text-tertiary); margin-top: 12px; padding: 10px; background-color: var(--bg-primary); border-radius: 8px; border: 1px dashed var(--border-color); line-height: 1.5; }
+.percentage-note strong { color: var(--text-secondary); }
+.set-1rm-button { display: inline-block; margin-left: 8px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 2px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+.set-1rm-button:hover { background-color: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+.lap-times-container { background-color: var(--bg-tertiary); border-radius: 12px; padding: 16px; }
+.lap-times-container.section-laps { margin-top: 16px; }
+.lap-times-title { font-size: 16px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+.lap-times-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.lap-time-item { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-secondary); padding: 8px 12px; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+.lap-time-value { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+/* THE FIX: Styles for the new Chipper buttons and displays */
+.record-time-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-}
-.set-1rm-button:hover {
-  background-color: #3b82f6;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
   color: #fff;
-  border-color: #3b82f6;
+  transition: all 0.2s ease-out;
+}
+.record-time-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 20px -5px #ef444450;
+}
+
+.recorded-time-display {
+  background-color: var(--bg-tertiary);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.recorded-time-icon {
+  color: #10b981;
+}
+.recorded-time-label {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.recorded-time-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.recorded-time-display.review-mode {
+  padding: 12px;
+  margin-top: 12px;
+  justify-content: space-between;
+}
+.recorded-time-display.review-mode .recorded-time-label {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+.recorded-time-display.review-mode .recorded-time-value {
+  font-size: 18px;
 }
