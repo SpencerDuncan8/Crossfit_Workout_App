@@ -8,7 +8,6 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const updateBlockField = (field, value) => onUpdate({ ...block, [field]: value });
   const updateExerciseField = (exIndex, field, value) => { const n = { ...block }; n.exercises[exIndex][field] = value; onUpdate(n); };
   
-  // THE FIX: Add a handler for the new 'load' property and update addSet
   const addSet = (exIndex) => { const n = { ...block }; n.exercises[exIndex].sets.push({ id: generateUniqueId(), reps: '5', load: '' }); onUpdate(n); };
   const updateSetReps = (exIndex, setIndex, reps) => { const n = { ...block }; n.exercises[exIndex].sets[setIndex].reps = reps; onUpdate(n); };
   const updateSetLoad = (exIndex, setIndex, load) => { const n = { ...block }; n.exercises[exIndex].sets[setIndex].load = load; onUpdate(n); };
@@ -33,7 +32,6 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const renderBlockContent = () => {
     let placeholder = block.type === 'Conditioning: AMRAP' || block.type === 'Warm-up' ? "e.g., 10 Dumbbell Thrusters" : "Exercise Name";
     switch (block.type) {
-      // --- THE FIX: The Strength block editor now includes the 'load' input field ---
       case 'Strength': return (
         <><div className="block-form-grid" style={{gridTemplateColumns: '1fr'}}><div className="block-input-group"><label>Rest Between Sets</label><input type="text" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} placeholder="e.g., 60s" /></div></div><div className="exercise-editor-list">{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="strength-exercise-editor"><div className="exercise-editor-item"><input type="text" placeholder="e.g., Bench Press" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div><div className="sets-list">{(ex.sets || []).map((set, setIndex) => (<div key={set.id} className="set-editor-row"><span className="set-label">Set {setIndex + 1}</span><input type="text" className="reps-input" placeholder="Reps" value={set.reps} onChange={(e) => updateSetReps(exIndex, setIndex, e.target.value)} /><span className="reps-label">reps</span><span className="reps-label" style={{margin: '0 4px'}}>x</span><input type="text" className="load-input" placeholder="Load" value={set.load || ''} onChange={(e) => updateSetLoad(exIndex, setIndex, e.target.value)} /><span className="reps-label">(lbs or %)</span><button className="remove-set-btn" onClick={() => removeSet(exIndex, set.id)}><Trash2 size={14}/></button></div>))}<button className="add-set-btn" onClick={() => addSet(exIndex)}><PlusCircle size={14} /> Add Set</button></div></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
       );
@@ -62,11 +60,21 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
             {(block.exercises || []).map((ex, exIndex) => (
                 <div key={ex.id} className="accessory-exercise-editor">
                   <input type="text" className="accessory-name" placeholder="Exercise Name" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} />
-                  <div className="accessory-inputs">
-                    <input type="number" placeholder="Sets" value={ex.sets || ''} onChange={(e) => updateExerciseField(exIndex, 'sets', e.target.value)} /><span className="accessory-label">sets</span>
-                    <input type="number" placeholder="Weight" value={ex.weight || ''} onChange={(e) => updateExerciseField(exIndex, 'weight', e.target.value)} /><span className="accessory-label">lbs</span>
-                    <input type="number" placeholder="Value" value={ex.value || ''} onChange={(e) => updateExerciseField(exIndex, 'value', e.target.value)} />
-                    <input type="text" placeholder="Unit" value={ex.unit || ''} onChange={(e) => updateExerciseField(exIndex, 'unit', e.target.value)} />
+                  <div className="accessory-controls-row">
+                    <div className="accessory-input-group">
+                      <input type="number" placeholder="Sets" value={ex.sets || ''} onChange={(e) => updateExerciseField(exIndex, 'sets', e.target.value)} />
+                      <span className="accessory-label">sets</span>
+                    </div>
+                    <div className="accessory-input-group">
+                      <input type="number" placeholder="Weight" value={ex.weight || ''} onChange={(e) => updateExerciseField(exIndex, 'weight', e.target.value)} />
+                      <span className="accessory-label">lbs</span>
+                    </div>
+                    <div className="accessory-input-group">
+                      <input type="number" placeholder="Value" value={ex.value || ''} onChange={(e) => updateExerciseField(exIndex, 'value', e.target.value)} />
+                    </div>
+                    <div className="accessory-input-group">
+                      <input type="text" className="unit-input" placeholder="Unit" value={ex.unit || ''} onChange={(e) => updateExerciseField(exIndex, 'unit', e.target.value)} />
+                    </div>
                   </div>
                   <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button>
                 </div>
