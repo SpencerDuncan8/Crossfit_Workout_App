@@ -6,7 +6,8 @@ import { TimerContext } from '../../context/TimerContext.jsx';
 import { Play, HelpCircle } from 'lucide-react';
 
 const ConditioningCard = ({ block }) => {
-  const { openExerciseModal } = useContext(AppStateContext);
+  // THE FIX: Get the hasExerciseDetails function from the context
+  const { openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
   const { startTimer } = useContext(TimerContext);
   
   const { type, exercises, duration, rounds, work, rest, minutes } = block;
@@ -28,7 +29,6 @@ const ConditioningCard = ({ block }) => {
         const totalLaps = !isNaN(numRounds) && numRounds > 0 ? numRounds : 0;
         startTimer({ type: 'stopwatch', totalLaps: totalLaps });
     } else if (type === 'Conditioning: Chipper') {
-        // THE FIX: Set the isRecordable flag to true for Chippers
         startTimer({ type: 'stopwatch', totalLaps: 0, isRecordable: true }); 
     } else {
       startTimer({ type: 'stopwatch' });
@@ -36,7 +36,8 @@ const ConditioningCard = ({ block }) => {
   };
   
   const handleExerciseClick = (exercise) => {
-    if (exercise.id) {
+    // We only open the modal if details exist, which is checked by the hasExerciseDetails function
+    if (hasExerciseDetails(exercise.id)) {
       openExerciseModal(exercise.id);
     }
   };
@@ -89,7 +90,8 @@ const ConditioningCard = ({ block }) => {
               {ex.reps && <span className="exercise-list-reps">{ex.reps}</span>}
               <span className="exercise-list-name">{ex.name}</span>
             </div>
-            {ex.id && <HelpCircle size={18} className="help-icon" />}
+            {/* THE FIX: Only show the icon if details exist for this exercise ID */}
+            {hasExerciseDetails(ex.id) && <HelpCircle size={18} className="help-icon" />}
           </li>
         ))}
       </ul>

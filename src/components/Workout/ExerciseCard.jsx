@@ -27,7 +27,8 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
 };
 
 const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType, setActiveView }) => {
-  const { openExerciseModal } = useContext(AppStateContext);
+  // THE FIX: Get the hasExerciseDetails function from the context
+  const { openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
   const { name, sets, note, id, trackingType, value, weight, unit } = exercise;
 
   const handleRestClick = () => {
@@ -37,7 +38,12 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
     }
   };
 
-  const handleExerciseClick = () => { if (id) { openExerciseModal(id); } };
+  const handleExerciseClick = () => { 
+    // We only open the modal if details exist, which is checked by the hasExerciseDetails function
+    if (hasExerciseDetails(id)) { 
+      openExerciseModal(id); 
+    } 
+  };
   
   if (blockType === 'Bodyweight') {
     const isCompleted = progress?.completed || false;
@@ -57,7 +63,8 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
             <h4 className="bw-name clickable" onClick={handleExerciseClick}>{name}</h4>
             <p className="bw-target">{value} {unit}</p>
           </div>
-          {id && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
+          {/* THE FIX: Only show the icon if details exist */}
+          {hasExerciseDetails(id) && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
         </div>
       </div>
     );
@@ -68,7 +75,8 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
       <div className="exercise-card-accessory">
         <div className="exercise-info clickable" onClick={handleExerciseClick}>
           <h4>{name}</h4>
-          <HelpCircle size={18} className="help-icon" />
+          {/* THE FIX: Only show the icon if details exist */}
+          {hasExerciseDetails(id) && <HelpCircle size={18} className="help-icon" />}
         </div>
         <div className="exercise-details">
           {weight && <span>{weight}LBS</span>}
@@ -93,17 +101,19 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
 
   if (sets) {
     const percentageNoteInfo = progress?.sets?.[0]?.percentageInfo;
-    // --- THE FIX: Check if the exercise is in our trackedLifts array ---
     const isTrackedLift = trackedLifts.some(lift => lift.id === id);
 
     return (
       <div className="exercise-card-interactive">
-        <div className="exercise-info clickable" onClick={handleExerciseClick}><h4>{name}</h4><HelpCircle size={18} className="help-icon" /></div>
+        <div className="exercise-info clickable" onClick={handleExerciseClick}>
+          <h4>{name}</h4>
+          {/* THE FIX: Only show the icon if details exist */}
+          {hasExerciseDetails(id) && <HelpCircle size={18} className="help-icon" />}
+        </div>
         <div className="exercise-details"><span>{sets.length} SETS</span>{restDuration && <span>{restDuration} REST</span>}</div>
         
         {note && <p className="exercise-note">Note: {note}</p>}
         
-        {/* --- THE FIX: Only show the note if the lift is tracked --- */}
         {percentageNoteInfo && isTrackedLift && (
           <div className="percentage-note">
             {percentageNoteInfo.oneRepMax > 0 ? (
@@ -138,7 +148,15 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
     );
   }
   
-  return ( <div className="exercise-card-simple clickable" onClick={handleExerciseClick}><h4>{name}</h4><div className="exercise-details">{exercise.reps && <span>{exercise.reps} REPS</span>}{exercise.duration && <span>{exercise.duration}</span>}</div></div> );
+  return ( 
+    <div className="exercise-card-simple clickable" onClick={handleExerciseClick}>
+      <h4>{name}</h4>
+      <div className="exercise-details">
+        {exercise.reps && <span>{exercise.reps} REPS</span>}
+        {exercise.duration && <span>{exercise.duration}</span>}
+      </div>
+    </div> 
+  );
 };
 
 export default ExerciseCard;

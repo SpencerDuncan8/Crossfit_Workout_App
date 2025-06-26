@@ -47,7 +47,6 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
             <div className="recorded-time-display">
               <CheckCircle size={24} className="recorded-time-icon" />
               <div>
-                {/* THE FIX: Changed "Block Time" to "Chipper Time" */}
                 <span className="recorded-time-label">Chipper Time</span>
                 <span className="recorded-time-value">{blockProgress.recordedTime}</span>
               </div>
@@ -116,8 +115,13 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
             </>
           )}
           
+          {/* THE FIX IS HERE: This now uses the ExerciseCard component, which has the click logic built-in. */}
           {!isStrength && !isBodyweight && !isConditioning && !isAccessory && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
-             <div key={index} className="exercise-card-simple"><h4>{exercise.name}</h4></div>
+             <ExerciseCard
+                key={exercise.id || index}
+                exercise={exercise}
+                blockType={block.type}
+              />
           ))}
 
           {block.type === 'Warm-up' && (

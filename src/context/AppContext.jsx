@@ -226,6 +226,14 @@ const AppStateProviderComponent = ({ children }) => {
   const getScheduledDates = () => Object.keys(appState.workoutSchedule).sort((a,b) => new Date(a) - new Date(b));
   const navigateToPrevScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > 0) navigateToDate(dates[i - 1]); };
   const navigateToNextScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > -1 && i < dates.length - 1) navigateToDate(dates[i + 1]); };
+  
+  // THE FIX: New helper function to check for exercise details
+  const hasExerciseDetails = (exerciseId) => {
+    if (!exerciseId) return false;
+    // This relies on getExerciseByName returning a truthy value if details exist
+    return !!getExerciseByName(exerciseId);
+  };
+
   const openExerciseModal = (exerciseId) => { const details = getExerciseByName(exerciseId); if(details) updateAppState({isModalOpen: true, modalContent: details})};
   const closeModal = () => updateAppState({ isModalOpen: false });
   const addWeightEntry = (newWeight) => { const today = new Date().toLocaleDateString(); const entry = { date: today, weight: newWeight }; const hist = appState.weightHistory.filter(e => e.date !== today); const updated = [...hist, entry].sort((a,b) => new Date(a.date) - new Date(b.date)); const start = appState.startingWeight === 0 ? newWeight : appState.startingWeight; updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated }); };
@@ -256,6 +264,7 @@ const AppStateProviderComponent = ({ children }) => {
       selectWorkoutToSchedule, clearWorkoutToSchedule,
       autoScheduleProgram,
       updateOneRepMax, // --- THE FIX: Expose the new function ---
+      hasExerciseDetails, // THE FIX: Expose the new function
     }}>
       {children}
     </AppStateContext.Provider>

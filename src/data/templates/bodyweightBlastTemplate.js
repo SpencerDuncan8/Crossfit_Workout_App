@@ -18,7 +18,7 @@ export const bodyweightBlastTemplate = {
           id: generateUniqueId(), type: 'Warm-up',
           exercises: [
             { id: generateUniqueId(), name: 'Jumping Jacks (60s)' },
-            { id: generateUniqueId(), name: 'Arm Circles (30s each way)' },
+            { id: 'arm-circles', name: 'Arm Circles (30s each way)' },
             { id: generateUniqueId(), name: 'Leg Swings (30s each leg)' },
             { id: generateUniqueId(), name: 'Cat-Cow Stretch (10 reps)' },
           ],
@@ -26,17 +26,17 @@ export const bodyweightBlastTemplate = {
         {
           id: generateUniqueId(), type: 'Bodyweight',
           exercises: [
-            { id: 'pushup', name: '3 Sets of Push-ups', trackingType: 'reps', value: 'AMRAP' },
-            { id: 'squat', name: '3 Sets of Squats', trackingType: 'reps', value: '20' },
+            { id: 'push-ups', name: '3 Sets of Push-ups', trackingType: 'reps', value: 'AMRAP' },
+            { id: 'air-squats', name: '3 Sets of Squats', trackingType: 'reps', value: '20' },
             { id: 'plank', name: '2 Sets of Planks', trackingType: 'duration', value: '60' },
           ],
         },
         {
           id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 10,
           exercises: [
-            { id: 'burpee', name: 'Burpees', reps: '5' },
-            { id: 'lunge', name: 'Lunges (alternating)', reps: '10' },
-            { id: 'situp', name: 'Sit-ups', reps: '15' },
+            { id: 'burpees', name: 'Burpees', reps: '5' },
+            { id: 'bodyweight-lunge', name: 'Lunges (alternating)', reps: '10' },
+            { id: generateUniqueId(), name: 'Sit-ups', reps: '15' },
           ],
         },
         {
@@ -52,7 +52,7 @@ export const bodyweightBlastTemplate = {
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: 'High Knees (60s)' }, { id: generateUniqueId(), name: 'Butt Kicks (60s)' } ] },
         { 
           id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8,
-          exercises: [ { id: 'mountain_climber', name: 'Mountain Climbers' }, { id: 'jumping_squat', name: 'Jumping Squats' } ]
+          exercises: [ { id: 'mountain-climbers', name: 'Mountain Climbers' }, { id: 'jump-squats', name: 'Jumping Squats' } ]
         },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: generateUniqueId(), name: 'Childs Pose (60s)' } ] }
       ]
@@ -61,14 +61,14 @@ export const bodyweightBlastTemplate = {
       id: generateUniqueId(),
       name: 'W1D3: Upper Body Burn',
       blocks: [
-        { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: 'Inchworms (10 reps)' }, { id: 'plank', name: 'Shoulder Taps (20 reps)' } ] },
+        { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'inchworms', name: 'Inchworms (10 reps)' }, { id: generateUniqueId(), name: 'Shoulder Taps (20 reps)' } ] },
         { 
           id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 5,
-          exercises: [ { id: 'pushup', name: 'Push-ups', reps: '10' }, { id: 'dip', name: 'Dips (using chair/bench)', reps: '15' } ]
+          exercises: [ { id: 'push-ups', name: 'Push-ups', reps: '10' }, { id: generateUniqueId(), name: 'Dips (using chair/bench)', reps: '15' } ]
         },
         {
           id: generateUniqueId(), type: 'Bodyweight',
-          exercises: [ { id: 'plank', name: '2 Sets of Plank Shoulder Taps', trackingType: 'reps', value: '40' } ]
+          exercises: [ { id: generateUniqueId(), name: '2 Sets of Plank Shoulder Taps', trackingType: 'reps', value: '40' } ]
         },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: generateUniqueId(), name: 'Tricep Stretch (30s each)' } ] }
       ]
@@ -77,15 +77,15 @@ export const bodyweightBlastTemplate = {
       id: generateUniqueId(),
       name: 'W1D4: Leg Day Chipper',
       blocks: [
-        { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: 'Glute Bridges (20 reps)' }, { id: generateUniqueId(), name: 'Bodyweight Good Mornings (15 reps)' } ] },
+        { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'glute-bridges', name: 'Glute Bridges (20 reps)' }, { id: generateUniqueId(), name: 'Bodyweight Good Mornings (15 reps)' } ] },
         {
           id: generateUniqueId(), type: 'Conditioning: Chipper',
           exercises: [
-            { id: 'squat', name: 'Squats', reps: '100' },
-            { id: 'lunge', name: 'Walking Lunges', reps: '80' },
-            { id: generateUniqueId(), name: 'Calf Raises', reps: '60' },
-            { id: 'jumping_jack', name: 'Jumping Jacks', reps: '40' },
-            { id: 'burpee', name: 'Burpees', reps: '20' },
+            { id: 'air-squats', name: 'Squats', reps: '100' },
+            { id: 'bodyweight-lunge', name: 'Walking Lunges', reps: '80' },
+            { id: 'dumbbell-calf-raises', name: 'Calf Raises', reps: '60' },
+            { id: 'jump-rope', name: 'Jumping Jacks', reps: '40' },
+            { id: 'burpees', name: 'Burpees', reps: '20' },
           ]
         },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: generateUniqueId(), name: 'Pigeon Pose (60s each)' } ] }
@@ -98,11 +98,11 @@ export const bodyweightBlastTemplate = {
         {
           id: generateUniqueId(), type: 'Conditioning: EMOM',
           minutes: [
-            { id: generateUniqueId(), task: '15 Air Squats' },
-            { id: generateUniqueId(), task: '12 Push-ups' },
+            { id: 'air-squats', task: '15 Air Squats' },
+            { id: 'push-ups', task: '12 Push-ups' },
             { id: generateUniqueId(), task: '15 Sit-ups' },
-            { id: generateUniqueId(), task: '45s Plank' },
-            { id: generateUniqueId(), task: '60s Jumping Jacks' },
+            { id: 'plank', task: '45s Plank' },
+            { id: 'jump-rope', task: '60s Jumping Jacks' },
           ]
         }
       ]
@@ -111,15 +111,15 @@ export const bodyweightBlastTemplate = {
       id: generateUniqueId(),
       name: 'W2D1: Strength & Stamina',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: 'Jumping Jacks (60s)' }, { id: generateUniqueId(), name: 'Torso Twists (30s)' } ] },
+          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jump-rope', name: 'Jumping Jacks (60s)' }, { id: generateUniqueId(), name: 'Torso Twists (30s)' } ] },
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  { id: 'lunge', name: '3 Sets of Bulgarian Split Squats (L)', trackingType: 'reps', value: '12' },
-                  { id: 'lunge', name: '3 Sets of Bulgarian Split Squats (R)', trackingType: 'reps', value: '12' },
-                  { id: 'pushup', name: '3 Sets of Decline Push-ups', trackingType: 'reps', value: 'AMRAP' },
+                  { id: 'dumbbell-bulgarian-split-squats', name: '3 Sets of Bulgarian Split Squats (L)', trackingType: 'reps', value: '12' },
+                  { id: 'dumbbell-bulgarian-split-squats', name: '3 Sets of Bulgarian Split Squats (R)', trackingType: 'reps', value: '12' },
+                  { id: 'push-ups', name: '3 Sets of Decline Push-ups', trackingType: 'reps', value: 'AMRAP' },
               ]
           },
-          { id: generateUniqueId(), type: 'Cardio', exercises: [ { id: generateUniqueId(), name: 'Jog in Place or Jump Rope', duration: 10 } ] }
+          { id: generateUniqueId(), type: 'Cardio', exercises: [ { id: 'jump-rope', name: 'Jog in Place or Jump Rope', duration: 10 } ] }
       ]
     },
     { // Day 7
@@ -128,8 +128,8 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 20,
               exercises: [
-                  { id: 'pushup', name: 'Hand-Release Push-ups', reps: '8' },
-                  { id: 'squat', name: 'Air Squats', reps: '16' },
+                  { id: 'push-ups', name: 'Hand-Release Push-ups', reps: '8' },
+                  { id: 'air-squats', name: 'Air Squats', reps: '16' },
                   { id: generateUniqueId(), name: 'V-Ups', reps: '8' },
               ]
           }
@@ -141,7 +141,7 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: 'High Knees (60s)' }, { id: generateUniqueId(), name: 'Butt Kicks (60s)' } ] },
           { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8,
-              exercises: [ { id: 'burpee', name: 'Burpees' } ]
+              exercises: [ { id: 'burpees', name: 'Burpees' } ]
           },
           { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8,
               exercises: [ { id: 'plank', name: 'Plank' } ]
@@ -155,16 +155,16 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 1,
               exercises: [
-                  { id: 'burpee', name: 'Burpees', reps: '10' }, { id: 'squat', name: 'Squats', reps: '10' },
-                  { id: 'burpee', name: 'Burpees', reps: '9' }, { id: 'squat', name: 'Squats', reps: '9' },
-                  { id: 'burpee', name: 'Burpees', reps: '8' }, { id: 'squat', name: 'Squats', reps: '8' },
-                  { id: 'burpee', name: 'Burpees', reps: '7' }, { id: 'squat', name: 'Squats', reps: '7' },
-                  { id: 'burpee', name: 'Burpees', reps: '6' }, { id: 'squat', name: 'Squats', reps: '6' },
-                  { id: 'burpee', name: 'Burpees', reps: '5' }, { id: 'squat', name: 'Squats', reps: '5' },
-                  { id: 'burpee', name: 'Burpees', reps: '4' }, { id: 'squat', name: 'Squats', reps: '4' },
-                  { id: 'burpee', name: 'Burpees', reps: '3' }, { id: 'squat', name: 'Squats', reps: '3' },
-                  { id: 'burpee', name: 'Burpees', reps: '2' }, { id: 'squat', name: 'Squats', reps: '2' },
-                  { id: 'burpee', name: 'Burpees', reps: '1' }, { id: 'squat', name: 'Squats', reps: '1' },
+                  { id: 'burpees', name: 'Burpees', reps: '10' }, { id: 'air-squats', name: 'Squats', reps: '10' },
+                  { id: 'burpees', name: 'Burpees', reps: '9' }, { id: 'air-squats', name: 'Squats', reps: '9' },
+                  { id: 'burpees', name: 'Burpees', reps: '8' }, { id: 'air-squats', name: 'Squats', reps: '8' },
+                  { id: 'burpees', name: 'Burpees', reps: '7' }, { id: 'air-squats', name: 'Squats', reps: '7' },
+                  { id: 'burpees', name: 'Burpees', reps: '6' }, { id: 'air-squats', name: 'Squats', reps: '6' },
+                  { id: 'burpees', name: 'Burpees', reps: '5' }, { id: 'air-squats', name: 'Squats', reps: '5' },
+                  { id: 'burpees', name: 'Burpees', reps: '4' }, { id: 'air-squats', name: 'Squats', reps: '4' },
+                  { id: 'burpees', name: 'Burpees', reps: '3' }, { id: 'air-squats', name: 'Squats', reps: '3' },
+                  { id: 'burpees', name: 'Burpees', reps: '2' }, { id: 'air-squats', name: 'Squats', reps: '2' },
+                  { id: 'burpees', name: 'Burpees', reps: '1' }, { id: 'air-squats', name: 'Squats', reps: '1' },
               ]
           }
       ]
@@ -175,16 +175,16 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Conditioning: EMOM',
               minutes: [
-                  { id: generateUniqueId(), task: 'Minute 1: 15 Push-ups' },
-                  { id: generateUniqueId(), task: 'Minute 2: 20 Lunges' },
+                  { id: 'push-ups', task: 'Minute 1: 15 Push-ups' },
+                  { id: 'bodyweight-lunge', task: 'Minute 2: 20 Lunges' },
                   { id: generateUniqueId(), task: 'Minute 3: 25 Sit-ups' },
                   { id: generateUniqueId(), task: 'Minute 4: Rest' },
-                  { id: generateUniqueId(), task: 'Minute 5: 15 Push-ups' },
-                  { id: generateUniqueId(), task: 'Minute 6: 20 Lunges' },
+                  { id: 'push-ups', task: 'Minute 5: 15 Push-ups' },
+                  { id: 'bodyweight-lunge', task: 'Minute 6: 20 Lunges' },
                   { id: generateUniqueId(), task: 'Minute 7: 25 Sit-ups' },
                   { id: generateUniqueId(), task: 'Minute 8: Rest' },
-                  { id: generateUniqueId(), task: 'Minute 9: 15 Push-ups' },
-                  { id: generateUniqueId(), task: 'Minute 10: 20 Lunges' },
+                  { id: 'push-ups', task: 'Minute 9: 15 Push-ups' },
+                  { id: 'bodyweight-lunge', task: 'Minute 10: 20 Lunges' },
                   { id: generateUniqueId(), task: 'Minute 11: 25 Sit-ups' },
                   { id: generateUniqueId(), task: 'Minute 12: Rest' },
               ]
@@ -195,15 +195,15 @@ export const bodyweightBlastTemplate = {
       id: generateUniqueId(),
       name: 'W3D1: Power & Plyo',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: generateUniqueId(), name: 'Pogo Hops (60s)'}, {id: 'squat', name: 'Bodyweight Squats (20 reps)'}]},
+          { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: generateUniqueId(), name: 'Pogo Hops (60s)'}, {id: 'air-squats', name: 'Bodyweight Squats (20 reps)'}]},
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  { id: 'jumping_squat', name: '4 Sets of Jumping Squats', trackingType: 'reps', value: '15'},
-                  { id: 'pushup', name: '3 Sets of Plyo Push-ups', trackingType: 'reps', value: 'AMRAP'},
+                  { id: 'jump-squats', name: '4 Sets of Jumping Squats', trackingType: 'reps', value: '15'},
+                  { id: 'plyometric-push-ups', name: '3 Sets of Plyo Push-ups', trackingType: 'reps', value: 'AMRAP'},
               ]
           },
           { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 12,
-              exercises: [{id: 'lunge', name: 'Jumping Lunges', reps: '10'}, {id: 'burpee', name: 'Burpee Box Jumps (use stair)', reps: '5'}]}
+              exercises: [{id: 'jumping-lunges', name: 'Jumping Lunges', reps: '10'}, {id: 'burpees', name: 'Burpee Box Jumps (use stair)', reps: '5'}]}
       ]
     },
     { // Day 12
@@ -213,7 +213,7 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 3,
               exercises: [
                   {id: generateUniqueId(), name: 'Run 400m (or 2 min high knees)', reps: '1'},
-                  {id: 'squat', name: 'Air Squats', reps: '50'}
+                  {id: 'air-squats', name: 'Air Squats', reps: '50'}
               ]
           }
       ]
@@ -225,7 +225,7 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: generateUniqueId(), name: 'Bird-dog (10 each side)'}, {id: generateUniqueId(), name: 'Dead-bug (10 each side)'}]},
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  {id: 'situp', name: '3 Sets of Sit-ups', trackingType: 'reps', value: '30'},
+                  {id: generateUniqueId(), name: '3 Sets of Sit-ups', trackingType: 'reps', value: '30'},
                   {id: 'plank', name: '2 Sets of Side Plank (L)', trackingType: 'duration', value: '45'},
                   {id: 'plank', name: '2 Sets of Side Plank (R)', trackingType: 'duration', value: '45'},
               ]
@@ -238,11 +238,11 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Conditioning: EMOM',
               minutes: [
-                  {id: generateUniqueId(), task: 'Min 1: 1 Burpee'}, {id: generateUniqueId(), task: 'Min 2: 2 Burpees'},
-                  {id: generateUniqueId(), task: 'Min 3: 3 Burpees'}, {id: generateUniqueId(), task: 'Min 4: 4 Burpees'},
-                  {id: generateUniqueId(), task: 'Min 5: 5 Burpees'}, {id: generateUniqueId(), task: 'Min 6: 6 Burpees'},
-                  {id: generateUniqueId(), task: 'Min 7: 7 Burpees'}, {id: generateUniqueId(), task: 'Min 8: 8 Burpees'},
-                  {id: generateUniqueId(), task: 'Min 9: 9 Burpees'}, {id: generateUniqueId(), task: 'Min 10: 10 Burpees'},
+                  {id: 'burpees', task: 'Min 1: 1 Burpee'}, {id: 'burpees', task: 'Min 2: 2 Burpees'},
+                  {id: 'burpees', task: 'Min 3: 3 Burpees'}, {id: 'burpees', task: 'Min 4: 4 Burpees'},
+                  {id: 'burpees', task: 'Min 5: 5 Burpees'}, {id: 'burpees', task: 'Min 6: 6 Burpees'},
+                  {id: 'burpees', task: 'Min 7: 7 Burpees'}, {id: 'burpees', task: 'Min 8: 8 Burpees'},
+                  {id: 'burpees', task: 'Min 9: 9 Burpees'}, {id: 'burpees', task: 'Min 10: 10 Burpees'},
                   {id: generateUniqueId(), task: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute.'},
               ]
           }
@@ -254,12 +254,12 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Conditioning: Chipper',
               exercises: [
-                  {id: 'pushup', name: 'Push-ups', reps: '50'},
-                  {id: 'situp', name: 'Sit-ups', reps: '50'},
-                  {id: 'squat', name: 'Squats', reps: '50'},
-                  {id: generateUniqueId(), name: 'Double Unders (or 100 single jumps)', reps: '50'},
-                  {id: 'lunge', name: 'Lunges', reps: '50'},
-                  {id: 'burpee', name: 'Burpees', reps: '50'},
+                  {id: 'push-ups', name: 'Push-ups', reps: '50'},
+                  {id: generateUniqueId(), name: 'Sit-ups', reps: '50'},
+                  {id: 'air-squats', name: 'Squats', reps: '50'},
+                  {id: 'jump-rope', name: 'Double Unders (or 100 single jumps)', reps: '50'},
+                  {id: 'bodyweight-lunge', name: 'Lunges', reps: '50'},
+                  {id: 'burpees', name: 'Burpees', reps: '50'},
               ]
           }
       ]
@@ -268,12 +268,12 @@ export const bodyweightBlastTemplate = {
       id: generateUniqueId(),
       name: 'W4D1: Benchmark "Cindy"',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: generateUniqueId(), name: '3 Rounds: 5 Pushups, 10 Squats, 15 Situps'} ]},
+          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'push-ups', name: '3 Rounds: 5 Pushups, 10 Squats, 15 Situps'} ]},
           { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 20,
               exercises: [
-                  {id: generateUniqueId(), name: 'Pull-ups (or Bodyweight Rows)', reps: '5'},
-                  {id: 'pushup', name: 'Push-ups', reps: '10'},
-                  {id: 'squat', name: 'Squats', reps: '15'},
+                  {id: 'pullups', name: 'Pull-ups (or Bodyweight Rows)', reps: '5'},
+                  {id: 'push-ups', name: 'Push-ups', reps: '10'},
+                  {id: 'air-squats', name: 'Squats', reps: '15'},
               ]
           }
       ]
@@ -284,11 +284,11 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  {id: 'squat', name: '5 Sets of Pistol Squats (to a box, alternating)', trackingType: 'reps', value: '8'},
-                  {id: generateUniqueId(), name: '2 Sets of Glute Bridges', trackingType: 'reps', value: '25'}
+                  {id: 'air-squats', name: '5 Sets of Pistol Squats (to a box, alternating)', trackingType: 'reps', value: '8'},
+                  {id: 'glute-bridges', name: '2 Sets of Glute Bridges', trackingType: 'reps', value: '25'}
               ]
           },
-          { id: 'Cardio', type: 'Cardio', exercises: [ {id: generateUniqueId(), name: 'Wall Sit', duration: '5'} ] }
+          { id: generateUniqueId(), type: 'Cardio', exercises: [ {id: generateUniqueId(), name: 'Wall Sit', duration: '5'} ] }
       ]
     },
     { // Day 18
@@ -299,7 +299,7 @@ export const bodyweightBlastTemplate = {
               exercises: [{id: generateUniqueId(), name: 'Run/Sprint in place'}]
           },
           { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 30, rest: 15, rounds: 5,
-              exercises: [{id: 'jumping_jack', name: 'Jumping Jacks'}]
+              exercises: [{id: 'jump-rope', name: 'Jumping Jacks'}]
           }
       ]
     },
@@ -309,9 +309,9 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Conditioning: Chipper',
               exercises: [
-                  {id: 'burpee', name: 'Burpees', reps: '50'},
-                  {id: 'lunge', name: 'Walking Lunges', reps: '40'},
-                  {id: 'pushup', name: 'Push-ups', reps: '30'},
+                  {id: 'burpees', name: 'Burpees', reps: '50'},
+                  {id: 'bodyweight-lunge', name: 'Walking Lunges', reps: '40'},
+                  {id: 'push-ups', name: 'Push-ups', reps: '30'},
                   {id: generateUniqueId(), name: 'Tuck Jumps', reps: '20'},
                   {id: generateUniqueId(), name: 'Handstand Hold (against wall)', reps: '60s'},
               ]
@@ -325,15 +325,15 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 1,
               exercises: [
                   {id: generateUniqueId(), name: 'Box Jumps (on stair/curb)', reps: '25'},
-                  {id: 'jumping_jack', name: 'Jumping Jacks', reps: '25'},
+                  {id: 'jump-rope', name: 'Jumping Jacks', reps: '25'},
                   {id: generateUniqueId(), name: 'Kettlebell Swings (use backpack/heavy object)', reps: '25'},
-                  {id: 'lunge', name: 'Walking Lunges', reps: '25'},
+                  {id: 'bodyweight-lunge', name: 'Walking Lunges', reps: '25'},
                   {id: generateUniqueId(), name: 'Knees to Elbows', reps: '25'},
-                  {id: 'pushup', name: 'Push Press (use backpack)', reps: '25'},
+                  {id: 'dumbbell-push-press', name: 'Push Press (use backpack)', reps: '25'},
                   {id: generateUniqueId(), name: 'Back Extensions (supermans)', reps: '25'},
                   {id: 'plank', name: 'Wall Ball Shots (squat and toss pillow)', reps: '25'},
-                  {id: 'burpee', name: 'Burpees', reps: '25'},
-                  {id: generateUniqueId(), name: 'Double Unders (or 50 singles)', reps: '25'},
+                  {id: 'burpees', name: 'Burpees', reps: '25'},
+                  {id: 'jump-rope', name: 'Double Unders (or 50 singles)', reps: '25'},
               ]
           }
       ]
