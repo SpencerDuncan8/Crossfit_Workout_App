@@ -541,4 +541,52 @@ export const upperBodyExercises = [
     },
     breathingPattern: "Inhale on fly down, exhale on press up"
   },
+  {
+    id: "shoulder-taps",
+    name: "Shoulder Taps",
+    category: "Upper Body",
+    primaryMuscles: ["Core", "Shoulders"],
+    equipment: ["None"],
+    setup: ["Start in a high plank position with your feet shoulder-width apart.", "The wider your feet, the more stable you'll be."],
+    execution: ["Keeping your hips as still as possible, lift one hand to tap the opposite shoulder.", "Return the hand to the floor and repeat on the other side.", "Alternate in a slow, controlled manner."],
+    commonMistakes: ["Rocking the hips from side to side.", "Moving too quickly.", "Sagging the back."],
+    modifications: { easier: "Widen your feet or perform from your knees.", harder: "Bring your feet closer together." },
+    breathingPattern: "Exhale as you tap"
+  },
+  {
+    id: "dips-chair",
+    name: "Dips (using chair/bench)",
+    category: "Upper Body",
+    primaryMuscles: ["Triceps", "Chest", "Shoulders"],
+    equipment: ["Bench/Chair"],
+    setup: ["Sit on the edge of a sturdy chair or bench.", "Place your hands on the edge, fingers pointing forward, next to your hips.", "Slide your hips forward off the bench, with your legs either bent (easier) or straight (harder)."],
+    execution: ["Lower your body by bending your elbows until they are at a 90-degree angle.", "Keep your back close to the bench.", "Press through your palms to return to the starting position."],
+    commonMistakes: ["Going too low and straining shoulders.", "Letting hips drift away from the bench.", "Flaring elbows out."],
+    modifications: { easier: "Bend your knees to reduce the load.", harder: "Straighten your legs or elevate your feet." },
+    breathingPattern: "Inhale down, exhale up"
+  },
+  {
+    id: "hand-release-push-ups",
+    name: "Hand-Release Push-ups",
+    category: "Upper Body",
+    primaryMuscles: ["Chest", "Triceps", "Back"],
+    equipment: ["None"],
+    setup: ["Start in a standard push-up position."],
+    execution: ["Lower your entire body to the floor with control.", "At the bottom, lift both hands completely off the floor for a moment.", "Place your hands back down and push up explosively back to the plank position."],
+    commonMistakes: ["'Worming' up by lifting the chest before the hips.", "Not fully lifting the hands."],
+    modifications: { easier: "Perform from your knees.", harder: "Add a clap after the hand release." },
+    breathingPattern: "Inhale down, exhale on the explosive push"
+  },
+  {
+    id: "handstand-hold",
+    name: "Handstand Hold (against wall)",
+    category: "Upper Body",
+    primaryMuscles: ["Shoulders", "Core", "Triceps"],
+    equipment: ["Wall"],
+    setup: ["Place your hands on the floor about 6-12 inches away from a wall."],
+    execution: ["Kick up one leg at a time to get your feet onto the wall.", "Find your balance and press firmly through your hands.", "Keep your body tight and in a straight line. Hold for the prescribed time."],
+    commonMistakes: ["Arching the back.", "Bending the elbows.", "Looking at the floor instead of between the hands."],
+    modifications: { easier: "Perform a 'wall walk' by walking feet up the wall into an inverted position.", harder: "Move hands further from the wall or practice free-standing." },
+    breathingPattern: "Breathe steadily and consistently"
+  }
 ];

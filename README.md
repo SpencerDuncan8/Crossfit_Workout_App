@@ -41,9 +41,10 @@ The application is now built on a flexible, program-based architecture that serv
   - **Tabata:** Customize work/rest intervals and total rounds for high-intensity training.
 
 ### 3. Interactive Workout Experience
-- **Dynamic Display:** The workout view automatically renders any workout you've scheduled, presenting it in clear, actionable cards.
+- **Dynamic Display:** The workout view automatically renders any workout you've selected, presenting it in clear, actionable cards for upcoming sessions or as a detailed summary for completed ones.
 - **Live Strength Tracking:** Log weight and reps for each set with easy +/- buttons. A checkbox marks the set as complete, providing visual progress.
 - **1RM Percentage Calculation:** For percentage-based sets, the app displays the calculated target weight based on your saved 1-Rep Max, taking the guesswork out of training.
+- **Integrated Exercise Library:** Get detailed instructions, setup cues, and common mistakes for pre-defined exercises by clicking the help icon, ensuring proper form.
 - **Context-Aware Integrated Timers:**
   - **Smart Start:** The app automatically launches the correct timer (Stopwatch, Countdown, AMRAP, EMOM, Tabata) based on the workout block you're on. A dedicated rest timer can be started between sets.
   - **Lap Timer for RFT:** For "Rounds for Time" workouts, a "Time Round" button appears on the timer bar, allowing you to log the time for each round.
@@ -51,10 +52,11 @@ The application is now built on a flexible, program-based architecture that serv
   - **Live Feedback:** Round times for RFTs and the final recorded time for Chippers are displayed in real-time directly within the relevant workout block.
 
 ### 4. Full-Featured Calendar & Logbook
-- **Visual Workout Planner:** Click on any future date to open a modal and assign a workout from any program in your library. An indicator shows which workout is currently assigned.
-- **Interactive Day Modal:** Click a scheduled day to either start the workout or change it.
-- **Detailed Logbook:** After completing a workout, the calendar entry is marked as complete. Clicking it opens a review modal showing a summary of your performance, including total sets, reps, volume, and a detailed breakdown of any logged round times or final block scores.
-- **Direct Navigation:** Easily jump between your scheduled workouts directly from the main Workout View using previous/next day buttons.
+- **Multi-Workout Scheduling:** Plan your day down to the last detail. Add multiple workouts to a single day (e.g., morning cardio and evening strength training) and track each one's completion status individually.
+- **Visual Workout Planner:** Click on any date to open a modal and assign a workout from any program in your library. Dots indicate how many workouts are planned for that day.
+- **Interactive Day Modal:** Click a scheduled day to view all workouts, start a new one, add another, or review completed sessions.
+- **Detailed Logbook:** After completing a workout, its entry is marked as complete on the calendar. Clicking the day shows all workouts, with completed ones offering a review modal with a full performance summary (total sets, reps, volume, and detailed logged times).
+- **Direct Navigation:** Seamlessly navigate between all your scheduled workouts—upcoming or completed—directly from the main Workout View using the previous/next day buttons.
 
 ### 5. Advanced Progress Tracking
 - **At-a-Glance Dashboard:** The dashboard displays key metrics: total workouts completed, lifetime lbs lifted, total reps, current weight, and weight lost.

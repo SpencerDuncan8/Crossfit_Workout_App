@@ -540,5 +540,82 @@ export const lowerBodyExercises = [
       harder: "Single leg or weighted"
     },
     breathingPattern: "Exhale up, inhale down"
+  },
+  {
+    id: "bodyweight-bulgarian-split-squats",
+    name: "Bodyweight Bulgarian Split Squats",
+    category: "Lower Body",
+    primaryMuscles: ["Quads", "Glutes", "Balance"],
+    equipment: ["Bench/Box"],
+    setup: [
+      "Rear foot elevated on bench",
+      "Front foot 2-3 feet forward",
+      "Torso upright"
+    ],
+    execution: [
+      "Lower straight down until your front thigh is parallel to the floor.",
+      "Front knee tracks over toes",
+      "Back knee toward floor",
+      "Drive through front heel"
+    ],
+    commonMistakes: [
+      "Leaning forward",
+      "Front foot too close",
+      "Pushing off back foot",
+      "Knee caving inward"
+    ],
+    modifications: {
+      easier: "Use a lower box or reduce range of motion.",
+      harder: "Add a pause at the bottom or a jump on the way up."
+    },
+    breathingPattern: "Inhale down, exhale up"
+  },
+  {
+    id: "tuck-jumps",
+    name: "Tuck Jumps",
+    category: "Lower Body",
+    primaryMuscles: ["Quads", "Glutes", "Calves", "Core"],
+    equipment: ["None"],
+    setup: ["Stand with your feet shoulder-width apart."],
+    execution: ["Drop into a shallow squat and then explode upwards.", "As you jump, bring your knees up towards your chest.", "Land softly with bent knees to absorb the impact and immediately go into the next rep."],
+    commonMistakes: ["Landing with straight legs.", "Not jumping high enough to bring knees up."],
+    modifications: { easier: "Perform high knees or box jumps to a low box.", harder: "Try to grab your shins at the peak of the jump." },
+    breathingPattern: "Exhale on the jump"
+  },
+  {
+    id: "box-jumps",
+    name: "Box Jumps (stair/curb)",
+    category: "Lower Body",
+    primaryMuscles: ["Quads", "Glutes", "Calves"],
+    equipment: ["Box/Stair"],
+    setup: ["Stand in front of a sturdy box, stair, or curb.", "Feet should be shoulder-width apart."],
+    execution: ["Drop into a partial squat, swing your arms back, then swing them forward as you jump explosively.", "Land softly on the box with your knees bent, in a squat position.", "Stand up fully on the box, then step down one foot at a time. Do not jump down."],
+    commonMistakes: ["Landing on your toes or with straight legs.", "Jumping down from the box.", "Using a box that is too high."],
+    modifications: { easier: "Use a lower box or perform step-ups.", harder: "Use a higher box or perform consecutive jumps without pausing." },
+    breathingPattern: "Exhale on the jump"
+  },
+  {
+    id: "pistol-squats-box",
+    name: "Pistol Squats (to a box)",
+    category: "Lower Body",
+    primaryMuscles: ["Quads", "Glutes", "Balance", "Core"],
+    equipment: ["Box/Chair"],
+    setup: ["Stand on one leg in front of a box or chair.", "Extend the non-standing leg straight out in front of you."],
+    execution: ["Slowly lower your body down in a controlled squat until you are sitting on the box.", "Keep the extended leg off the floor.", "Drive through the heel of your standing leg to return to the start position.", "Alternate legs."],
+    commonMistakes: ["Dropping onto the box without control.", "Letting the knee of the standing leg cave in."],
+    modifications: { easier: "Use a higher box.", harder: "Use a lower box, or remove the box entirely for a full pistol squat." },
+    breathingPattern: "Inhale down, exhale up"
+  },
+  {
+    id: "wall-sit",
+    name: "Wall Sit",
+    category: "Lower Body",
+    primaryMuscles: ["Quads", "Glutes", "Hamstrings"],
+    equipment: ["Wall"],
+    setup: ["Stand with your back against a wall.", "Walk your feet forward about two feet."],
+    execution: ["Slide your back down the wall until your thighs are parallel to the floor, with knees bent at 90 degrees.", "Keep your back flat against the wall.", "Hold this position for the prescribed time."],
+    commonMistakes: ["Not getting low enough.", "Letting knees go past toes.", "Placing hands on thighs for support."],
+    modifications: { easier: "Don't squat as low.", harder: "Hold a weight on your lap or perform a single-leg wall sit." },
+    breathingPattern: "Breathe steadily and consistently"
   }
 ];
