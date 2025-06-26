@@ -14,7 +14,7 @@ const initialAppState = {
   weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
   programs: [], 
   workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
-  oneRepMaxes: {}, // --- THE FIX: State to store 1RM values ---
+  oneRepMaxes: {},
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingInfo: null, 
   workoutToScheduleId: null,
@@ -28,7 +28,6 @@ const AppStateProviderComponent = ({ children }) => {
   
   const allWorkouts = appState.programs.flatMap(p => p.workouts);
 
-  // --- THE FIX: New function to update a 1RM value ---
   const updateOneRepMax = (exerciseId, weight) => {
     const numericWeight = parseFloat(weight);
     if (isNaN(numericWeight)) return;
@@ -227,10 +226,8 @@ const AppStateProviderComponent = ({ children }) => {
   const navigateToPrevScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > 0) navigateToDate(dates[i - 1]); };
   const navigateToNextScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > -1 && i < dates.length - 1) navigateToDate(dates[i + 1]); };
   
-  // THE FIX: New helper function to check for exercise details
   const hasExerciseDetails = (exerciseId) => {
     if (!exerciseId) return false;
-    // This relies on getExerciseByName returning a truthy value if details exist
     return !!getExerciseByName(exerciseId);
   };
 
@@ -241,6 +238,8 @@ const AppStateProviderComponent = ({ children }) => {
   
   const completeWorkout = (dateString, stats) => {
     const newSchedule = { ...appState.workoutSchedule };
+    // THE FIX: No longer need to save a separate 'laps' array here.
+    // It is now correctly nested inside stats.blockTimes.
     if (newSchedule[dateString]) newSchedule[dateString].completedData = stats;
     updateAppState({
       workoutSchedule: newSchedule,
@@ -263,8 +262,8 @@ const AppStateProviderComponent = ({ children }) => {
       navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, 
       selectWorkoutToSchedule, clearWorkoutToSchedule,
       autoScheduleProgram,
-      updateOneRepMax, // --- THE FIX: Expose the new function ---
-      hasExerciseDetails, // THE FIX: Expose the new function
+      updateOneRepMax,
+      hasExerciseDetails,
     }}>
       {children}
     </AppStateContext.Provider>

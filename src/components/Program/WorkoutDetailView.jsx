@@ -33,15 +33,16 @@ const WorkoutDetailView = ({ workout, completedData }) => {
 
       <div className="detail-blocks-container">
         {workout.blocks.map(block => {
-          const shouldShowLapsForBlock = completedData?.laps?.length > 0 && block.type === 'Conditioning: RFT';
-          const recordedBlockTime = completedData?.blockTimes?.[block.id]?.recordedTime;
+          // THE FIX: Check for laps in the new, more specific block-based location
+          const completedBlockData = completedData?.blockTimes?.[block.id];
+          const recordedBlockTime = completedBlockData?.recordedTime;
+          const shouldShowLapsForBlock = completedBlockData?.laps?.length > 0;
 
           return (
             <div key={block.id} className="detail-block-card">
               <h5 className="detail-block-title">{block.type}</h5>
               {recordedBlockTime && (
                  <div className="recorded-time-display review-mode">
-                    {/* THE FIX: Changed "Block Time" to a dynamic label */}
                     <span className="recorded-time-label">
                       {block.type === 'Conditioning: Chipper' ? 'Chipper Time' : 'Block Time'}
                     </span>
@@ -73,7 +74,8 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                 <div className="completed-laps-section">
                    <h5 className="detail-block-title sub-title">Round Times</h5>
                    <ul className="detail-exercise-list">
-                      {completedData.laps.map((lapTime, index) => (
+                      {/* THE FIX: Read from completedBlockData.laps */}
+                      {completedBlockData.laps.map((lapTime, index) => (
                         <li key={index} style={{display: 'flex', justifyContent: 'space-between'}}>
                           <strong>Round {index + 1}:</strong> 
                           <span>{formatTime(lapTime)}</span>

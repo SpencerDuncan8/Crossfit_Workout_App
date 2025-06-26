@@ -38,6 +38,25 @@ const WorkoutView = ({ setActiveView }) => {
       }
     }
   }, [timer.recordedTime]);
+  
+  // THE FIX: Add a new useEffect to capture lap times as they happen
+  useEffect(() => {
+    // Only capture laps if the timer is inactive (meaning the RFT just finished)
+    // and there are laps to capture.
+    if (!timer.isActive && timer.laps.length > 0) {
+      const rftBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: RFT');
+      if (rftBlock) {
+        setBlockProgress(prev => ({
+          ...prev,
+          [rftBlock.id]: {
+            ...prev[rftBlock.id],
+            laps: [...timer.laps], // Save a copy of the laps
+          }
+        }));
+      }
+    }
+  }, [timer.isActive, timer.laps, activeWorkout]);
+
 
   useEffect(() => {
     if (activeWorkout) {
@@ -77,25 +96,26 @@ const WorkoutView = ({ setActiveView }) => {
   };
   
   const handleFinishWorkout = () => {
-    let sessionStats = { sets: 0, reps: 0, weight: 0, laps: [], blockTimes: {} };
+    let sessionStats = { sets: 0, reps: 0, weight: 0, blockTimes: {} };
     Object.keys(exerciseProgress).forEach(exerciseId => {
       const progress = exerciseProgress[exerciseId];
       if (progress && progress.sets) { progress.sets.forEach(set => { if (set.completed) { sessionStats.sets++; if (set.reps && set.weight) { const reps = parseInt(set.reps, 10) || 0; const weight = parseInt(set.weight, 10) || 0; sessionStats.reps += reps; sessionStats.weight += reps * weight; } } }); }
       else if (progress && progress.completed) { sessionStats.sets++; }
     });
     
+    // THE FIX: Read block progress (laps and times) from the reliable local state
     sessionStats.blockTimes = blockProgress;
 
-    // --- THE FIX: The RFT lap-saving logic is moved BEFORE the Chipper logic ---
-    // This ensures laps are saved before the timer might be stopped and cleared.
-    if (timer.laps && timer.laps.length > 0) {
-        sessionStats.laps = [...timer.laps]; // Create a copy of the array
-        const lastLapTime = timer.laps[timer.laps.length - 1];
-        if (typeof lastLapTime === 'number') { 
-            sessionStats.totalTime = formatTime(lastLapTime); 
+    // This loop calculates the totalTime for display if an RFT was completed
+    Object.values(blockProgress).forEach(blockData => {
+        if (blockData.laps && blockData.laps.length > 0) {
+            const lastLapTime = blockData.laps[blockData.laps.length - 1];
+            if (typeof lastLapTime === 'number') {
+                sessionStats.totalTime = formatTime(lastLapTime);
+            }
         }
-    }
-    
+    });
+
     // This handles the case where a chipper timer was running but not explicitly recorded before finishing
     const isChipperRunning = activeWorkout.blocks.some(b => b.type === 'Conditioning: Chipper') && timer.isActive && timer.type === 'stopwatch' && timer.totalLaps === 0;
     if (isChipperRunning) {
