@@ -13,7 +13,9 @@ const initialAppState = {
   startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
   weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
   programs: [], 
-  workoutSchedule: {}, viewingDate: new Date().toISOString().split('T')[0],
+  workoutSchedule: {}, 
+  viewingDate: new Date().toISOString().split('T')[0],
+  viewingScheduleId: null, 
   oneRepMaxes: {},
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingInfo: null, 
@@ -21,7 +23,7 @@ const initialAppState = {
 };
 
 const AppStateProviderComponent = ({ children }) => {
-  const [appState, setAppState, clearAppState] = usePersistentState('blockfitState_v1', initialAppState);
+  const [appState, setAppState, clearAppState] = usePersistentState('blockfitState_v2_multi', initialAppState);
   const { clearTimer } = useContext(TimerContext);
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
@@ -141,58 +143,47 @@ const AppStateProviderComponent = ({ children }) => {
     let currentSchedule = { ...appState.workoutSchedule };
     let currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
-
-    for (const workout of workoutsToSchedule) {
+  
+    const findNextAvailableDate = (startDate) => {
+      let date = new Date(startDate);
       while (true) {
-        const dayOfWeek = currentDate.getDay();
-
-        if (dayOfWeek === 6) { 
-          currentDate.setDate(currentDate.getDate() + 2);
+        const dayOfWeek = date.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) { 
+          date.setDate(date.getDate() + (dayOfWeek === 6 ? 2 : 1));
           continue;
         }
-        if (dayOfWeek === 0) { 
-          currentDate.setDate(currentDate.getDate() + 1);
-          continue;
-        }
-
-        let daysScheduledThisWeek = 0;
-        const startOfWeek = new Date(currentDate);
-        startOfWeek.setDate(currentDate.getDate() - dayOfWeek + 1);
-        for (let i = 0; i < 5; i++) {
-          const checkDate = new Date(startOfWeek);
-          checkDate.setDate(startOfWeek.getDate() + i);
-          const dateString = checkDate.toISOString().split('T')[0];
-          if (currentSchedule[dateString]) {
-            daysScheduledThisWeek++;
-          }
-        }
-
-        if (daysScheduledThisWeek >= daysPerWeek) {
-          const daysToNextMonday = 8 - dayOfWeek;
-          currentDate.setDate(currentDate.getDate() + daysToNextMonday);
-          continue;
-        }
-        
-        const dateString = currentDate.toISOString().split('T')[0];
-        if (currentSchedule[dateString]) {
-          currentDate.setDate(currentDate.getDate() + 1);
-          continue;
-        }
-        break;
+        return date; 
       }
-
-      const dateString = currentDate.toISOString().split('T')[0];
-      currentSchedule[dateString] = { workoutId: workout.id, completedData: null };
-
-      if (daysPerWeek <= 3) {
-        currentDate.setDate(currentDate.getDate() + 2);
+    };
+  
+    let scheduleDate = findNextAvailableDate(currentDate);
+    let workoutIndex = 0;
+    
+    for (const workout of workoutsToSchedule) {
+      const dateString = scheduleDate.toISOString().split('T')[0];
+      
+      const daySchedule = currentSchedule[dateString] ? [...currentSchedule[dateString]] : [];
+      daySchedule.push({
+        scheduleId: generateUniqueId(),
+        workoutId: workout.id,
+        completedData: null,
+      });
+      currentSchedule[dateString] = daySchedule;
+  
+      workoutIndex++;
+      if (workoutIndex % daysPerWeek === 0) {
+        scheduleDate.setDate(scheduleDate.getDate() + (8 - scheduleDate.getDay()));
       } else {
-        currentDate.setDate(currentDate.getDate() + 1);
+        scheduleDate.setDate(scheduleDate.getDate() + 1);
+        const dayOfWeek = scheduleDate.getDay();
+        if (dayOfWeek === 6) scheduleDate.setDate(scheduleDate.getDate() + 2); 
+        if (dayOfWeek === 0) scheduleDate.setDate(scheduleDate.getDate() + 1); 
       }
     }
     
     updateAppState({ workoutSchedule: currentSchedule });
   };
+  
   
   const resetAllData = () => {
     clearAppState();
@@ -210,21 +201,69 @@ const AppStateProviderComponent = ({ children }) => {
   
   const scheduleWorkoutForDate = (date, workoutId) => {
     const dateString = date.toISOString().split('T')[0];
-    const currentSchedule = appState.workoutSchedule[dateString];
-    if (currentSchedule && currentSchedule.workoutId === workoutId) {
-        const newSchedule = { ...appState.workoutSchedule };
-        delete newSchedule[dateString];
-        updateAppState({ workoutSchedule: newSchedule });
-    } else {
-        updateAppState({ workoutSchedule: { ...appState.workoutSchedule, [dateString]: { workoutId, completedData: null } } });
-    }
-    clearWorkoutToSchedule();
+    const newScheduleEntry = {
+      scheduleId: generateUniqueId(),
+      workoutId,
+      completedData: null,
+    };
+    
+    setAppState(prev => {
+      const daySchedule = prev.workoutSchedule[dateString] ? [...prev.workoutSchedule[dateString]] : [];
+      daySchedule.push(newScheduleEntry);
+      return {
+        ...prev,
+        workoutSchedule: { ...prev.workoutSchedule, [dateString]: daySchedule },
+        workoutToScheduleId: null 
+      };
+    });
   };
 
-  const navigateToDate = (dateString) => updateAppState({ viewingDate: dateString });
-  const getScheduledDates = () => Object.keys(appState.workoutSchedule).sort((a,b) => new Date(a) - new Date(b));
-  const navigateToPrevScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > 0) navigateToDate(dates[i - 1]); };
-  const navigateToNextScheduled = () => { const dates = getScheduledDates(); const i = dates.indexOf(appState.viewingDate); if (i > -1 && i < dates.length - 1) navigateToDate(dates[i + 1]); };
+  const removeWorkoutFromSchedule = (date, scheduleId) => {
+    const dateString = date.toISOString().split('T')[0];
+    setAppState(prev => {
+      const daySchedule = (prev.workoutSchedule[dateString] || []).filter(item => item.scheduleId !== scheduleId);
+      const newSchedule = { ...prev.workoutSchedule };
+      if (daySchedule.length > 0) {
+        newSchedule[dateString] = daySchedule;
+      } else {
+        delete newSchedule[dateString]; 
+      }
+      return { ...prev, workoutSchedule: newSchedule };
+    });
+  };
+
+  const navigateToDate = (dateString, scheduleId = null) => {
+    updateAppState({ viewingDate: dateString, viewingScheduleId: scheduleId });
+  };
+  
+  const getScheduledDates = () => Object.keys(appState.workoutSchedule)
+    .filter(date => appState.workoutSchedule[date].length > 0) // Only include dates with workouts
+    .sort((a,b) => new Date(a) - new Date(b));
+
+  // --- THE FIX: Updated navigation logic ---
+  const navigateToPrevScheduled = () => {
+    const dates = getScheduledDates();
+    const currentIndex = dates.indexOf(appState.viewingDate);
+    if (currentIndex > 0) {
+      const prevDateString = dates[currentIndex - 1];
+      const prevDaySchedule = appState.workoutSchedule[prevDateString];
+      if (prevDaySchedule && prevDaySchedule.length > 0) {
+        navigateToDate(prevDateString, prevDaySchedule[0].scheduleId);
+      }
+    }
+  };
+
+  const navigateToNextScheduled = () => {
+    const dates = getScheduledDates();
+    const currentIndex = dates.indexOf(appState.viewingDate);
+    if (currentIndex > -1 && currentIndex < dates.length - 1) {
+      const nextDateString = dates[currentIndex + 1];
+      const nextDaySchedule = appState.workoutSchedule[nextDateString];
+      if (nextDaySchedule && nextDaySchedule.length > 0) {
+        navigateToDate(nextDateString, nextDaySchedule[0].scheduleId);
+      }
+    }
+  };
   
   const hasExerciseDetails = (exerciseId) => {
     if (!exerciseId) return false;
@@ -236,18 +275,26 @@ const AppStateProviderComponent = ({ children }) => {
   const addWeightEntry = (newWeight) => { const today = new Date().toLocaleDateString(); const entry = { date: today, weight: newWeight }; const hist = appState.weightHistory.filter(e => e.date !== today); const updated = [...hist, entry].sort((a,b) => new Date(a.date) - new Date(b.date)); const start = appState.startingWeight === 0 ? newWeight : appState.startingWeight; updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated }); };
   const addPhotoEntry = (photoUrl) => { const today = new Date().toLocaleDateString(); const photo = { date: today, url: photoUrl }; const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date)); updateAppState({ photos: updated }); };
   
-  const completeWorkout = (dateString, stats) => {
-    const newSchedule = { ...appState.workoutSchedule };
-    // THE FIX: No longer need to save a separate 'laps' array here.
-    // It is now correctly nested inside stats.blockTimes.
-    if (newSchedule[dateString]) newSchedule[dateString].completedData = stats;
-    updateAppState({
-      workoutSchedule: newSchedule,
-      totalWorkoutsCompleted: appState.totalWorkoutsCompleted + 1,
-      totalSets: appState.totalSets + (stats.sets || 0),
-      totalReps: appState.totalReps + (stats.reps || 0),
-      totalLbsLifted: appState.totalLbsLifted + (stats.weight || 0),
-      showConfetti: true,
+  const completeWorkout = (dateString, scheduleId, stats) => {
+    setAppState(prev => {
+      const newSchedule = { ...prev.workoutSchedule };
+      const daySchedule = (newSchedule[dateString] || []).map(item => {
+        if (item.scheduleId === scheduleId) {
+          return { ...item, completedData: stats };
+        }
+        return item;
+      });
+      newSchedule[dateString] = daySchedule;
+
+      return {
+        ...prev,
+        workoutSchedule: newSchedule,
+        totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1,
+        totalSets: prev.totalSets + (stats.sets || 0),
+        totalReps: prev.totalReps + (stats.reps || 0),
+        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0),
+        showConfetti: true,
+      };
     });
     setTimeout(() => updateAppState({ showConfetti: false }), 5000);
   };
@@ -264,6 +311,7 @@ const AppStateProviderComponent = ({ children }) => {
       autoScheduleProgram,
       updateOneRepMax,
       hasExerciseDetails,
+      removeWorkoutFromSchedule, 
     }}>
       {children}
     </AppStateContext.Provider>

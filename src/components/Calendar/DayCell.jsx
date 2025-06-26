@@ -12,23 +12,26 @@ const DayCell = ({ day, onDayClick }) => {
   }
 
   const dateString = day.date.toISOString().split('T')[0];
-  const scheduledInfo = appState.workoutSchedule[dateString];
+  const scheduledItems = appState.workoutSchedule[dateString] || [];
   
-  const isCompleted = scheduledInfo && scheduledInfo.completedData;
-  const isPlanned = scheduledInfo && !isCompleted;
+  // THE FIX: New logic for multiple workouts per day
+  const isFullyCompleted = scheduledItems.length > 0 && scheduledItems.every(item => item.completedData);
+  const plannedWorkouts = scheduledItems.filter(item => !item.completedData);
   
-  const workoutColor = isPlanned || isCompleted ? getWorkoutColor() : 'transparent';
+  const workoutColor = scheduledItems.length > 0 ? getWorkoutColor() : 'transparent';
   
   let cellClass = 'day-cell';
   if (day.isToday) cellClass += ' today';
-  if (isCompleted) cellClass += ' completed';
+  if (isFullyCompleted) cellClass += ' completed';
 
   return (
-    // THE FIX: Pass both 'day' and 'scheduledInfo' up on click
-    <div className={cellClass} style={{'--workout-color': workoutColor}} onClick={() => onDayClick(day, scheduledInfo)}>
+    <div className={cellClass} style={{'--workout-color': workoutColor}} onClick={() => onDayClick(day, scheduledItems)}>
       <span className="day-number">{day.dayNumber}</span>
       <div className="dot-container">
-        {isPlanned && <div className="workout-dot"></div>}
+        {/* THE FIX: Render a dot for each planned workout */}
+        {plannedWorkouts.map(item => (
+          <div key={item.scheduleId} className="workout-dot"></div>
+        ))}
       </div>
     </div>
   );

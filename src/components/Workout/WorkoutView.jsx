@@ -4,6 +4,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { TimerContext } from '../../context/TimerContext.jsx';
 import WorkoutSection from './WorkoutSection.jsx';
+import WorkoutDetailView from '../Program/WorkoutDetailView.jsx';
 import { CheckCircle, AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import './Workout.css';
 
@@ -19,9 +20,14 @@ const WorkoutView = ({ setActiveView }) => {
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [blockProgress, setBlockProgress] = useState({});
 
-  const scheduleEntry = appState.workoutSchedule[appState.viewingDate];
+  // THE FIX: Logic to find the specific scheduled item being viewed
+  const daySchedule = appState.workoutSchedule[appState.viewingDate] || [];
+  const scheduleEntry = daySchedule.find(item => item.scheduleId === appState.viewingScheduleId);
+
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
+  const isCompleted = !!scheduleEntry?.completedData;
+
 
   // This effect listens for a recorded time from the context (for Chippers)
   useEffect(() => {
@@ -37,12 +43,10 @@ const WorkoutView = ({ setActiveView }) => {
         }));
       }
     }
-  }, [timer.recordedTime]);
+  }, [timer.recordedTime, activeWorkout]);
   
-  // THE FIX: Add a new useEffect to capture lap times as they happen
+  // This effect captures lap times as they happen
   useEffect(() => {
-    // Only capture laps if the timer is inactive (meaning the RFT just finished)
-    // and there are laps to capture.
     if (!timer.isActive && timer.laps.length > 0) {
       const rftBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: RFT');
       if (rftBlock) {
@@ -103,10 +107,8 @@ const WorkoutView = ({ setActiveView }) => {
       else if (progress && progress.completed) { sessionStats.sets++; }
     });
     
-    // THE FIX: Read block progress (laps and times) from the reliable local state
     sessionStats.blockTimes = blockProgress;
 
-    // This loop calculates the totalTime for display if an RFT was completed
     Object.values(blockProgress).forEach(blockData => {
         if (blockData.laps && blockData.laps.length > 0) {
             const lastLapTime = blockData.laps[blockData.laps.length - 1];
@@ -116,7 +118,6 @@ const WorkoutView = ({ setActiveView }) => {
         }
     });
 
-    // This handles the case where a chipper timer was running but not explicitly recorded before finishing
     const isChipperRunning = activeWorkout.blocks.some(b => b.type === 'Conditioning: Chipper') && timer.isActive && timer.type === 'stopwatch' && timer.totalLaps === 0;
     if (isChipperRunning) {
         const chipperBlock = activeWorkout.blocks.find(b => b.type === 'Conditioning: Chipper');
@@ -126,7 +127,8 @@ const WorkoutView = ({ setActiveView }) => {
         stopTimer();
     }
 
-    completeWorkout(appState.viewingDate, sessionStats);
+    // THE FIX: Pass the scheduleId to the completion function
+    completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats);
     setActiveView('calendar');
   };
 
@@ -135,10 +137,55 @@ const WorkoutView = ({ setActiveView }) => {
   const isPrevDisabled = currentIndex <= 0;
   const isNextDisabled = currentIndex >= scheduledDates.length - 1;
 
-  if (!activeWorkout) { return ( <div className="workout-view-container"> <div className="rest-day-content" style={{ backgroundColor: 'var(--bg-tertiary)'}}> <AlertTriangle size={48} color="#facc15" /> <h2 style={{marginTop: '16px'}}>No Workout Scheduled</h2> <p>Go to the Calendar tab to assign a workout for this day.</p> <button className="day-nav-btn" onClick={() => setActiveView('calendar')} style={{marginTop: '20px', padding: '10px 20px', borderRadius: '8px', background: 'var(--bg-primary)'}}><ArrowLeft size={20}/> Back to Calendar</button> </div> </div> ); }
+  // THE FIX: Updated the condition to check if a specific workout is being viewed
+  if (!activeWorkout || !scheduleEntry) {
+    return (
+      <div className="workout-view-container">
+        <div className="rest-day-content" style={{ backgroundColor: 'var(--bg-tertiary)'}}>
+          <AlertTriangle size={48} color="#facc15" />
+          <h2 style={{marginTop: '16px'}}>No Workout Selected</h2>
+          <p>Go to the Calendar and select a scheduled workout to begin.</p>
+          <button className="day-nav-btn" onClick={() => setActiveView('calendar')} style={{marginTop: '20px', padding: '10px 20px', borderRadius: '8px', background: 'var(--bg-primary)'}}>
+            <ArrowLeft size={20}/> Go to Calendar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const viewingDate = new Date(appState.viewingDate);
   const formattedDate = viewingDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+  if (isCompleted) {
+    return (
+      <div className="workout-view-container">
+        <div className="workout-header">
+          <div className="workout-header-nav">
+            <button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn">
+              <ChevronLeft size={28} />
+            </button>
+            <div className="workout-header-title">
+              <span className="workout-day-badge">{formattedDate}</span>
+              <h1>{activeWorkout.name}</h1>
+            </div>
+            <button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn">
+              <ChevronRight size={28} />
+            </button>
+          </div>
+        </div>
+        <WorkoutDetailView workout={activeWorkout} completedData={scheduleEntry.completedData} />
+        <div className="finish-workout-container">
+            <button 
+              className="finish-workout-button" 
+              onClick={() => setActiveView('calendar')} 
+              style={{background: 'var(--bg-tertiary)', color: 'var(--text-primary)'}}
+            >
+                <ArrowLeft size={24} /> Back to Calendar
+            </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="workout-view-container">
