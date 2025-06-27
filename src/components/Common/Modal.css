@@ -13,10 +13,10 @@
 }
 
 .modal-container {
-  background: rgba(42, 49, 65, 0.8); /* Semi-transparent background */
+  background: var(--modal-bg); /* Semi-transparent background */
   backdrop-filter: blur(10px); /* The "glass" effect */
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--modal-border);
   border-radius: 16px;
   width: 100%;
   max-width: 600px;
@@ -47,7 +47,7 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--modal-close-btn-bg);
   border: none;
   border-radius: 50%;
   width: 36px;
@@ -61,7 +61,7 @@
 }
 
 .modal-close-btn:hover {
-  background: var(--bg-tertiary);
+  background: var(--modal-close-btn-bg-hover);
   color: var(--text-primary);
 }
 
