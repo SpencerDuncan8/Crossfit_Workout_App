@@ -209,3 +209,34 @@
   font-weight: 600;
   color: var(--text-tertiary);
 }
+/* src/components/Progress/Progress.css */
+
+/* ... (all previous CSS is unchanged) ... */
+
+/* --- UNIT TOGGLE STYLES --- */
+.unit-toggle-container {
+  display: flex;
+  background-color: var(--bg-primary);
+  border-radius: 10px;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.unit-toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background-color: transparent;
+  color: var(--text-tertiary);
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.unit-toggle-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}

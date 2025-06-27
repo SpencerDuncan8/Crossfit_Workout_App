@@ -17,6 +17,7 @@ const initialAppState = {
   viewingDate: new Date().toISOString().split('T')[0],
   viewingScheduleId: null, 
   oneRepMaxes: {},
+  unitSystem: 'imperial', // New state for tracking the unit system
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingInfo: null, 
   workoutToScheduleId: null,
@@ -27,13 +28,21 @@ const AppStateProviderComponent = ({ children }) => {
   const { clearTimer } = useContext(TimerContext);
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
-  
+
+  // New function to toggle the unit system
+  const toggleUnitSystem = () => {
+    setAppState(prev => ({
+      ...prev,
+      unitSystem: prev.unitSystem === 'imperial' ? 'metric' : 'imperial'
+    }));
+  };
+
   const allWorkouts = appState.programs.flatMap(p => p.workouts);
 
   const updateOneRepMax = (exerciseId, weight) => {
     const numericWeight = parseFloat(weight);
     if (isNaN(numericWeight)) return;
-    
+
     setAppState(prev => ({
       ...prev,
       oneRepMaxes: {
@@ -113,7 +122,7 @@ const AppStateProviderComponent = ({ children }) => {
         isTemplate: false,
         daysPerWeek: template.daysPerWeek,
     };
-    
+
     const updatedPrograms = [...appState.programs, newProgram];
     updateAppState({ programs: updatedPrograms });
   };
@@ -138,12 +147,12 @@ const AppStateProviderComponent = ({ children }) => {
   const closeWorkoutEditor = () => {
     updateAppState({ isWorkoutEditorOpen: false, editingInfo: null });
   };
-  
+
   const autoScheduleProgram = (workoutsToSchedule, daysPerWeek = 5) => {
     let currentSchedule = { ...appState.workoutSchedule };
     let currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
-  
+
     const findNextAvailableDate = (startDate) => {
       let date = new Date(startDate);
       while (true) {
@@ -155,13 +164,13 @@ const AppStateProviderComponent = ({ children }) => {
         return date; 
       }
     };
-  
+
     let scheduleDate = findNextAvailableDate(currentDate);
     let workoutIndex = 0;
-    
+
     for (const workout of workoutsToSchedule) {
       const dateString = scheduleDate.toISOString().split('T')[0];
-      
+
       const daySchedule = currentSchedule[dateString] ? [...currentSchedule[dateString]] : [];
       daySchedule.push({
         scheduleId: generateUniqueId(),
@@ -169,7 +178,7 @@ const AppStateProviderComponent = ({ children }) => {
         completedData: null,
       });
       currentSchedule[dateString] = daySchedule;
-  
+
       workoutIndex++;
       if (workoutIndex % daysPerWeek === 0) {
         scheduleDate.setDate(scheduleDate.getDate() + (8 - scheduleDate.getDay()));
@@ -180,25 +189,25 @@ const AppStateProviderComponent = ({ children }) => {
         if (dayOfWeek === 0) scheduleDate.setDate(scheduleDate.getDate() + 1); 
       }
     }
-    
+
     updateAppState({ workoutSchedule: currentSchedule });
   };
-  
-  
+
+
   const resetAllData = () => {
     clearAppState();
     clearTimer();
     window.location.reload();
   };
-  
+
   const selectWorkoutToSchedule = (workoutId) => {
     updateAppState({ workoutToScheduleId: workoutId });
   };
-  
+
   const clearWorkoutToSchedule = () => {
     updateAppState({ workoutToScheduleId: null });
   };
-  
+
   const scheduleWorkoutForDate = (date, workoutId) => {
     const dateString = date.toISOString().split('T')[0];
     const newScheduleEntry = {
@@ -206,7 +215,7 @@ const AppStateProviderComponent = ({ children }) => {
       workoutId,
       completedData: null,
     };
-    
+
     setAppState(prev => {
       const daySchedule = prev.workoutSchedule[dateString] ? [...prev.workoutSchedule[dateString]] : [];
       daySchedule.push(newScheduleEntry);
@@ -235,12 +244,11 @@ const AppStateProviderComponent = ({ children }) => {
   const navigateToDate = (dateString, scheduleId = null) => {
     updateAppState({ viewingDate: dateString, viewingScheduleId: scheduleId });
   };
-  
+
   const getScheduledDates = () => Object.keys(appState.workoutSchedule)
     .filter(date => appState.workoutSchedule[date].length > 0) // Only include dates with workouts
     .sort((a,b) => new Date(a) - new Date(b));
 
-  // --- THE FIX: Updated navigation logic ---
   const navigateToPrevScheduled = () => {
     const dates = getScheduledDates();
     const currentIndex = dates.indexOf(appState.viewingDate);
@@ -264,7 +272,7 @@ const AppStateProviderComponent = ({ children }) => {
       }
     }
   };
-  
+
   const hasExerciseDetails = (exerciseId) => {
     if (!exerciseId) return false;
     return !!getExerciseByName(exerciseId);
@@ -274,7 +282,7 @@ const AppStateProviderComponent = ({ children }) => {
   const closeModal = () => updateAppState({ isModalOpen: false });
   const addWeightEntry = (newWeight) => { const today = new Date().toLocaleDateString(); const entry = { date: today, weight: newWeight }; const hist = appState.weightHistory.filter(e => e.date !== today); const updated = [...hist, entry].sort((a,b) => new Date(a.date) - new Date(b.date)); const start = appState.startingWeight === 0 ? newWeight : appState.startingWeight; updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated }); };
   const addPhotoEntry = (photoUrl) => { const today = new Date().toLocaleDateString(); const photo = { date: today, url: photoUrl }; const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date)); updateAppState({ photos: updated }); };
-  
+
   const completeWorkout = (dateString, scheduleId, stats) => {
     setAppState(prev => {
       const newSchedule = { ...prev.workoutSchedule };
@@ -298,7 +306,7 @@ const AppStateProviderComponent = ({ children }) => {
     });
     setTimeout(() => updateAppState({ showConfetti: false }), 5000);
   };
-  
+
   return (
     <AppStateContext.Provider value={{ 
       appState, allWorkouts, updateAppState,
@@ -310,6 +318,7 @@ const AppStateProviderComponent = ({ children }) => {
       selectWorkoutToSchedule, clearWorkoutToSchedule,
       autoScheduleProgram,
       updateOneRepMax,
+      toggleUnitSystem, // Expose the new function
       hasExerciseDetails,
       removeWorkoutFromSchedule, 
     }}>

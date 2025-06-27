@@ -1,9 +1,13 @@
 // src/components/Program/WorkoutDetailView.jsx
 
-import React from 'react';
+import React, { useContext } from 'react';
+import { AppStateContext } from '../../context/AppContext.jsx';
+import { lbsToKg, getUnitLabel } from '../../utils/unitUtils.js';
 import './WorkoutDetailView.css';
 
 const WorkoutDetailView = ({ workout, completedData }) => {
+  const { appState } = useContext(AppStateContext); // Get global state
+  
   if (!workout) return null;
 
   const formatTime = (seconds) => {
@@ -12,6 +16,16 @@ const WorkoutDetailView = ({ workout, completedData }) => {
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
+
+  // Prepare display values based on unit system
+  const isMetric = appState.unitSystem === 'metric';
+  const unitLabel = getUnitLabel(appState.unitSystem);
+  
+  let displayVolume = 0;
+  if (completedData) {
+      const volumeLbs = completedData.weight || 0;
+      displayVolume = isMetric ? lbsToKg(volumeLbs).toFixed(1) : volumeLbs.toLocaleString();
+  }
 
   return (
     <div className="workout-detail-container">
@@ -26,7 +40,7 @@ const WorkoutDetailView = ({ workout, completedData }) => {
           <div className="summary-stats">
             <span>Sets: {completedData.sets}</span>
             <span>Reps: {completedData.reps}</span>
-            <span>Volume: {completedData.weight.toLocaleString()} lbs</span>
+            <span>Volume: {displayVolume} {unitLabel}</span>
           </div>
         </div>
       )}

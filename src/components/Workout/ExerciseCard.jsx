@@ -3,22 +3,51 @@
 import React, { useContext } from 'react';
 import { Check, Square, Plus, Minus, Timer, HelpCircle } from 'lucide-react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { trackedLifts } from '../Progress/OneRepMaxEditor.jsx'; // --- THE FIX: Import the list ---
+import { trackedLifts } from '../Progress/OneRepMaxEditor.jsx';
+import { getUnitLabel, lbsToKg } from '../../utils/unitUtils.js';
 
-const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, onRestClick }) => {
+const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, onRestClick, unitSystem }) => {
   const { completed, weight, reps } = progressData;
+  
+  const unitLabel = getUnitLabel(unitSystem);
+  const incrementAmount = unitSystem === 'metric' ? 2.5 : 5;
 
   const handleCheckboxClick = () => { onSetUpdate(exerciseId, setIndex, 'completed', !completed); };
-  const handleIncrement = (field, currentValue, amount) => { const newValue = (parseInt(currentValue, 10) || 0) + amount; onSetUpdate(exerciseId, setIndex, field, String(newValue)); };
-  const handleDecrement = (field, currentValue, amount) => { const newValue = Math.max(0, (parseInt(currentValue, 10) || 0) - amount); onSetUpdate(exerciseId, setIndex, field, String(newValue)); };
+  
+  const handleWeightChange = (e) => {
+    onSetUpdate(exerciseId, setIndex, 'weight', e.target.value);
+  };
+
+  const handleIncrement = (field, currentValue, amount) => {
+    const newValue = (parseFloat(currentValue) || 0) + amount;
+    onSetUpdate(exerciseId, setIndex, field, String(newValue));
+  };
+  
+  const handleDecrement = (field, currentValue, amount) => {
+    const newValue = Math.max(0, (parseFloat(currentValue) || 0) - amount);
+    onSetUpdate(exerciseId, setIndex, field, String(newValue));
+  };
 
   return (
     <div className={`set-row-wrapper ${completed ? 'completed' : ''}`}>
       <div className="set-row">
-        <div className="set-status"><button className="set-checkbox" onClick={handleCheckboxClick}>{completed ? <Check size={20} /> : <Square size={20} />}</button><span className="set-number">Set {setIndex + 1}</span></div>
+        <div className="set-status">
+            <button className="set-checkbox" onClick={handleCheckboxClick}>{completed ? <Check size={20} /> : <Square size={20} />}</button>
+            <span className="set-number">Set {setIndex + 1}</span>
+        </div>
         <div className="set-inputs-container">
-          <div className="set-input-group"><button className="input-button" onClick={() => handleDecrement('weight', weight, 5)}><Minus size={16}/></button><input type="number" className="set-input" placeholder="0" value={weight || ''} onChange={(e) => onSetUpdate(exerciseId, setIndex, 'weight', e.target.value)} /><span>lbs</span><button className="input-button" onClick={() => handleIncrement('weight', weight, 5)}><Plus size={16}/></button></div>
-          <div className="set-input-group"><button className="input-button" onClick={() => handleDecrement('reps', reps, 1)}><Minus size={16}/></button><input type="number" className="set-input" placeholder={String(targetReps)} value={reps || ''} onChange={(e) => onSetUpdate(exerciseId, setIndex, 'reps', e.target.value)} /><span>reps</span><button className="input-button" onClick={() => handleIncrement('reps', reps, 1)}><Plus size={16}/></button></div>
+          <div className="set-input-group">
+            <button className="input-button" onClick={() => handleDecrement('weight', weight, incrementAmount)}><Minus size={16}/></button>
+            <input type="number" step="0.1" className="set-input" placeholder="0" value={weight || ''} onChange={handleWeightChange} />
+            <span>{unitLabel}</span>
+            <button className="input-button" onClick={() => handleIncrement('weight', weight, incrementAmount)}><Plus size={16}/></button>
+          </div>
+          <div className="set-input-group">
+            <button className="input-button" onClick={() => handleDecrement('reps', reps, 1)}><Minus size={16}/></button>
+            <input type="number" className="set-input" placeholder={String(targetReps)} value={reps || ''} onChange={(e) => onSetUpdate(exerciseId, setIndex, 'reps', e.target.value)} />
+            <span>reps</span>
+            <button className="input-button" onClick={() => handleIncrement('reps', reps, 1)}><Plus size={16}/></button>
+          </div>
         </div>
       </div>
       {completed && ( <div className="set-actions"><button className="rest-button" onClick={onRestClick}><Timer size={16} /> Start Rest</button></div> )}
@@ -27,8 +56,8 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
 };
 
 const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType, setActiveView }) => {
-  // THE FIX: Get the hasExerciseDetails function from the context
-  const { openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
+  const { appState, openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
+  const { unitSystem } = appState;
   const { name, sets, note, id, trackingType, value, weight, unit } = exercise;
 
   const handleRestClick = () => {
@@ -39,7 +68,6 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
   };
 
   const handleExerciseClick = () => { 
-    // We only open the modal if details exist, which is checked by the hasExerciseDetails function
     if (hasExerciseDetails(id)) { 
       openExerciseModal(id); 
     } 
@@ -63,7 +91,6 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
             <h4 className="bw-name clickable" onClick={handleExerciseClick}>{name}</h4>
             <p className="bw-target">{value} {unit}</p>
           </div>
-          {/* THE FIX: Only show the icon if details exist */}
           {hasExerciseDetails(id) && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
         </div>
       </div>
@@ -75,11 +102,10 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
       <div className="exercise-card-accessory">
         <div className="exercise-info clickable" onClick={handleExerciseClick}>
           <h4>{name}</h4>
-          {/* THE FIX: Only show the icon if details exist */}
           {hasExerciseDetails(id) && <HelpCircle size={18} className="help-icon" />}
         </div>
         <div className="exercise-details">
-          {weight && <span>{weight}LBS</span>}
+          {weight && <span>{weight}{getUnitLabel(unitSystem).toUpperCase()}</span>}
           {value && <span>{value} {unit?.toUpperCase()}</span>}
         </div>
         <div className="sets-container">
@@ -103,11 +129,15 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
     const percentageNoteInfo = progress?.sets?.[0]?.percentageInfo;
     const isTrackedLift = trackedLifts.some(lift => lift.id === id);
 
+    const unitLabel = getUnitLabel(unitSystem);
+    const display1RM = unitSystem === 'metric' 
+      ? parseFloat(lbsToKg(percentageNoteInfo?.oneRepMax || 0).toFixed(1))
+      : (percentageNoteInfo?.oneRepMax || 0);
+
     return (
       <div className="exercise-card-interactive">
         <div className="exercise-info clickable" onClick={handleExerciseClick}>
           <h4>{name}</h4>
-          {/* THE FIX: Only show the icon if details exist */}
           {hasExerciseDetails(id) && <HelpCircle size={18} className="help-icon" />}
         </div>
         <div className="exercise-details"><span>{sets.length} SETS</span>{restDuration && <span>{restDuration} REST</span>}</div>
@@ -118,7 +148,7 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
           <div className="percentage-note">
             {percentageNoteInfo.oneRepMax > 0 ? (
               <>
-                Target weight is <strong>{percentageNoteInfo.percent}%</strong> of your saved 1RM of <strong>{percentageNoteInfo.oneRepMax} lbs</strong>.
+                Target weight is <strong>{percentageNoteInfo.percent}%</strong> of your saved 1RM of <strong>{display1RM} {unitLabel}</strong>.
               </>
             ) : (
               <>
@@ -141,6 +171,7 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
               progressData={set} 
               targetReps={sets[index].reps} 
               onRestClick={handleRestClick}
+              unitSystem={unitSystem}
             />
           ))}
         </div>

@@ -4,7 +4,8 @@ import React, { useState, useContext } from 'react';
 import WeightLogger from './WeightLogger.jsx';
 import PhotoProgress from './PhotoProgress.jsx';
 import WeightChart from '../Dashboard/WeightChart.jsx';
-import OneRepMaxEditor from './OneRepMaxEditor.jsx'; // --- THE FIX: Import the new component
+import OneRepMaxEditor from './OneRepMaxEditor.jsx';
+import UnitToggle from './UnitToggle.jsx'; // Import the new component
 import { AppStateContext } from '../../context/AppContext.jsx';
 import Modal from '../Common/Modal.jsx';
 import { RotateCcw } from 'lucide-react';
@@ -27,6 +28,8 @@ const ProgressView = () => {
           <p>Track your transformation and celebrate your achievements.</p>
         </div>
 
+        <UnitToggle />
+
         <div className="progress-chart-container">
           <WeightChart />
         </div>
@@ -35,7 +38,6 @@ const ProgressView = () => {
         
         <PhotoProgress />
 
-        {/* --- THE FIX: Add the new editor to the view --- */}
         <OneRepMaxEditor />
 
         <div className="progress-card danger-zone">

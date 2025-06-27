@@ -6,6 +6,7 @@ import { TimerContext } from '../../context/TimerContext.jsx';
 import WorkoutSection from './WorkoutSection.jsx';
 import WorkoutDetailView from '../Program/WorkoutDetailView.jsx';
 import { CheckCircle, AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { calculateAndRoundTargetWeight, kgToLbs } from '../../utils/unitUtils.js';
 import './Workout.css';
 
 const formatTime = (seconds) => {
@@ -27,22 +28,14 @@ const WorkoutView = ({ setActiveView }) => {
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
   const isCompleted = !!scheduleEntry?.completedData;
 
-
-  // --- START OF THE FIX ---
-  // This effect ensures that if a workout is scheduled for the current day,
-  // it's automatically selected when navigating directly to this view.
   useEffect(() => {
-    // If a date is being viewed but no specific workout is selected yet
     if (appState.viewingDate && !appState.viewingScheduleId) {
       const scheduleForDate = appState.workoutSchedule[appState.viewingDate] || [];
-      // If there's at least one workout on this day, select the first one automatically
       if (scheduleForDate.length > 0) {
         navigateToDate(appState.viewingDate, scheduleForDate[0].scheduleId);
       }
     }
   }, [appState.viewingDate, appState.viewingScheduleId, appState.workoutSchedule, navigateToDate]);
-  // --- END OF THE FIX ---
-
 
   useEffect(() => {
     if (timer.recordedTime !== null) {
@@ -74,7 +67,6 @@ const WorkoutView = ({ setActiveView }) => {
     }
   }, [timer.isActive, timer.laps, activeWorkout]);
 
-
   useEffect(() => {
     if (activeWorkout) {
       const initialProgress = {};
@@ -82,8 +74,30 @@ const WorkoutView = ({ setActiveView }) => {
         if (block.type === 'Strength' && block.exercises) {
           block.exercises.forEach(exercise => {
             const exerciseId = `${block.id}-${exercise.id}`;
-            const oneRepMax = appState.oneRepMaxes[exercise.id] || 0;
-            initialProgress[exerciseId] = { sets: exercise.sets.map(set => { let targetWeight = ''; let percentageInfo = null; const loadStr = String(set.load || ''); if (loadStr.includes('%')) { const percentage = parseFloat(loadStr.replace('%', '')) / 100; if (!isNaN(percentage)) { percentageInfo = { percent: percentage * 100, oneRepMax: oneRepMax }; if (oneRepMax > 0) { const calculatedWeight = oneRepMax * percentage; targetWeight = String(Math.round(calculatedWeight / 5) * 5); } else { targetWeight = '0'; } } } else { targetWeight = loadStr; } return { id: set.id, completed: false, weight: targetWeight, reps: set.reps, percentageInfo: percentageInfo, }; }) };
+            const oneRepMaxLbs = appState.oneRepMaxes[exercise.id] || 0;
+            initialProgress[exerciseId] = {
+              sets: exercise.sets.map(set => {
+                let targetWeight = '';
+                let percentageInfo = null;
+                const loadStr = String(set.load || '');
+                if (loadStr.includes('%')) {
+                  const percentage = parseFloat(loadStr.replace('%', '')) / 100;
+                  if (!isNaN(percentage)) {
+                    percentageInfo = { percent: percentage * 100, oneRepMax: oneRepMaxLbs };
+                    targetWeight = String(calculateAndRoundTargetWeight(oneRepMaxLbs, percentage, appState.unitSystem));
+                  }
+                } else {
+                  targetWeight = loadStr;
+                }
+                return {
+                  id: set.id,
+                  completed: false,
+                  weight: targetWeight,
+                  reps: set.reps,
+                  percentageInfo: percentageInfo,
+                };
+              })
+            };
           });
         }
         if (block.type === 'Bodyweight' && block.exercises) { block.exercises.forEach(exercise => { const exerciseId = `${block.id}-${exercise.id}`; initialProgress[exerciseId] = { completed: false }; }); }
@@ -95,7 +109,7 @@ const WorkoutView = ({ setActiveView }) => {
       setExerciseProgress({});
       setBlockProgress({});
     }
-  }, [activeWorkout?.id, appState.oneRepMaxes]);
+  }, [activeWorkout?.id, appState.oneRepMaxes, appState.unitSystem]);
 
   const handleSetUpdate = (exerciseId, setIndex, field, value) => {
     setExerciseProgress(currentProgress => {
@@ -126,8 +140,25 @@ const WorkoutView = ({ setActiveView }) => {
     let sessionStats = { sets: 0, reps: 0, weight: 0, blockTimes: {} };
     Object.keys(exerciseProgress).forEach(exerciseId => {
       const progress = exerciseProgress[exerciseId];
-      if (progress && progress.sets) { progress.sets.forEach(set => { if (set.completed) { sessionStats.sets++; if (set.reps && set.weight) { const reps = parseInt(set.reps, 10) || 0; const weight = parseInt(set.weight, 10) || 0; sessionStats.reps += reps; sessionStats.weight += reps * weight; } } }); }
-      else if (progress && progress.completed) { sessionStats.sets++; }
+      if (progress && progress.sets) {
+        progress.sets.forEach(set => {
+          if (set.completed) {
+            sessionStats.sets++;
+            if (set.reps && set.weight) {
+              const reps = parseInt(set.reps, 10) || 0;
+              let weightInLbs = parseFloat(set.weight) || 0;
+              if (appState.unitSystem === 'metric') {
+                weightInLbs = kgToLbs(weightInLbs);
+              }
+              sessionStats.reps += reps;
+              sessionStats.weight += reps * weightInLbs;
+            }
+          }
+        });
+      }
+      else if (progress && progress.completed) {
+        sessionStats.sets++;
+      }
     });
     
     sessionStats.blockTimes = blockProgress;

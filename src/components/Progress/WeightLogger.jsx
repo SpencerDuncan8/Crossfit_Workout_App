@@ -3,16 +3,22 @@
 import React, { useState, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { TrendingUp } from 'lucide-react';
+import { kgToLbs, getUnitLabel } from '../../utils/unitUtils.js';
 
 const WeightLogger = () => {
-  const { addWeightEntry } = useContext(AppStateContext);
+  const { appState, addWeightEntry } = useContext(AppStateContext);
   const [weight, setWeight] = useState('');
+
+  const unitLabel = getUnitLabel(appState.unitSystem);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newWeight = parseFloat(weight);
-    if (!isNaN(newWeight) && newWeight > 0) {
-      addWeightEntry(newWeight);
+    let weightInLbs = parseFloat(weight);
+    if (!isNaN(weightInLbs) && weightInLbs > 0) {
+      if (appState.unitSystem === 'metric') {
+        weightInLbs = kgToLbs(weightInLbs);
+      }
+      addWeightEntry(weightInLbs);
       setWeight(''); // Clear input after submission
     }
   };
@@ -32,7 +38,7 @@ const WeightLogger = () => {
           className="weight-input"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          placeholder="Enter current weight"
+          placeholder={`Enter current weight in ${unitLabel}`}
         />
         <button type="submit" className="log-weight-btn">Log</button>
       </form>

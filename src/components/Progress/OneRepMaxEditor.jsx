@@ -3,8 +3,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext';
 import { Target } from 'lucide-react';
+import { lbsToKg, kgToLbs, getUnitLabel } from '../../utils/unitUtils.js';
 
-// --- THE FIX: Export this array so other components can use it. ---
 export const trackedLifts = [
   { id: 'squat', name: 'Squat' },
   { id: 'bench_press', name: 'Bench Press' },
@@ -14,12 +14,22 @@ export const trackedLifts = [
 
 const OneRepMaxEditor = () => {
   const { appState, updateOneRepMax } = useContext(AppStateContext);
+  const { oneRepMaxes, unitSystem } = appState;
   
-  const [localMaxes, setLocalMaxes] = useState(appState.oneRepMaxes || {});
+  const [localMaxes, setLocalMaxes] = useState({});
 
   useEffect(() => {
-    setLocalMaxes(appState.oneRepMaxes || {});
-  }, [appState.oneRepMaxes]);
+    const convertedMaxes = {};
+    for (const lift of trackedLifts) {
+      const weightLbs = oneRepMaxes[lift.id] || '';
+      if (unitSystem === 'metric' && weightLbs) {
+        convertedMaxes[lift.id] = parseFloat(lbsToKg(weightLbs).toFixed(1));
+      } else {
+        convertedMaxes[lift.id] = weightLbs;
+      }
+    }
+    setLocalMaxes(convertedMaxes);
+  }, [oneRepMaxes, unitSystem]);
 
   const handleInputChange = (exerciseId, value) => {
     setLocalMaxes(prev => ({
@@ -30,8 +40,19 @@ const OneRepMaxEditor = () => {
   
   const handleBlur = (exerciseId) => {
     const value = localMaxes[exerciseId];
-    updateOneRepMax(exerciseId, value);
+    let weightInLbs = parseFloat(value);
+    
+    if (isNaN(weightInLbs)) {
+      weightInLbs = 0;
+    }
+    
+    if (unitSystem === 'metric') {
+      weightInLbs = kgToLbs(weightInLbs);
+    }
+    updateOneRepMax(exerciseId, weightInLbs);
   };
+
+  const unitLabel = getUnitLabel(unitSystem);
   
   return (
     <div className="progress-card">
@@ -49,13 +70,14 @@ const OneRepMaxEditor = () => {
             <div className="orm-input-group">
               <input
                 type="number"
+                step="0.1"
                 className="orm-input"
                 placeholder="0"
                 value={localMaxes[lift.id] || ''}
                 onChange={(e) => handleInputChange(lift.id, e.target.value)}
                 onBlur={() => handleBlur(lift.id)}
               />
-              <span className="orm-unit-label">lbs</span>
+              <span className="orm-unit-label">{unitLabel}</span>
             </div>
           </div>
         ))}
