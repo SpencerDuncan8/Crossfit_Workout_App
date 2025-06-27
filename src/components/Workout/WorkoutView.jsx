@@ -16,7 +16,7 @@ const formatTime = (seconds) => {
 };
 
 const WorkoutView = ({ setActiveView }) => {
-  const { appState, allWorkouts, completeWorkout, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates } = useContext(AppStateContext);
+  const { appState, allWorkouts, completeWorkout, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, getPreviousExercisePerformance } = useContext(AppStateContext);
   const { timer, startTimer, stopTimer } = useContext(TimerContext);
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [blockProgress, setBlockProgress] = useState({});
@@ -257,10 +257,20 @@ const WorkoutView = ({ setActiveView }) => {
     <div className="workout-view-container">
       <div className="workout-header"><div className="workout-header-nav"><button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn"><ChevronLeft size={28} /></button><div className="workout-header-title"><span className="workout-day-badge">{formattedDate}</span><h1>{activeWorkout.name}</h1></div><button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn"><ChevronRight size={28} /></button></div></div>
       
-      {activeWorkout.blocks.map(block => (
+      {activeWorkout.blocks.map(block => {
+        // Find previous performance data for each exercise in this block
+        const blockWithPreviousPerformance = {
+          ...block,
+          exercises: block.exercises?.map(ex => ({
+            ...ex,
+            previousPerformance: getPreviousExercisePerformance(ex.id, appState.viewingDate)
+          }))
+        };
+        
+        return (
           <WorkoutSection 
             key={block.id} 
-            block={block} 
+            block={blockWithPreviousPerformance} 
             progress={exerciseProgress} 
             onSetUpdate={handleSetUpdate}
             onBlockProgressUpdate={handleBlockProgressUpdate}
@@ -269,7 +279,8 @@ const WorkoutView = ({ setActiveView }) => {
             setActiveView={setActiveView}
             timer={timer}
           />
-      ))}
+        )
+      })}
       <div className="finish-workout-container"><button className="finish-workout-button" onClick={handleFinishWorkout}><CheckCircle size={24} /> Finish Workout & Log</button></div>
     </div>
   );

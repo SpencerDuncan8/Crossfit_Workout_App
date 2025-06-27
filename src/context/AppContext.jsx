@@ -273,6 +273,29 @@ const AppStateProviderComponent = ({ children }) => {
     }
   };
 
+  // --- NEW FUNCTION TO FIND PAST PERFORMANCE ---
+  const getPreviousExercisePerformance = (exerciseId, currentDate) => {
+    const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a));
+    const currentViewDate = new Date(currentDate);
+
+    for (const date of sortedDates) {
+      const loopDate = new Date(date);
+      if (loopDate < currentViewDate) { // Only look at past dates
+        const daySchedule = appState.workoutSchedule[date];
+        for (const entry of daySchedule) {
+          if (entry.completedData?.detailedProgress) {
+            for (const progressKey in entry.completedData.detailedProgress) {
+              if (progressKey.endsWith(`-${exerciseId}`)) {
+                return entry.completedData.detailedProgress[progressKey];
+              }
+            }
+          }
+        }
+      }
+    }
+    return null; // No previous performance found
+  };
+
   const hasExerciseDetails = (exerciseId) => {
     if (!exerciseId) return false;
     return !!getExerciseByName(exerciseId);
@@ -320,6 +343,7 @@ const AppStateProviderComponent = ({ children }) => {
       updateOneRepMax,
       toggleUnitSystem, // Expose the new function
       hasExerciseDetails,
+      getPreviousExercisePerformance, // Expose the new function
       removeWorkoutFromSchedule, 
     }}>
       {children}

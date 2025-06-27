@@ -1,12 +1,12 @@
 // src/components/Workout/ExerciseCard.jsx
 
 import React, { useContext } from 'react';
-import { Check, Square, Plus, Minus, Timer, HelpCircle } from 'lucide-react';
+import { Check, Square, Plus, Minus, Timer, HelpCircle, History } from 'lucide-react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { trackedLifts } from '../Progress/OneRepMaxEditor.jsx';
 import { getUnitLabel, lbsToKg } from '../../utils/unitUtils.js';
 
-const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, onRestClick, unitSystem }) => {
+const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, onRestClick, unitSystem, prevSetData }) => {
   const { completed, weight, reps } = progressData;
   
   const unitLabel = getUnitLabel(unitSystem);
@@ -26,6 +26,20 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
   const handleDecrement = (field, currentValue, amount) => {
     const newValue = Math.max(0, (parseFloat(currentValue) || 0) - amount);
     onSetUpdate(exerciseId, setIndex, field, String(newValue));
+  };
+
+  const renderPreviousPerformance = () => {
+    if (!prevSetData || !prevSetData.completed) return null;
+
+    const prevWeightLbs = parseFloat(prevSetData.weight) || 0;
+    const prevDisplayWeight = unitSystem === 'metric' ? lbsToKg(prevWeightLbs).toFixed(1) : prevWeightLbs;
+
+    return (
+      <div className="previous-performance">
+        <History size={14} />
+        <span>Previous: {prevSetData.reps} x {prevDisplayWeight} {unitLabel}</span>
+      </div>
+    );
   };
 
   return (
@@ -50,15 +64,17 @@ const SetRow = ({ setIndex, exerciseId, onSetUpdate, progressData, targetReps, o
           </div>
         </div>
       </div>
+      {renderPreviousPerformance()}
       {completed && ( <div className="set-actions"><button className="rest-button" onClick={onRestClick}><Timer size={16} /> Start Rest</button></div> )}
     </div>
   );
 };
 
-const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType, setActiveView }) => {
+const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, startTimer, blockType, setActiveView }) => {
   const { appState, openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
   const { unitSystem } = appState;
-  const { name, sets, note, id, trackingType, value, weight, unit } = exercise;
+  const { name, sets, note, id, trackingType, value, weight, unit, previousPerformance } = exercise;
+  const fullExerciseId = `${blockId}-${id}`;
 
   const handleRestClick = () => {
     const restSeconds = parseInt(restDuration, 10);
@@ -75,10 +91,10 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
   
   if (blockType === 'Bodyweight') {
     const isCompleted = progress?.completed || false;
-    const unit = trackingType === 'duration' ? 'SECS' : 'REPS';
+    const unitText = trackingType === 'duration' ? 'SECS' : 'REPS';
 
     const handleCheckboxClick = () => {
-      onSetUpdate(exerciseId, null, 'completed', !isCompleted);
+      onSetUpdate(fullExerciseId, null, 'completed', !isCompleted);
     };
 
     return (
@@ -89,7 +105,7 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
           </button>
           <div className="bw-info">
             <h4 className="bw-name clickable" onClick={handleExerciseClick}>{name}</h4>
-            <p className="bw-target">{value} {unit}</p>
+            <p className="bw-target">{value} {unitText}</p>
           </div>
           {hasExerciseDetails(id) && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
         </div>
@@ -113,7 +129,7 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
             <div key={set.id} className={`accessory-set-row ${set.completed ? 'completed' : ''}`}>
               <button 
                 className="accessory-set-checkbox"
-                onClick={() => onSetUpdate(exerciseId, index, 'completed', !set.completed)}
+                onClick={() => onSetUpdate(fullExerciseId, index, 'completed', !set.completed)}
               >
                 {set.completed ? <Check size={20} /> : <Square size={20} />}
               </button>
@@ -162,18 +178,22 @@ const ExerciseCard = ({ exerciseId, exercise, progress, onSetUpdate, restDuratio
         )}
         
         <div className="sets-container">
-          {progress && progress.sets.map((set, index) => (
-            <SetRow 
-              key={set.id} 
-              setIndex={index} 
-              exerciseId={exerciseId} 
-              onSetUpdate={onSetUpdate} 
-              progressData={set} 
-              targetReps={sets[index].reps} 
-              onRestClick={handleRestClick}
-              unitSystem={unitSystem}
-            />
-          ))}
+          {progress && progress.sets.map((set, index) => {
+            const prevSetData = previousPerformance?.sets?.[index];
+            return (
+              <SetRow 
+                key={set.id} 
+                setIndex={index} 
+                exerciseId={fullExerciseId} 
+                onSetUpdate={onSetUpdate} 
+                progressData={set} 
+                targetReps={sets[index].reps} 
+                onRestClick={handleRestClick}
+                unitSystem={unitSystem}
+                prevSetData={prevSetData}
+              />
+            )
+          })}
         </div>
       </div>
     );

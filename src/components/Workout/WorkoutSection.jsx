@@ -110,7 +110,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
                 return (
                   <ExerciseCard 
                     key={exerciseId} 
-                    exerciseId={exerciseId}
+                    blockId={block.id}
                     exercise={exercise} 
                     progress={progress[exerciseId]}
                     onSetUpdate={onSetUpdate}
