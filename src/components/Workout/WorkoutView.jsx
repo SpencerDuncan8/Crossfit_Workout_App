@@ -189,7 +189,20 @@ const WorkoutView = ({ setActiveView }) => {
 
   return (
     <div className="workout-view-container">
-      <div className="workout-header"><div className="workout-header-nav"><button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn"><ChevronLeft size={28} /></button><div className="workout-header-title"><span className="workout-day-badge">{formattedDate}</span><h1>{activeWorkout.name}</h1></div><button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn"><ChevronRight size={28} /></button></div></div>
+      <div className="workout-header">
+        <div className="workout-header-nav">
+            <button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn">
+                <ChevronLeft size={28} />
+            </button>
+            <div className="workout-header-title">
+                <span className="workout-day-badge">{formattedDate}</span>
+                <h1>{activeWorkout.name}</h1>
+            </div>
+            <button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn">
+                <ChevronRight size={28} />
+            </button>
+        </div>
+      </div>
       
       {activeWorkout.blocks.map(block => (
           <WorkoutSection 

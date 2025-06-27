@@ -44,6 +44,12 @@
     cursor: pointer; transition: color 0.2s;
 }
 .assign-btn:hover { color: #10b981; }
+
+/* THE FIX: Add a new rule for the delete button's hover state */
+.assign-btn.trash-btn:hover {
+  color: #ef4444; /* red-500 */
+}
+
 .assign-workout-item.active { border-color: #059669; }
 .assign-workout-item.active .assign-btn { color: #10b981; }
 .assign-workout-item.active .assign-workout-name {

@@ -11,7 +11,8 @@ const Modal = ({ children, isOpen, onClose, title }) => {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          {title && <h2 className="modal-title">{title}</h2>}
+          {/* THE FIX: Allow title to be a string or a full JSX element */}
+          {title && (typeof title === 'string' ? <h2 className="modal-title">{title}</h2> : title)}
           <button className="modal-close-btn" onClick={onClose}>
             <X size={24} />
           </button>

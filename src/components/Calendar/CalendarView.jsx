@@ -26,22 +26,45 @@ const CalendarView = ({ setActiveView }) => {
       return;
     }
     
-    // THE FIX: The primary view for a day is now its schedule
-    setModalContent({ type: 'day-schedule', date: day.date, scheduledItems });
+    setModalContent({ type: 'day-schedule', date: day.date });
   };
   
   const closeModal = () => { setModalContent(null); setPreviewWorkoutId(null); };
   const handlePrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   
+  // THE FIX: Add functions to navigate days within the modal
+  const handlePrevDayInModal = () => {
+    setModalContent(prev => {
+      if (!prev) return null;
+      const newDate = new Date(prev.date);
+      newDate.setUTCDate(newDate.getUTCDate() - 1);
+      return { ...prev, date: newDate };
+    });
+    setPreviewWorkoutId(null); // Reset preview on day change
+  };
+
+  const handleNextDayInModal = () => {
+    setModalContent(prev => {
+      if (!prev) return null;
+      const newDate = new Date(prev.date);
+      newDate.setUTCDate(newDate.getUTCDate() + 1);
+      return { ...prev, date: newDate };
+    });
+    setPreviewWorkoutId(null); // Reset preview on day change
+  };
+
   const previewWorkout = previewWorkoutId ? allWorkouts.find(w => w.id === previewWorkoutId) : null;
   const workoutToSchedule = appState.workoutToScheduleId ? allWorkouts.find(w => w.id === appState.workoutToScheduleId) : null;
 
   const renderModalContent = () => {
     if (!modalContent) return null;
 
+    const { date } = modalContent;
+    const dateString = date.toISOString().split('T')[0];
+    const scheduledItems = appState.workoutSchedule[dateString] || [];
+
     if (modalContent.type === 'day-schedule') {
-        const { date, scheduledItems } = modalContent;
         if (scheduledItems.length === 0 && !previewWorkout) {
             return renderAssignView(date);
         }
@@ -78,7 +101,7 @@ const CalendarView = ({ setActiveView }) => {
                     {item.completedData ? <CheckCircle size={16} /> : <Eye size={16}/>}
                     {workout.name}
                   </span>
-                  <button className="assign-btn" onClick={() => removeWorkoutFromSchedule(date, item.scheduleId)}>
+                  <button className="assign-btn trash-btn" onClick={() => removeWorkoutFromSchedule(date, item.scheduleId)}>
                       <Trash2 size={20} />
                   </button>
                 </div>
@@ -102,7 +125,7 @@ const CalendarView = ({ setActiveView }) => {
           <>
             <button className="modal-back-btn" onClick={() => setPreviewWorkoutId(null)}><ArrowLeft size={18}/> Back to List</button>
             <WorkoutDetailView workout={previewWorkout} />
-            <button className="action-btn schedule-btn" style={{marginTop: '16px', width: '100%'}} onClick={() => { scheduleWorkoutForDate(date, previewWorkout.id); closeModal(); }}>
+            <button className="action-btn schedule-btn" style={{marginTop: '16px', width: '100%'}} onClick={() => { scheduleWorkoutForDate(date, previewWorkout.id); setModalContent({ type: 'day-schedule', date }); }}>
               <CheckCircle size={20}/> Schedule This Workout
             </button>
           </>
@@ -126,7 +149,7 @@ const CalendarView = ({ setActiveView }) => {
           {allWorkouts.map(workout => (
             <div key={workout.id} className="assign-workout-item">
               <span className="assign-workout-name" onClick={() => setPreviewWorkoutId(workout.id)}><Eye size={16} /> {workout.name}</span>
-              <button className="assign-btn" onClick={() => { scheduleWorkoutForDate(date, workout.id); closeModal(); }}>
+              <button className="assign-btn" onClick={() => { scheduleWorkoutForDate(date, workout.id); setModalContent({ type: 'day-schedule', date }); }}>
                 <PlusCircle size={20} />
               </button>
             </div>
@@ -135,16 +158,27 @@ const CalendarView = ({ setActiveView }) => {
       );
   }
   
-  const getModalTitle = () => {
+  // THE FIX: This function now builds the entire title with navigation
+  const getModalTitleWithNav = () => {
     if (!modalContent) return '';
     const d = new Date(modalContent.date);
     const formattedDate = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
-    
-    switch(modalContent.type) {
-        case 'day-schedule': return formattedDate;
-        case 'assign': return `Add to ${formattedDate}`;
-        default: return 'Calendar Action';
-    }
+    const isAssignView = modalContent.type === 'assign';
+
+    return (
+        <div className="modal-title-nav">
+            <button className="day-nav-btn" onClick={handlePrevDayInModal}>
+                <ChevronLeft size={24} />
+            </button>
+            <div className="modal-title-text-container">
+                <h2>{formattedDate}</h2>
+                {isAssignView && <span>Add a Workout</span>}
+            </div>
+            <button className="day-nav-btn" onClick={handleNextDayInModal}>
+                <ChevronRight size={24} />
+            </button>
+        </div>
+    );
   }
 
   return (
@@ -168,7 +202,11 @@ const CalendarView = ({ setActiveView }) => {
           {monthDays.map(day => (<DayCell key={day.key} day={day} onDayClick={handleDayClick} />))}
         </div>
       </div>
-      <Modal isOpen={!!modalContent} onClose={closeModal} title={getModalTitle()}>
+      <Modal 
+        isOpen={!!modalContent} 
+        onClose={closeModal} 
+        title={getModalTitleWithNav()}
+      >
         {renderModalContent()}
       </Modal>
     </>
