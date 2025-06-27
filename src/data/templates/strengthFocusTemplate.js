@@ -2,31 +2,41 @@
 
 import { generateUniqueId } from '../../utils/idUtils.js';
 
-// --- THE FIX: Updated rest to be in seconds ---
 const strengthWorkoutA = {
   name: 'Workout A',
   blocks: [
-    { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Jumping Jacks (60s)'}, {name: 'Cat-Cow Stretch (10 reps)'}, {name: 'Empty Barbell Squats (2x10)'}] },
+    { id: generateUniqueId(), type: 'Warm-up', exercises: [
+      { id: 'jumping-jack', name: 'Jumping Jacks (60s)' }, // FIXED
+      { id: 'cat-cow-stretch', name: 'Cat-Cow Stretch (10 reps)' }, // FIXED
+      { id: 'squat', name: 'Empty Barbell Squats (2x10)' } // FIXED
+    ] },
     { id: generateUniqueId(), type: 'Strength', rest: '150s', exercises: [
       { id: 'squat', name: 'Squat', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
       { id: 'bench_press', name: 'Bench Press', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
-      { id: generateUniqueId(), name: 'Barbell Row', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '' })) },
+      { id: 'barbell-row', name: 'Barbell Row', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '' })) }, // FIXED
     ]},
-    { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Couch Stretch (60s each side)'}] },
+    { id: generateUniqueId(), type: 'Cool-down', exercises: [
+      { id: 'couch-stretch', name: 'Couch Stretch (60s each side)' } // FIXED
+    ] },
   ]
 };
 
-// --- THE FIX: Updated rest to be in seconds ---
 const strengthWorkoutB = {
   name: 'Workout B',
   blocks: [
-    { id: generateUniqueId(), type: 'Warm-up', exercises: [{name: 'Jumping Jacks (60s)'}, {name: 'Band Pull-Aparts (2x15)'}, {name: 'Empty Barbell OHP (2x10)'}] },
+    { id: generateUniqueId(), type: 'Warm-up', exercises: [
+      { id: 'jumping-jack', name: 'Jumping Jacks (60s)' }, // FIXED
+      { id: 'band-pull-aparts', name: 'Band Pull-Aparts (2x15)' }, // FIXED
+      { id: 'overhead_press', name: 'Empty Barbell OHP (2x10)' } // FIXED
+    ] },
     { id: generateUniqueId(), type: 'Strength', rest: '150s', exercises: [
       { id: 'squat', name: 'Squat', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
       { id: 'overhead_press', name: 'Overhead Press', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '85%' })) },
       { id: 'deadlift', name: 'Deadlift', sets: [{ id: generateUniqueId(), reps: '5', load: '85%' }] },
     ]},
-    { id: generateUniqueId(), type: 'Cool-down', exercises: [{name: 'Pigeon Pose (60s each side)'}] },
+    { id: generateUniqueId(), type: 'Cool-down', exercises: [
+      { id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)' } // FIXED
+    ] },
   ]
 };
 
