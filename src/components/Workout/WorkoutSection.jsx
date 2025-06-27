@@ -11,7 +11,7 @@ const formatTime = (seconds) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
-const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveView, timer, blockProgress }) => {
+const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveView, timer, blockProgress, onBlockProgressUpdate }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
   const isStrength = block.type === 'Strength';
   const isBodyweight = block.type === 'Bodyweight';
   const isAccessory = block.type === 'Accessory / Carry';
+  const isAmrap = block.type === 'Conditioning: AMRAP';
   
   const shouldShowLaps = timer && timer.isActive && timer.laps.length > 0 && 
                          (block.type === 'Conditioning: RFT');
@@ -42,6 +43,22 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
         <div className="section-content">
           
           {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
+
+          {isAmrap && (
+            <div className="amrap-score-logger">
+              <label htmlFor={`amrap-score-${block.id}`}>
+                <CheckCircle size={18} />
+                Log Your Score
+              </label>
+              <input
+                id={`amrap-score-${block.id}`}
+                type="text"
+                placeholder="e.g., 5 Rounds + 12 Reps"
+                value={blockProgress?.score || ''}
+                onChange={(e) => onBlockProgressUpdate(block.id, 'score', e.target.value)}
+              />
+            </div>
+          )}
 
           {isChipperTimeRecorded && (
             <div className="recorded-time-display">
@@ -115,7 +132,6 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
             </>
           )}
           
-          {/* THE FIX IS HERE: This now uses the ExerciseCard component, which has the click logic built-in. */}
           {!isStrength && !isBodyweight && !isConditioning && !isAccessory && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
              <ExerciseCard
                 key={exercise.id || index}

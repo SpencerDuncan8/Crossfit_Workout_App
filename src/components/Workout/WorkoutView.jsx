@@ -20,7 +20,6 @@ const WorkoutView = ({ setActiveView }) => {
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [blockProgress, setBlockProgress] = useState({});
 
-  // THE FIX: Logic to find the specific scheduled item being viewed
   const daySchedule = appState.workoutSchedule[appState.viewingDate] || [];
   const scheduleEntry = daySchedule.find(item => item.scheduleId === appState.viewingScheduleId);
 
@@ -29,7 +28,6 @@ const WorkoutView = ({ setActiveView }) => {
   const isCompleted = !!scheduleEntry?.completedData;
 
 
-  // This effect listens for a recorded time from the context (for Chippers)
   useEffect(() => {
     if (timer.recordedTime !== null) {
       const chipperBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: Chipper');
@@ -45,7 +43,6 @@ const WorkoutView = ({ setActiveView }) => {
     }
   }, [timer.recordedTime, activeWorkout]);
   
-  // This effect captures lap times as they happen
   useEffect(() => {
     if (!timer.isActive && timer.laps.length > 0) {
       const rftBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: RFT');
@@ -54,7 +51,7 @@ const WorkoutView = ({ setActiveView }) => {
           ...prev,
           [rftBlock.id]: {
             ...prev[rftBlock.id],
-            laps: [...timer.laps], // Save a copy of the laps
+            laps: [...timer.laps], 
           }
         }));
       }
@@ -99,6 +96,16 @@ const WorkoutView = ({ setActiveView }) => {
     });
   };
   
+  const handleBlockProgressUpdate = (blockId, field, value) => {
+    setBlockProgress(prev => ({
+      ...prev,
+      [blockId]: {
+        ...prev[blockId],
+        [field]: value,
+      },
+    }));
+  };
+
   const handleFinishWorkout = () => {
     let sessionStats = { sets: 0, reps: 0, weight: 0, blockTimes: {} };
     Object.keys(exerciseProgress).forEach(exerciseId => {
@@ -127,7 +134,6 @@ const WorkoutView = ({ setActiveView }) => {
         stopTimer();
     }
 
-    // THE FIX: Pass the scheduleId to the completion function
     completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats);
     setActiveView('calendar');
   };
@@ -137,7 +143,6 @@ const WorkoutView = ({ setActiveView }) => {
   const isPrevDisabled = currentIndex <= 0;
   const isNextDisabled = currentIndex >= scheduledDates.length - 1;
 
-  // THE FIX: Updated the condition to check if a specific workout is being viewed
   if (!activeWorkout || !scheduleEntry) {
     return (
       <div className="workout-view-container">
@@ -189,31 +194,19 @@ const WorkoutView = ({ setActiveView }) => {
 
   return (
     <div className="workout-view-container">
-      <div className="workout-header">
-        <div className="workout-header-nav">
-            <button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn">
-                <ChevronLeft size={28} />
-            </button>
-            <div className="workout-header-title">
-                <span className="workout-day-badge">{formattedDate}</span>
-                <h1>{activeWorkout.name}</h1>
-            </div>
-            <button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn">
-                <ChevronRight size={28} />
-            </button>
-        </div>
-      </div>
+      <div className="workout-header"><div className="workout-header-nav"><button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn"><ChevronLeft size={28} /></button><div className="workout-header-title"><span className="workout-day-badge">{formattedDate}</span><h1>{activeWorkout.name}</h1></div><button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn"><ChevronRight size={28} /></button></div></div>
       
       {activeWorkout.blocks.map(block => (
           <WorkoutSection 
             key={block.id} 
             block={block} 
             progress={exerciseProgress} 
-            onSetUpdate={handleSetUpdate} 
+            onSetUpdate={handleSetUpdate}
+            onBlockProgressUpdate={handleBlockProgressUpdate}
+            blockProgress={blockProgress[block.id]}
             startTimer={startTimer}
             setActiveView={setActiveView}
             timer={timer}
-            blockProgress={blockProgress[block.id]}
           />
       ))}
       <div className="finish-workout-container"><button className="finish-workout-button" onClick={handleFinishWorkout}><CheckCircle size={24} /> Finish Workout & Log</button></div>
