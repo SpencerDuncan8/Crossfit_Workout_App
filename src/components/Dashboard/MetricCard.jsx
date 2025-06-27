@@ -42,10 +42,7 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
         return '---';
     }
     
-    // Show one decimal for floats, none for integers
-    if (val % 1 !== 0) {
-      return val.toFixed(1);
-    }
+    // Always round the value and format it. This removes the decimal.
     return Math.round(val).toLocaleString('en-US');
   };
 

@@ -22,11 +22,8 @@
 .hero-section h2 { font-size: 28px; font-weight: bold; color: var(--text-primary); margin-bottom: 8px; }
 .hero-section p { color: var(--text-tertiary); font-size: 16px; }
 
-/* THE FIX: Remove the old .main-metric-card styles */
-
 .metrics-grid {
   display: grid;
-  /* THE FIX: Ensure a 2-column layout on mobile, expanding on larger screens */
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 16px;
 }
@@ -48,8 +45,27 @@
 .metric-card-icon { flex-shrink: 0; width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 .metric-card-content { flex-grow: 1; }
 .metric-card-title { color: var(--text-tertiary); font-size: 14px; margin-bottom: 4px; }
-.metric-card-value { color: var(--text-primary); font-size: 28px; font-weight: 700; line-height: 1.2; }
-.metric-card-unit { font-size: 16px; font-weight: 500; color: var(--text-tertiary); margin-left: 4px; }
+
+/* --- THIS IS THE FIX --- */
+.metric-card-value {
+  color: var(--text-primary);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: flex;
+  align-items: baseline; /* Aligns the bottom of the number and unit */
+  flex-wrap: wrap;       /* Allows the unit to wrap to the next line */
+  gap: 4px;              /* Creates space between number and unit */
+}
+
+.metric-card-unit {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  /* The margin-left is no longer needed because of the 'gap' property above */
+}
+/* --- END OF FIX --- */
+
 .fire-icon { animation: flame 1.5s ease-in-out infinite alternate; }
 
 @keyframes flame {
