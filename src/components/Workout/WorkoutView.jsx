@@ -137,7 +137,14 @@ const WorkoutView = ({ setActiveView }) => {
   };
 
   const handleFinishWorkout = () => {
-    let sessionStats = { sets: 0, reps: 0, weight: 0, blockTimes: {} };
+    let sessionStats = {
+      sets: 0,
+      reps: 0,
+      weight: 0, // This is total volume in lbs
+      blockTimes: {},
+      detailedProgress: exerciseProgress,
+    };
+
     Object.keys(exerciseProgress).forEach(exerciseId => {
       const progress = exerciseProgress[exerciseId];
       if (progress && progress.sets) {
@@ -158,6 +165,13 @@ const WorkoutView = ({ setActiveView }) => {
       }
       else if (progress && progress.completed) {
         sessionStats.sets++;
+        // For bodyweight exercises, find the target reps and add to total
+        const [blockId, exId] = exerciseId.split('-');
+        const block = activeWorkout.blocks.find(b => b.id === blockId);
+        const exercise = block?.exercises.find(e => e.id === exId);
+        if (exercise?.trackingType === 'reps') {
+          sessionStats.reps += parseInt(exercise.value, 10) || 0;
+        }
       }
     });
     

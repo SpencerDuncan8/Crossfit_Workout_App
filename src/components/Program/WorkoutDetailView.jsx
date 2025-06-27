@@ -3,6 +3,7 @@
 import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { lbsToKg, getUnitLabel } from '../../utils/unitUtils.js';
+import { Check } from 'lucide-react';
 import './WorkoutDetailView.css';
 
 const WorkoutDetailView = ({ workout, completedData }) => {
@@ -75,21 +76,76 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                 {block.type === 'Conditioning: EMOM' ? (
                   block.minutes.map((min, i) => <li key={i}><strong>Min {i + 1}:</strong> {min.task}</li>)
                 ) : 
-                block.type === 'Cardio' ? (
-                  (block.exercises || []).map((ex, i) => (
-                      <li key={i}>
-                          <strong>{ex.duration} min:</strong> {ex.name || 'General Cardio'}
-                      </li>
-                  ))
-                ) :
                 (
-                  (block.exercises || []).map((ex, i) => (
-                    <li key={i}>
-                      {block.type === 'Strength' && `${ex.sets.length} x `}
-                      {ex.reps && `${ex.reps} `}
-                      {ex.name}
-                    </li>
-                  ))
+                  (block.exercises || []).map((ex, i) => {
+                    const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
+
+                    // If it's a completed view AND a type we track in detail, show the detailed progress.
+                    if (completedData?.detailedProgress && trackedBlockTypes.includes(block.type)) {
+                      const exerciseId = `${block.id}-${ex.id}`;
+                      const progress = completedData.detailedProgress[exerciseId];
+
+                      if (!progress) return null; // No progress logged for this specific exercise.
+
+                      switch (block.type) {
+                        case 'Strength': {
+                          const completedSets = progress.sets?.filter(s => s.completed);
+                          if (!completedSets || completedSets.length === 0) return null; // Don't show if no sets were done
+                          return (
+                            <li key={i} className="completed-strength-exercise">
+                              <strong>{ex.name}</strong>
+                              <ul className="completed-sets-list">
+                                {completedSets.map((set, setIndex) => {
+                                  // Convert logged weight back to current unit system for display
+                                  const weightLbs = parseFloat(set.weight) || 0;
+                                  const displayWeight = isMetric ? lbsToKg(weightLbs).toFixed(1) : weightLbs;
+                                  return (
+                                    <li key={set.id || setIndex} className="completed-set-row">
+                                      <span>Set {setIndex + 1}:</span>
+                                      <span>{set.reps} reps at {displayWeight} {unitLabel}</span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </li>
+                          );
+                        }
+
+                        case 'Accessory / Carry': {
+                          const completedSets = progress.sets?.filter(s => s.completed);
+                          if (!completedSets || completedSets.length === 0) return null;
+                          return (
+                            <li key={i}>
+                              <Check size={16} className="completed-item-marker" />
+                              <strong>{ex.name}</strong> ({completedSets.length} / {progress.sets.length} sets done)
+                            </li>
+                          );
+                        }
+                        
+                        case 'Bodyweight': {
+                          if (!progress.completed) return null;
+                          return (
+                            <li key={i}>
+                              <Check size={16} className="completed-item-marker" />
+                              <strong>{ex.name}</strong>
+                            </li>
+                          );
+                        }
+                        default:
+                          return null;
+                      }
+                    } else {
+                      // Otherwise (not a completed view OR not a tracked type), render the planned exercise.
+                      return (
+                        <li key={i}>
+                          {block.type === 'Strength' && `${ex.sets.length} x `}
+                          {(ex.reps || ex.duration) && `${ex.reps || ex.duration} `}
+                          {ex.name}
+                          {block.type === 'Cardio' && ' min'}
+                        </li>
+                      );
+                    }
+                  })
                 )}
               </ul>
               {shouldShowLapsForBlock && (
