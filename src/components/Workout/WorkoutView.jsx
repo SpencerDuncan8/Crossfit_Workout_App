@@ -28,6 +28,22 @@ const WorkoutView = ({ setActiveView }) => {
   const isCompleted = !!scheduleEntry?.completedData;
 
 
+  // --- START OF THE FIX ---
+  // This effect ensures that if a workout is scheduled for the current day,
+  // it's automatically selected when navigating directly to this view.
+  useEffect(() => {
+    // If a date is being viewed but no specific workout is selected yet
+    if (appState.viewingDate && !appState.viewingScheduleId) {
+      const scheduleForDate = appState.workoutSchedule[appState.viewingDate] || [];
+      // If there's at least one workout on this day, select the first one automatically
+      if (scheduleForDate.length > 0) {
+        navigateToDate(appState.viewingDate, scheduleForDate[0].scheduleId);
+      }
+    }
+  }, [appState.viewingDate, appState.viewingScheduleId, appState.workoutSchedule, navigateToDate]);
+  // --- END OF THE FIX ---
+
+
   useEffect(() => {
     if (timer.recordedTime !== null) {
       const chipperBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: Chipper');
