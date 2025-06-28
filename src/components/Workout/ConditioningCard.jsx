@@ -3,10 +3,9 @@
 import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { TimerContext } from '../../context/TimerContext.jsx';
-import { Play, HelpCircle } from 'lucide-react';
+import { Play, HelpCircle, Star } from 'lucide-react';
 
-const ConditioningCard = ({ block }) => {
-  // THE FIX: Get the hasExerciseDetails function from the context
+const ConditioningCard = ({ block, previousPerformance }) => {
   const { openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
   const { startTimer } = useContext(TimerContext);
   
@@ -36,7 +35,6 @@ const ConditioningCard = ({ block }) => {
   };
   
   const handleExerciseClick = (exercise) => {
-    // We only open the modal if details exist, which is checked by the hasExerciseDetails function
     if (hasExerciseDetails(exercise.id)) {
       openExerciseModal(exercise.id);
     }
@@ -76,6 +74,17 @@ const ConditioningCard = ({ block }) => {
         <h3>{type.replace('Conditioning: ', '')}</h3>
         <span className="wod-format-badge">{formatBadge()}</span>
       </div>
+
+      {previousPerformance && (
+        <div className="previous-best-display">
+          <Star size={16} />
+          {previousPerformance.type === 'TIME' ? (
+            <span>Best Time: <strong>{previousPerformance.time}</strong></span>
+          ) : (
+            <span>Previous Score: <strong>{previousPerformance.score}</strong></span>
+          )}
+        </div>
+      )}
       
       <ul className="exercise-list">
         {minutes?.map((min, index) => (
@@ -90,7 +99,6 @@ const ConditioningCard = ({ block }) => {
               {ex.reps && <span className="exercise-list-reps">{ex.reps}</span>}
               <span className="exercise-list-name">{ex.name}</span>
             </div>
-            {/* THE FIX: Only show the icon if details exist for this exercise ID */}
             {hasExerciseDetails(ex.id) && <HelpCircle size={18} className="help-icon" />}
           </li>
         ))}

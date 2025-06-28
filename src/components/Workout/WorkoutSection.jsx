@@ -42,7 +42,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
       {!isCollapsed && (
         <div className="section-content">
           
-          {isConditioning && <ConditioningCard block={block} startTimer={startTimer} />}
+          {isConditioning && <ConditioningCard block={block} startTimer={startTimer} previousPerformance={block.previousPerformance} />}
 
           {isAmrap && (
             <div className="amrap-score-logger">

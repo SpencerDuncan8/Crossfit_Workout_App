@@ -29,7 +29,6 @@ const AppStateProviderComponent = ({ children }) => {
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
 
-  // New function to toggle the unit system
   const toggleUnitSystem = () => {
     setAppState(prev => ({
       ...prev,
@@ -273,7 +272,6 @@ const AppStateProviderComponent = ({ children }) => {
     }
   };
 
-  // --- NEW FUNCTION TO FIND PAST PERFORMANCE ---
   const getPreviousExercisePerformance = (exerciseId, currentDate) => {
     const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a));
     const currentViewDate = new Date(currentDate);
@@ -295,6 +293,53 @@ const AppStateProviderComponent = ({ children }) => {
     }
     return null; // No previous performance found
   };
+  
+  // --- NEW FUNCTION TO FIND PAST BLOCK PERFORMANCE ---
+  const getPreviousBlockPerformance = (blockId, blockType, currentDate) => {
+    const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a));
+    const currentViewDate = new Date(currentDate);
+    let bestPerformance = null;
+
+    const parseTimeToSeconds = (time) => {
+      if (typeof time === 'number') return time;
+      if (typeof time !== 'string' || !time.includes(':')) return Infinity;
+      const parts = time.split(':');
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    };
+
+    for (const date of sortedDates) {
+      if (new Date(date) >= currentViewDate) continue;
+
+      const daySchedule = appState.workoutSchedule[date];
+      for (const entry of daySchedule) {
+        const blockData = entry.completedData?.blockTimes?.[blockId];
+        if (!blockData) continue;
+
+        if (blockType === 'Conditioning: AMRAP' && blockData.score) {
+          // For AMRAP, just return the most recent score as "best" is complex to parse.
+          return { score: blockData.score, type: 'AMRAP' };
+        }
+        
+        if (blockType === 'Conditioning: Chipper' && blockData.recordedTime) {
+          const currentTimeInSeconds = parseTimeToSeconds(blockData.recordedTime);
+          if (!bestPerformance || currentTimeInSeconds < bestPerformance.timeInSeconds) {
+            bestPerformance = { time: blockData.recordedTime, timeInSeconds: currentTimeInSeconds, type: 'TIME' };
+          }
+        }
+        
+        if (blockType === 'Conditioning: RFT' && blockData.laps?.length > 0) {
+          const totalTimeInSeconds = blockData.laps[blockData.laps.length - 1];
+          if (!bestPerformance || totalTimeInSeconds < bestPerformance.timeInSeconds) {
+             const minutes = Math.floor(totalTimeInSeconds / 60);
+             const seconds = totalTimeInSeconds % 60;
+             bestPerformance = { time: `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`, timeInSeconds: totalTimeInSeconds, type: 'TIME' };
+          }
+        }
+      }
+    }
+    return bestPerformance;
+  };
+
 
   const hasExerciseDetails = (exerciseId) => {
     if (!exerciseId) return false;
@@ -341,9 +386,10 @@ const AppStateProviderComponent = ({ children }) => {
       selectWorkoutToSchedule, clearWorkoutToSchedule,
       autoScheduleProgram,
       updateOneRepMax,
-      toggleUnitSystem, // Expose the new function
+      toggleUnitSystem,
       hasExerciseDetails,
-      getPreviousExercisePerformance, // Expose the new function
+      getPreviousExercisePerformance,
+      getPreviousBlockPerformance, // Expose the new function
       removeWorkoutFromSchedule, 
     }}>
       {children}

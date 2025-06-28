@@ -1,6 +1,6 @@
 // src/components/Workout/WorkoutView.jsx
 
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { TimerContext } from '../../context/TimerContext.jsx';
 import WorkoutSection from './WorkoutSection.jsx';
@@ -16,7 +16,7 @@ const formatTime = (seconds) => {
 };
 
 const WorkoutView = ({ setActiveView }) => {
-  const { appState, allWorkouts, completeWorkout, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, getPreviousExercisePerformance } = useContext(AppStateContext);
+  const { appState, allWorkouts, completeWorkout, navigateToDate, navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates, getPreviousExercisePerformance, getPreviousBlockPerformance } = useContext(AppStateContext);
   const { timer, startTimer, stopTimer } = useContext(TimerContext);
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [blockProgress, setBlockProgress] = useState({});
@@ -27,6 +27,21 @@ const WorkoutView = ({ setActiveView }) => {
   const workoutId = scheduleEntry?.workoutId;
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
   const isCompleted = !!scheduleEntry?.completedData;
+
+  const enrichedActiveWorkout = useMemo(() => {
+    if (!activeWorkout) return null;
+    return {
+      ...activeWorkout,
+      blocks: activeWorkout.blocks.map(block => ({
+        ...block,
+        previousPerformance: getPreviousBlockPerformance(block.id, block.type, appState.viewingDate),
+        exercises: block.exercises?.map(ex => ({
+          ...ex,
+          previousPerformance: getPreviousExercisePerformance(ex.id, appState.viewingDate)
+        }))
+      }))
+    };
+  }, [activeWorkout, appState.viewingDate, appState.workoutSchedule]);
 
   useEffect(() => {
     if (appState.viewingDate && !appState.viewingScheduleId) {
@@ -204,7 +219,7 @@ const WorkoutView = ({ setActiveView }) => {
   const isPrevDisabled = currentIndex <= 0;
   const isNextDisabled = currentIndex >= scheduledDates.length - 1;
 
-  if (!activeWorkout || !scheduleEntry) {
+  if (!enrichedActiveWorkout || !scheduleEntry) {
     return (
       <div className="workout-view-container">
         <div className="rest-day-content" style={{ backgroundColor: 'var(--bg-tertiary)'}}>
@@ -255,22 +270,12 @@ const WorkoutView = ({ setActiveView }) => {
 
   return (
     <div className="workout-view-container">
-      <div className="workout-header"><div className="workout-header-nav"><button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn"><ChevronLeft size={28} /></button><div className="workout-header-title"><span className="workout-day-badge">{formattedDate}</span><h1>{activeWorkout.name}</h1></div><button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn"><ChevronRight size={28} /></button></div></div>
+      <div className="workout-header"><div className="workout-header-nav"><button onClick={navigateToPrevScheduled} disabled={isPrevDisabled} className="day-nav-btn"><ChevronLeft size={28} /></button><div className="workout-header-title"><span className="workout-day-badge">{formattedDate}</span><h1>{enrichedActiveWorkout.name}</h1></div><button onClick={navigateToNextScheduled} disabled={isNextDisabled} className="day-nav-btn"><ChevronRight size={28} /></button></div></div>
       
-      {activeWorkout.blocks.map(block => {
-        // Find previous performance data for each exercise in this block
-        const blockWithPreviousPerformance = {
-          ...block,
-          exercises: block.exercises?.map(ex => ({
-            ...ex,
-            previousPerformance: getPreviousExercisePerformance(ex.id, appState.viewingDate)
-          }))
-        };
-        
-        return (
+      {enrichedActiveWorkout.blocks.map(block => (
           <WorkoutSection 
             key={block.id} 
-            block={blockWithPreviousPerformance} 
+            block={block} 
             progress={exerciseProgress} 
             onSetUpdate={handleSetUpdate}
             onBlockProgressUpdate={handleBlockProgressUpdate}
@@ -279,8 +284,7 @@ const WorkoutView = ({ setActiveView }) => {
             setActiveView={setActiveView}
             timer={timer}
           />
-        )
-      })}
+      ))}
       <div className="finish-workout-container"><button className="finish-workout-button" onClick={handleFinishWorkout}><CheckCircle size={24} /> Finish Workout & Log</button></div>
     </div>
   );
