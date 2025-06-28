@@ -4,21 +4,18 @@ import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { TimerContext } from '../../context/TimerContext.jsx';
 import { Play, HelpCircle, Star } from 'lucide-react';
-import { conditioningInfo } from '../../data/conditioningInfo.js'; // --- ADD THIS ---
+import { conditioningInfo } from '../../data/conditioningInfo.js';
 
 const ConditioningCard = ({ block, previousPerformance }) => {
-  // --- UPDATE THIS TO INCLUDE `openInfoModal` ---
   const { openExerciseModal, hasExerciseDetails, openInfoModal } = useContext(AppStateContext);
   const { startTimer } = useContext(TimerContext);
   
   const { type, exercises, duration, rounds, work, rest, minutes } = block;
 
-  // --- ADD THIS INFO LOOKUP ---
   const info = conditioningInfo[type];
 
-  // --- ADD THIS HANDLER ---
   const handleInfoClick = (e) => {
-    e.stopPropagation(); // Prevent card click or other parent events
+    e.stopPropagation();
     if (info) {
       openInfoModal(info);
     }
@@ -33,7 +30,10 @@ const ConditioningCard = ({ block, previousPerformance }) => {
     if (type === 'Conditioning: AMRAP') {
         startTimer({ type: 'amrap', duration: (duration || 0) * 60 });
     } else if (type === 'Conditioning: Tabata') {
-        startTimer({ type: 'tabata', tabataRounds: rounds, tabataWork: work, tabataRest: rest });
+        startTimer({ type: 'tabata', tabataRounds: 8, tabataWork: 20, tabataRest: 10 });
+    } else if (type === 'Conditioning: Intervals') {
+        // --- FIX: Pass 'intervals' as the type ---
+        startTimer({ type: 'intervals', tabataRounds: rounds, tabataWork: work, tabataRest: rest });
     } else if (type === 'Conditioning: EMOM') {
         startTimer({ type: 'emom', duration: (minutes?.length || 0) * 60 });
     } else if (type === 'Conditioning: RFT') {
@@ -60,6 +60,7 @@ const ConditioningCard = ({ block, previousPerformance }) => {
       case 'Conditioning: Chipper': return { text: "Time Workout", style: "fortime-button" };
       case 'Conditioning: EMOM': return { text: "Start EMOM", style: "emom-button" };
       case 'Conditioning: Tabata': return { text: "Start Tabata", style: "tabata-button" };
+      case 'Conditioning: Intervals': return { text: "Start Intervals", style: "tabata-button" };
       default: return { text: "Start Timer", style: "fortime-button" };
     }
   };
@@ -77,13 +78,13 @@ const ConditioningCard = ({ block, previousPerformance }) => {
       if (type === 'Conditioning: AMRAP') return `${duration || 0} Min AMRAP`;
       if (type === 'Conditioning: Chipper') return 'For Time';
       if (type === 'Conditioning: EMOM') return `EMOM for ${minutes?.length || 0} Mins`;
-      if (type === 'Conditioning: Tabata') return `${rounds || 0} Rounds (${work || 0}s/${rest || 0}s)`;
+      if (type === 'Conditioning: Tabata') return `8 Rounds (20s/10s)`;
+      if (type === 'Conditioning: Intervals') return `${rounds || 0} Rounds (${work || 0}s/${rest || 0}s)`;
       return type;
   }
 
   return (
     <div className="conditioning-card">
-      {/* --- MODIFY THIS HEADER --- */}
       <div className="conditioning-header">
         <div className="conditioning-title-group">
           <h3>{type.replace('Conditioning: ', '')}</h3>
@@ -91,16 +92,15 @@ const ConditioningCard = ({ block, previousPerformance }) => {
         </div>
         <span className="wod-format-badge">{formatBadge()}</span>
       </div>
-      {/* --- END MODIFICATION --- */}
 
       {previousPerformance && (
         <div className="previous-best-display">
           <Star size={16} />
-          {previousPerformance.type === 'TIME' ? (
-            <span>Best Time: <strong>{previousPerformance.time}</strong></span>
-          ) : (
-            <span>Previous Score: <strong>{previousPerformance.score}</strong></span>
-          )}
+            {previousPerformance.type === 'TIME' ? (
+                <span>Best Time: <strong>{previousPerformance.time}</strong></span>
+            ) : (
+                <span>Previous Score: <strong>{previousPerformance.score}</strong></span>
+            )}
         </div>
       )}
       

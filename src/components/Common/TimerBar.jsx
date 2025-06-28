@@ -24,13 +24,16 @@ const TimerBar = () => {
         if (timer.totalLaps > 0) {
           return `Round ${timer.laps.length + 1} / ${timer.totalLaps}`;
         }
-        // THE FIX: Make the title more specific for Chippers
         if (timer.isRecordable) {
             return 'CHIPPER';
         }
         return 'WOD TIMER';
       case 'emom': return `EMOM - MINUTE ${timer.emom.currentMinute} / ${timer.emom.totalMinutes}`;
-      case 'tabata': return `TABATA - ROUND ${timer.tabata.currentRound} / ${timer.tabata.totalRounds}`;
+      // --- FIX: Differentiate between Tabata and Intervals ---
+      case 'tabata': 
+        return `TABATA - ROUND ${timer.tabata.currentRound} / ${timer.tabata.totalRounds}`;
+      case 'intervals':
+        return `INTERVALS - ROUND ${timer.tabata.currentRound} / ${timer.tabata.totalRounds}`;
       default: return 'TIMER';
     }
   };
@@ -49,7 +52,6 @@ const TimerBar = () => {
       );
     }
     
-    // THE FIX: Change the condition to use the new `isRecordable` flag.
     if (timer.isRecordable) { // Chipper
         return (
             <button className="timer-record-btn" onClick={recordAndStopTimer}>
@@ -62,8 +64,8 @@ const TimerBar = () => {
     return null;
   };
   
-  // THE FIX: The action button now shows for RFT (laps) or Chipper (recordable)
   const hasActionButton = timer.type === 'stopwatch' && (timer.totalLaps > 0 || timer.isRecordable);
+  const isIntervalType = timer.type === 'tabata' || timer.type === 'intervals';
 
   return (
     <div className="timer-bar" key={timer.key}>
@@ -80,7 +82,7 @@ const TimerBar = () => {
         {renderActionButton()}
         
         <div className="timer-time-cluster">
-            {timer.type === 'tabata' && (
+            {isIntervalType && (
                 <span className={`tabata-phase-badge ${timer.tabata.isWorkPhase ? 'work' : 'rest'}`}>
                 {timer.tabata.isWorkPhase ? 'WORK' : 'REST'}
                 </span>

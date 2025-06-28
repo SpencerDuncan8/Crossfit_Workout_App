@@ -141,14 +141,25 @@ const WorkoutView = ({ setActiveView }) => {
     });
   };
   
-  const handleBlockProgressUpdate = (blockId, field, value) => {
-    setBlockProgress(prev => ({
-      ...prev,
-      [blockId]: {
-        ...prev[blockId],
-        [field]: value,
-      },
-    }));
+  const handleBlockProgressUpdate = (blockId, fieldOrData, value) => {
+    setBlockProgress(prev => {
+        if (typeof fieldOrData === 'object' && fieldOrData !== null) {
+            return {
+                ...prev,
+                [blockId]: {
+                    ...prev[blockId],
+                    ...fieldOrData
+                }
+            };
+        }
+        return {
+            ...prev,
+            [blockId]: {
+                ...prev[blockId],
+                [fieldOrData]: value,
+            },
+        };
+    });
   };
 
   const handleFinishWorkout = () => {

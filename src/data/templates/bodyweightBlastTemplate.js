@@ -51,8 +51,8 @@ export const bodyweightBlastTemplate = {
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'high-knees', name: 'High Knees (60s)' }, { id: 'butt-kicks', name: 'Butt Kicks (60s)' } ] },
         { 
-          id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8,
-          exercises: [ { id: 'mountain-climbers', name: 'Mountain Climbers' }, { id: 'jump-squats', name: 'Jumping Squats' } ]
+          id: generateUniqueId(), type: 'Conditioning: Tabata',
+          exercises: [ { id: 'mountain-climbers', name: 'Mountain Climbers' } ]
         },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'childs-pose', name: 'Childs Pose (60s)' } ] }
       ]
@@ -141,10 +141,10 @@ export const bodyweightBlastTemplate = {
       name: 'W2D3: Tabata Time',
       blocks: [
           { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'high-knees', name: 'High Knees (60s)' }, { id: 'butt-kicks', name: 'Butt Kicks (60s)' } ] },
-          { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8,
+          { id: generateUniqueId(), type: 'Conditioning: Tabata',
               exercises: [ { id: 'burpees', name: 'Burpees' } ]
           },
-          { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8,
+          { id: generateUniqueId(), type: 'Conditioning: Tabata',
               exercises: [ { id: 'plank', name: 'Plank' } ]
           },
           { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'cobra-stretch', name: 'Cobra Stretch (60s)' } ] }
@@ -298,10 +298,10 @@ export const bodyweightBlastTemplate = {
       id: generateUniqueId(),
       name: 'W4D3: Interval Hell',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 40, rest: 20, rounds: 5,
+          { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 40, rest: 20, rounds: 5,
               exercises: [{id: 'high-knees', name: 'Run/Sprint in place'}]
           },
-          { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 30, rest: 15, rounds: 5,
+          { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 30, rest: 15, rounds: 5,
               exercises: [{id: 'jumping-jack', name: 'Jumping Jacks'}]
           }
       ]

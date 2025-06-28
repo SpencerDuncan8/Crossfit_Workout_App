@@ -61,14 +61,16 @@ The application will follow a **Freemium** model to allow users to experience th
 - **Modular Blocks:** Build workouts using a variety of block types: Warm-up, Strength, Bodyweight, Accessory / Carry, Cardio, Cool-down, and multiple Conditioning formats.
 - **Strength Blocks:** Define exercises with unique sets, reps, and load. Supports percentage-based loading which automatically calculates weight based on your saved 1-Rep Max.
 - **Conditioning Blocks:**
-  - **AMRAP:** Set a time, list the exercises, and log your final score to track performance.
-  - **RFT (Rounds for Time):** Define rounds and exercises, backed by a lap timer.
+  - **AMRAP (As Many Rounds As Possible):** Set a time, list the exercises, and log your final score (total rounds + reps) to track performance.
+  - **RFT (Rounds for Time):** Define rounds and exercises, backed by a lap timer to record split times.
   - **Chipper:** Create a high-rep list of exercises to be completed once for time.
-  - **EMOM & Tabata:** Customize intervals for high-intensity training.
+  - **Tabata:** A true Tabata protocol (8 rounds of 20s work, 10s rest). Log reps for each of the 8 rounds to automatically calculate your official Tabata score (lowest reps).
+  - **EMOM (Every Minute On the Minute):** Customize minute-by-minute tasks for high-intensity training.
+  - **Intervals:** A flexible HIIT block where you can customize work time, rest time, and total rounds.
 
 ### 3. Interactive Workout Experience
-- **Live Tracking & Timers:** Log sets/reps in real-time and use context-aware timers (Stopwatch, Countdown, AMRAP, EMOM) that launch automatically for the block you're on.
-- **Live Feedback & Score Logging:** Log round times for RFTs, record final times for Chippers, and enter your total reps/rounds for AMRAPs to save with your workout results.
+- **Live Tracking & Timers:** Log sets/reps in real-time and use context-aware timers (Stopwatch, Countdown, AMRAP, EMOM, Tabata, Intervals) that launch automatically for the block you're on.
+- **Live Feedback & Score Logging:** Log round times for RFTs, record final times for Chippers, enter your total reps/rounds for AMRAPs, and log reps for each round of a Tabata to save detailed performance data with your workout results.
 - **1RM Percentage Calculation:** The app displays the calculated target weight based on your saved 1-Rep Max.
 - **Seamless Navigation:** Use arrow buttons in the Workout View and Calendar modals to easily flip between days.
 
@@ -83,6 +85,7 @@ The application will follow a **Freemium** model to allow users to experience th
 - **Weight & Photo Logging:** Track your body weight and visualize it on a chart. Upload progress photos and compare them side-by-side.
 
 ### 6. Quality of Life Features
+- **In-App Explanations:** Click the help icon next to any conditioning workout type (AMRAP, RFT, Tabata, etc.) to get a detailed explanation of the rules and scoring.
 - **Light & Dark Mode:** Toggle between a sleek dark theme and a clean light theme.
 - **Responsive Design:** A mobile-first design ensures a seamless experience on any device.
 

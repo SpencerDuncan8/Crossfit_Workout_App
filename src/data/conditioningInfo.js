@@ -45,12 +45,23 @@ export const conditioningInfo = {
   },
   'Conditioning: Tabata': {
     title: 'Tabata',
-    description: 'Tabata is a form of high-intensity interval training (HIIT). The structure is very specific: 20 seconds of all-out effort, followed by 10 seconds of rest. This cycle is repeated, typically for 8 rounds, totaling 4 minutes per exercise.',
+    description: 'Tabata is a form of high-intensity interval training (HIIT). The structure is very specific: 20 seconds of all-out effort, followed by 10 seconds of rest. This cycle is repeated for 8 rounds, totaling 4 minutes.',
     points: [
       'One Tabata "round" is 8 intervals.',
       'Each interval consists of 20 seconds of work and 10 seconds of rest.',
       'The goal is maximum intensity during the 20-second work periods.',
-      'Traditionally, the score is the lowest number of reps completed in any of the 8 work intervals.'
+      'Your score is the lowest number of reps completed in any of the 8 work intervals.'
+    ]
+  },
+  // --- THIS IS THE NEWLY ADDED SECTION ---
+  'Conditioning: Intervals': {
+    title: 'Custom Intervals (HIIT)',
+    description: 'This is a flexible form of High-Intensity Interval Training (HIIT). You can customize the duration of the work periods, rest periods, and the total number of rounds to create a wide variety of workouts.',
+    points: [
+      'Define a "Work" period (in seconds).',
+      'Define a "Rest" period (in seconds).',
+      'Set the total number of rounds.',
+      'This format is great for tailoring workout intensity and duration to your specific goals.'
     ]
   }
 };

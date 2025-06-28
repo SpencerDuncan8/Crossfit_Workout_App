@@ -7,8 +7,7 @@ import WorkoutBlockEditor from './WorkoutBlockEditor.jsx';
 import { generateUniqueId } from '../../utils/idUtils.js';
 import './WorkoutEditor.css';
 
-// --- THE FIX: Added 'Accessory / Carry' to the list ---
-const blockTypes = [ 'Warm-up', 'Strength', 'Bodyweight', 'Accessory / Carry', 'Conditioning: AMRAP', 'Conditioning: RFT', 'Conditioning: Chipper', 'Conditioning: EMOM', 'Conditioning: Tabata', 'Cardio', 'Cool-down' ];
+const blockTypes = [ 'Warm-up', 'Strength', 'Bodyweight', 'Accessory / Carry', 'Conditioning: AMRAP', 'Conditioning: RFT', 'Conditioning: Chipper', 'Conditioning: EMOM', 'Conditioning: Intervals', 'Conditioning: Tabata', 'Cardio', 'Cool-down' ];
 
 const WorkoutEditor = () => {
   const { appState, allWorkouts, closeWorkoutEditor, saveCustomWorkout } = useContext(AppStateContext);
@@ -17,17 +16,39 @@ const WorkoutEditor = () => {
   useEffect(() => {
     const { editingInfo } = appState;
     if (editingInfo) {
+      let workoutToLoad;
       if (editingInfo.workoutId) {
-        const workoutToEdit = allWorkouts.find(w => w.id === editingInfo.workoutId);
-        if (workoutToEdit) {
-          setWorkout(JSON.parse(JSON.stringify(workoutToEdit)));
-        }
+        const foundWorkout = allWorkouts.find(w => w.id === editingInfo.workoutId);
+        // Deep copy to prevent direct state mutation
+        workoutToLoad = foundWorkout ? JSON.parse(JSON.stringify(foundWorkout)) : null;
       } else {
         // This handles creating a new workout.
-        setWorkout({ id: generateUniqueId(), name: 'My New Workout', blocks: [] });
+        workoutToLoad = { id: generateUniqueId(), name: 'My New Workout', blocks: [] };
+      }
+
+      if (workoutToLoad) {
+        // --- FIX: DATA MIGRATION ---
+        // This automatically converts old "Tabata" blocks to the new "Intervals" format on load.
+        // This prevents the app from crashing when editing old workouts.
+        let needsUpdate = false;
+        workoutToLoad.blocks = workoutToLoad.blocks.map(block => {
+          if (block.type === 'Conditioning: Tabata' && block.hasOwnProperty('work')) {
+            needsUpdate = true;
+            return { ...block, type: 'Conditioning: Intervals' };
+          }
+          return block;
+        });
+
+        if (needsUpdate) {
+          console.log("Migrated old Tabata blocks to new Intervals format.");
+        }
+        // --- END FIX ---
+        
+        setWorkout(workoutToLoad);
       }
     }
   }, [appState.editingInfo, allWorkouts]);
+
 
   if (!workout) return null;
 
@@ -52,7 +73,6 @@ const WorkoutEditor = () => {
       case 'Bodyweight':
         newBlock.exercises = [{ id: generateUniqueId(), name: '', trackingType: 'reps', value: '15' }];
         break;
-      // --- THE FIX: Define the default structure for the new block type ---
       case 'Accessory / Carry':
         newBlock.exercises = [{ id: generateUniqueId(), name: 'Farmer\'s Carry', weight: '50', value: '100', unit: 'meters' }];
         break;
@@ -68,8 +88,12 @@ const WorkoutEditor = () => {
       case 'Conditioning: EMOM':
         newBlock = { ...newBlock, minutes: [{ id: generateUniqueId(), task: '' }] };
         break;
+      case 'Conditioning: Intervals':
+        // --- FIX: Ensure new Intervals blocks have an empty exercises array ---
+        newBlock = { ...newBlock, work: 30, rest: 15, rounds: 5, exercises: [] };
+        break;
       case 'Conditioning: Tabata':
-        newBlock = { ...newBlock, work: 20, rest: 10, rounds: 8 };
+        newBlock.exercises = [{ id: generateUniqueId(), name: '' }];
         break;
       case 'Cardio':
         newBlock.exercises = [{ id: generateUniqueId(), name: '', duration: '20' }];
@@ -95,7 +119,7 @@ const WorkoutEditor = () => {
         <div className="editor-body">
           <div className="editor-input-group"><label className="editor-label" htmlFor="workoutName">Workout Name</label><input id="workoutName" className="editor-input" type="text" value={workout.name} onChange={handleNameChange} /></div>
           <div><h3 className="editor-section-title">Workout Blocks</h3>{workout.blocks.length > 0 ? ( workout.blocks.map(block => ( <WorkoutBlockEditor key={block.id} block={block} onUpdate={handleUpdateBlock} onDelete={handleDeleteBlock} />)) ) : ( <p style={{color: 'var(--text-tertiary)', textAlign: 'center', padding: '16px'}}>This workout has no blocks yet.</p> )}</div>
-          <div><h3 className="editor-section-title">Add a Block</h3><div className="add-block-grid">{blockTypes.map(type => ( <button key={type} className="add-block-btn" onClick={() => handleAddBlock(type)}><Plus size={16} /> {type}</button>))}</div></div>
+          <div><h3 className="editor-section-title">Add a Block</h3><div className="add-block-grid">{blockTypes.map(type => ( <button key={type} className="add-block-btn" onClick={() => handleAddBlock(type)}><Plus size={16} /> {type.replace('Conditioning: ', '')}</button>))}</div></div>
         </div>
       </div>
     </div>

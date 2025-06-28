@@ -17,11 +17,10 @@ const initialAppState = {
   viewingDate: new Date().toISOString().split('T')[0],
   viewingScheduleId: null, 
   oneRepMaxes: {},
-  unitSystem: 'imperial', // New state for tracking the unit system
+  unitSystem: 'imperial',
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingInfo: null, 
   workoutToScheduleId: null,
-  // --- ADD THIS ---
   isInfoModalOpen: false, 
   infoModalContent: null,
 };
@@ -32,14 +31,12 @@ const AppStateProviderComponent = ({ children }) => {
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
 
-  // --- ADD THESE NEW FUNCTIONS ---
   const openInfoModal = (content) => {
     updateAppState({ isInfoModalOpen: true, infoModalContent: content });
   };
   const closeInfoModal = () => {
     updateAppState({ isInfoModalOpen: false, infoModalContent: null });
   };
-  // --- END NEW FUNCTIONS ---
 
   const toggleUnitSystem = () => {
     setAppState(prev => ({
@@ -305,8 +302,7 @@ const AppStateProviderComponent = ({ children }) => {
     }
     return null; // No previous performance found
   };
-  
-  // --- NEW FUNCTION TO FIND PAST BLOCK PERFORMANCE ---
+
   const getPreviousBlockPerformance = (blockId, blockType, currentDate) => {
     const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a));
     const currentViewDate = new Date(currentDate);
@@ -327,18 +323,21 @@ const AppStateProviderComponent = ({ children }) => {
         const blockData = entry.completedData?.blockTimes?.[blockId];
         if (!blockData) continue;
 
+        if (blockType === 'Conditioning: Tabata' && blockData.score && blockData.rounds) {
+          return { score: blockData.score, rounds: blockData.rounds, type: 'TABATA' };
+        }
+
         if (blockType === 'Conditioning: AMRAP' && blockData.score) {
-          // For AMRAP, just return the most recent score as "best" is complex to parse.
           return { score: blockData.score, type: 'AMRAP' };
         }
-        
+
         if (blockType === 'Conditioning: Chipper' && blockData.recordedTime) {
           const currentTimeInSeconds = parseTimeToSeconds(blockData.recordedTime);
           if (!bestPerformance || currentTimeInSeconds < bestPerformance.timeInSeconds) {
             bestPerformance = { time: blockData.recordedTime, timeInSeconds: currentTimeInSeconds, type: 'TIME' };
           }
         }
-        
+
         if (blockType === 'Conditioning: RFT' && blockData.laps?.length > 0) {
           const totalTimeInSeconds = blockData.laps[blockData.laps.length - 1];
           if (!bestPerformance || totalTimeInSeconds < bestPerformance.timeInSeconds) {
@@ -401,9 +400,8 @@ const AppStateProviderComponent = ({ children }) => {
       toggleUnitSystem,
       hasExerciseDetails,
       getPreviousExercisePerformance,
-      getPreviousBlockPerformance, // Expose the new function
+      getPreviousBlockPerformance,
       removeWorkoutFromSchedule, 
-      // --- ADD THESE TO THE EXPORTED VALUE ---
       openInfoModal,
       closeInfoModal,
     }}>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Play, Flag, CheckCircle } from 'lucide-react';
 import ExerciseCard from './ExerciseCard.jsx';
 import ConditioningCard from './ConditioningCard.jsx';
+import TabataScoreLogger from './TabataScoreLogger.jsx';
 
 const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -27,6 +28,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
   const isBodyweight = block.type === 'Bodyweight';
   const isAccessory = block.type === 'Accessory / Carry';
   const isAmrap = block.type === 'Conditioning: AMRAP';
+  const isTabata = block.type === 'Conditioning: Tabata';
   
   const shouldShowLaps = timer && timer.isActive && timer.laps.length > 0 && 
                          (block.type === 'Conditioning: RFT');
@@ -36,13 +38,22 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
   return (
     <div className={`workout-section ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="section-header" onClick={() => setIsCollapsed(!isCollapsed)}>
-        <h3>{block.type}</h3>
+        <h3>{block.type.replace('Conditioning: ', '')}</h3>
         <div className="section-meta"><ChevronDown size={24} className="collapse-icon" /></div>
       </div>
       {!isCollapsed && (
         <div className="section-content">
           
           {isConditioning && <ConditioningCard block={block} startTimer={startTimer} previousPerformance={block.previousPerformance} />}
+
+          {isTabata && (
+            <TabataScoreLogger
+              blockId={block.id}
+              blockProgress={blockProgress}
+              onBlockProgressUpdate={onBlockProgressUpdate}
+              previousPerformance={block.previousPerformance}
+            />
+          )}
 
           {isAmrap && (
             <div className="amrap-score-logger">

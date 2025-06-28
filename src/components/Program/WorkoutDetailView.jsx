@@ -52,10 +52,11 @@ const WorkoutDetailView = ({ workout, completedData }) => {
           const recordedBlockTime = completedBlockData?.recordedTime;
           const recordedScore = completedBlockData?.score;
           const shouldShowLapsForBlock = completedBlockData?.laps?.length > 0;
+          const tabataRounds = completedBlockData?.rounds;
 
           return (
             <div key={block.id} className="detail-block-card">
-              <h5 className="detail-block-title">{block.type}</h5>
+              <h5 className="detail-block-title">{block.type.replace('Conditioning: ', '')}</h5>
               {recordedBlockTime && (
                  <div className="recorded-time-display review-mode">
                     <span className="recorded-time-label">
@@ -64,10 +65,18 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                     <span className="recorded-time-value">{recordedBlockTime}</span>
                  </div>
               )}
-              {recordedScore && (
+              {recordedScore && block.type === 'Conditioning: AMRAP' && (
                  <div className="recorded-score-display review-mode">
                     <span className="recorded-score-label">
                       Score
+                    </span>
+                    <span className="recorded-score-value">{recordedScore}</span>
+                 </div>
+              )}
+              {recordedScore && block.type === 'Conditioning: Tabata' && (
+                 <div className="recorded-score-display review-mode">
+                    <span className="recorded-score-label">
+                      Tabata Score (Lowest Reps)
                     </span>
                     <span className="recorded-score-value">{recordedScore}</span>
                  </div>
@@ -80,23 +89,21 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                   (block.exercises || []).map((ex, i) => {
                     const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
 
-                    // If it's a completed view AND a type we track in detail, show the detailed progress.
                     if (completedData?.detailedProgress && trackedBlockTypes.includes(block.type)) {
                       const exerciseId = `${block.id}-${ex.id}`;
                       const progress = completedData.detailedProgress[exerciseId];
 
-                      if (!progress) return null; // No progress logged for this specific exercise.
+                      if (!progress) return null;
 
                       switch (block.type) {
                         case 'Strength': {
                           const completedSets = progress.sets?.filter(s => s.completed);
-                          if (!completedSets || completedSets.length === 0) return null; // Don't show if no sets were done
+                          if (!completedSets || completedSets.length === 0) return null;
                           return (
                             <li key={i} className="completed-strength-exercise">
                               <strong>{ex.name}</strong>
                               <ul className="completed-sets-list">
                                 {completedSets.map((set, setIndex) => {
-                                  // Convert logged weight back to current unit system for display
                                   const weightLbs = parseFloat(set.weight) || 0;
                                   const displayWeight = isMetric ? lbsToKg(weightLbs).toFixed(1) : weightLbs;
                                   return (
@@ -135,7 +142,6 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                           return null;
                       }
                     } else {
-                      // Otherwise (not a completed view OR not a tracked type), render the planned exercise.
                       return (
                         <li key={i}>
                           {block.type === 'Strength' && `${ex.sets.length} x `}
@@ -148,6 +154,19 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                   })
                 )}
               </ul>
+              {tabataRounds && (
+                <div className="completed-laps-section">
+                   <h5 className="detail-block-title sub-title">Reps per Round</h5>
+                   <ul className="detail-exercise-list">
+                      {tabataRounds.map((reps, index) => (
+                        <li key={index} style={{display: 'flex', justifyContent: 'space-between'}}>
+                          <strong>Round {index + 1}:</strong> 
+                          <span>{reps || 0} reps</span>
+                        </li>
+                      ))}
+                   </ul>
+                </div>
+              )}
               {shouldShowLapsForBlock && (
                 <div className="completed-laps-section">
                    <h5 className="detail-block-title sub-title">Round Times</h5>

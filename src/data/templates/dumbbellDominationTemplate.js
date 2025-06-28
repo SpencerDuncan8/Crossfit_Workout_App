@@ -107,11 +107,8 @@ const coreWorkouts = [
         { id: 'pullups', name: 'Pull-ups', sets: [{id: generateUniqueId(), reps:'8'},{id: generateUniqueId(), reps:'8'},{id: generateUniqueId(), reps:'8'},{id: generateUniqueId(), reps:'8'}] },
         { id: 'dumbbell-arnold-press', name: 'Dumbbell Arnold Press', sets: [{id: generateUniqueId(), reps:'10'},{id: generateUniqueId(), reps:'10'},{id: generateUniqueId(), reps:'10'}] },
       ]},
-      { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 8, exercises: [
+      { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [
         { id: 'dumbbell-thrusters', name: 'Dumbbell Thrusters' },
-        { id: 'push-ups', name: 'Push-ups' },
-        { id: 'mountain-climbers', name: 'Mountain Climbers' },
-        { id: 'burpees', name: 'Burpees' },
       ]},
       { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'static-stretching', name: '5 min Easy Bike + Stretches' } ] },
     ]
@@ -180,11 +177,9 @@ const coreWorkouts = [
         { id: 'dumbbell-squat-to-press', name: 'Dumbbell Squat to Press', sets: [{id: generateUniqueId(), reps:'6'},{id: generateUniqueId(), reps:'6'},{id: generateUniqueId(), reps:'6'},{id: generateUniqueId(), reps:'6'},{id: generateUniqueId(), reps:'6'}] },
         { id: 'dumbbell-clean-and-press', name: 'Dumbbell Clean and Press', sets: [{id: generateUniqueId(), reps:'4'},{id: generateUniqueId(), reps:'4'},{id: generateUniqueId(), reps:'4'},{id: generateUniqueId(), reps:'4'},{id: generateUniqueId(), reps:'4'}] },
       ]},
-      { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 16, exercises: [
+      { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 20, rest: 10, rounds: 16, exercises: [
         { id: 'dumbbell-jump-squats', name: 'Dumbbell Jump Squats' },
         { id: 'burpees', name: 'Burpees' },
-        { id: 'jumping-lunges', name: 'Jumping Lunges' },
-        { id: 'mountain-climbers', name: 'Mountain Climbers' },
       ]},
       { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'static-stretching', name: '5 min Easy Bike + Stretches' } ] },
     ]
@@ -225,7 +220,7 @@ const coreWorkouts = [
         { id: 'dumbbell-romanian-deadlifts', name: 'Dumbbell Romanian Deadlifts', sets: [{id:generateUniqueId(), reps:'8'},{id:generateUniqueId(), reps:'8'},{id:generateUniqueId(), reps:'8'},{id:generateUniqueId(), reps:'8'},{id:generateUniqueId(), reps:'8'}] },
       ]},
       { id: generateUniqueId(), type: 'Conditioning: Chipper', exercises: [
-        { id: 'dumbbell-goblet-squats', name: '1-2-3-4-5-4-3-2-1 reps of:', reps: '' },
+        { id: 'complex1', name: '1-2-3-4-5-4-3-2-1 reps of:', reps: '' },
         { id: 'dumbbell-goblet-squats', name: 'Dumbbell Goblet Squats', reps: '' },
         { id: 'burpees', name: 'Burpees', reps: '' },
         { id: 'jumping-lunges', name: 'Jumping Lunges (each leg)', reps: '' },
@@ -371,11 +366,11 @@ const coreWorkouts = [
         { id: 'dumbbell-clean-and-press', name: 'Dumbbell Clean and Press (each arm)', sets: [{id:generateUniqueId(), reps:'2'},{id:generateUniqueId(), reps:'2'},{id:generateUniqueId(), reps:'2'},{id:generateUniqueId(), reps:'2'},{id:generateUniqueId(), reps:'2'},{id:generateUniqueId(), reps:'2'}] },
         { id: 'dumbbell-jump-squats', name: 'Dumbbell Jump Squats', sets: [{id:generateUniqueId(), reps:'3'},{id:generateUniqueId(), reps:'3'},{id:generateUniqueId(), reps:'3'},{id:generateUniqueId(), reps:'3'},{id:generateUniqueId(), reps:'3'},{id:generateUniqueId(), reps:'3'}] },
       ]},
-      { id: generateUniqueId(), type: 'Conditioning: Tabata', work: 20, rest: 10, rounds: 32, exercises: [
-        { id: 'dumbbell-jump-squats', name: 'Tabata Dumbbell Jump Squats (8 rds)' },
-        { id: 'burpees', name: 'Tabata Burpees (8 rds)' },
-        { id: 'jumping-lunges', name: 'Tabata Jumping Lunges (8 rds)' },
-        { id: 'stationary-bike', name: 'Tabata Bike Sprints (8 rds)' },
+      { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 20, rest: 10, rounds: 32, exercises: [
+        { id: 'dumbbell-jump-squats', name: 'Dumbbell Jump Squats' },
+        { id: 'burpees', name: 'Burpees' },
+        { id: 'jumping-lunges', name: 'Jumping Lunges' },
+        { id: 'stationary-bike', name: 'Bike Sprints' },
       ]},
       { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'static-stretching', name: '5 min Easy Bike + Stretches' } ] },
     ]

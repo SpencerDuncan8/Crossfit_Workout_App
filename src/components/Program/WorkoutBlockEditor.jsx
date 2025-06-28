@@ -92,7 +92,26 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
       case 'Conditioning: Chipper': return (
         <>{block.type === 'Conditioning: RFT' && (<div className="block-form-grid"><div className="block-input-group"><label>Rounds</label><input type="number" value={block.rounds || ''} onChange={(e) => updateBlockField('rounds', e.target.value)} /></div></div>)}<div className="exercise-editor-list"><label className="editor-label">Exercises</label>{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="exercise-editor-item"><input type="text" className="reps-input for-time-reps" placeholder="Reps" value={ex.reps || ''} onChange={(e) => updateExerciseField(exIndex, 'reps', e.target.value)} /><span className="for-time-x">x</span><input type="text" placeholder="Exercise Name" value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></>
       );
-      case 'Conditioning: Tabata': return ( <><div className="block-form-grid"><div className="block-input-group"><label>Work (sec)</label><input type="number" value={block.work || ''} onChange={(e) => updateBlockField('work', e.target.value)} /></div><div className="block-input-group"><label>Rest (sec)</label><input type="number" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} /></div><div className="block-input-group"><label>Rounds</label><input type="number" value={block.rounds || ''} onChange={(e) => updateBlockField('rounds', e.target.value)} /></div></div><div className="exercise-editor-list"><label className="editor-label">Exercises</label>{(block.exercises || []).map((ex, exIndex) => (<div key={ex.id} className="exercise-editor-item"><input type="text" placeholder={placeholder} value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} /><button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button></div>))}<button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button></div></> );
+      // --- FIX: This now renders the customizable intervals block ---
+      case 'Conditioning: Intervals': return ( 
+        <>
+            <div className="block-form-grid">
+                <div className="block-input-group"><label>Work (sec)</label><input type="number" value={block.work || ''} onChange={(e) => updateBlockField('work', e.target.value)} /></div>
+                <div className="block-input-group"><label>Rest (sec)</label><input type="number" value={block.rest || ''} onChange={(e) => updateBlockField('rest', e.target.value)} /></div>
+                <div className="block-input-group"><label>Rounds</label><input type="number" value={block.rounds || ''} onChange={(e) => updateBlockField('rounds', e.target.value)} /></div>
+            </div>
+            <div className="exercise-editor-list">
+                <label className="editor-label">Exercises</label>
+                {(block.exercises || []).map((ex, exIndex) => (
+                    <div key={ex.id} className="exercise-editor-item">
+                        <input type="text" placeholder={placeholder} value={ex.name || ''} onChange={(e) => updateExerciseField(exIndex, 'name', e.target.value)} />
+                        <button className="remove-exercise-btn" onClick={() => removeExercise(exIndex)}><X size={16} /></button>
+                    </div>
+                ))}
+                <button className="add-exercise-btn" onClick={addExercise}><PlusCircle size={16} /> Add Exercise</button>
+            </div>
+        </> 
+      );
       case 'Cardio': return (
         <div className="exercise-editor-list">
             <label className="editor-label">Exercises</label>
@@ -112,7 +131,7 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
       );
     }
   };
-  return ( <div className="workout-block"><div className="block-header"><h4>{block.type}</h4><button className="delete-block-btn" onClick={() => onDelete(block.id)}><Trash2 size={18} /></button></div><div className="block-content">{renderBlockContent()}</div></div> );
+  return ( <div className="workout-block"><div className="block-header"><h4>{block.type.replace('Conditioning: ', '')}</h4><button className="delete-block-btn" onClick={() => onDelete(block.id)}><Trash2 size={18} /></button></div><div className="block-content">{renderBlockContent()}</div></div> );
 };
 
 export default WorkoutBlockEditor;

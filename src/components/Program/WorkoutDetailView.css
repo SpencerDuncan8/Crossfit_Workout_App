@@ -67,19 +67,17 @@
     color: var(--text-primary);
 }
 
-/* THE FIX: Styles for the completed laps section inside the modal */
 .completed-laps-section {
     margin-top: 16px;
     padding-top: 12px;
     border-top: 1px solid var(--border-color);
 }
 
-.completed-laps-section .sub-title {
+.detail-block-title.sub-title {
     color: #3b82f6; /* Blue to distinguish from the main block title */
     font-size: 14px;
+    margin-bottom: 8px;
 }
-
-/* --- NEW STYLES FOR COMPLETED WORKOUT DETAILS --- */
 
 .completed-strength-exercise {
   display: flex;

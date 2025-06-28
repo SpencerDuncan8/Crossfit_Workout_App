@@ -283,3 +283,109 @@
 .info-icon:hover {
     color: #3b82f6; /* Blue accent */
 }
+/* src/components/Workout/Workout.css */
+
+/* ... (all existing styles) ... */
+
+/* --- TABATA SCORE LOGGER STYLES --- */
+.tabata-score-logger {
+  margin-top: 16px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabata-score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tabata-score-header label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.tabata-score-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-tertiary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.tabata-score-display strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tabata-rounds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.tabata-round-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tabata-round-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.tabata-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding-right: 8px;
+}
+
+.tabata-input-wrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+.tabata-input-wrapper input:focus {
+  outline: none;
+}
+
+.tabata-previous-reps {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.conditioning-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-icon {
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.info-icon:hover {
+    color: #3b82f6; /* Blue accent */
+}
