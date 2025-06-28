@@ -4,12 +4,25 @@ import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { TimerContext } from '../../context/TimerContext.jsx';
 import { Play, HelpCircle, Star } from 'lucide-react';
+import { conditioningInfo } from '../../data/conditioningInfo.js'; // --- ADD THIS ---
 
 const ConditioningCard = ({ block, previousPerformance }) => {
-  const { openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
+  // --- UPDATE THIS TO INCLUDE `openInfoModal` ---
+  const { openExerciseModal, hasExerciseDetails, openInfoModal } = useContext(AppStateContext);
   const { startTimer } = useContext(TimerContext);
   
   const { type, exercises, duration, rounds, work, rest, minutes } = block;
+
+  // --- ADD THIS INFO LOOKUP ---
+  const info = conditioningInfo[type];
+
+  // --- ADD THIS HANDLER ---
+  const handleInfoClick = (e) => {
+    e.stopPropagation(); // Prevent card click or other parent events
+    if (info) {
+      openInfoModal(info);
+    }
+  };
 
   const handleStartWOD = () => {
     if (!startTimer) {
@@ -70,10 +83,15 @@ const ConditioningCard = ({ block, previousPerformance }) => {
 
   return (
     <div className="conditioning-card">
+      {/* --- MODIFY THIS HEADER --- */}
       <div className="conditioning-header">
-        <h3>{type.replace('Conditioning: ', '')}</h3>
+        <div className="conditioning-title-group">
+          <h3>{type.replace('Conditioning: ', '')}</h3>
+          {info && <HelpCircle size={20} className="info-icon" onClick={handleInfoClick} />}
+        </div>
         <span className="wod-format-badge">{formatBadge()}</span>
       </div>
+      {/* --- END MODIFICATION --- */}
 
       {previousPerformance && (
         <div className="previous-best-display">

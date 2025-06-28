@@ -14,6 +14,7 @@ import ExerciseDetailModal from './components/Common/ExerciseDetailModal.jsx';
 import WorkoutEditor from './components/Program/WorkoutEditor.jsx';
 import Confetti from 'react-confetti';
 import { useWindowSize } from './hooks/useWindowSize.jsx';
+import InfoModal from './components/Common/InfoModal.jsx'; // --- ADD THIS ---
 import './App.css';
 import './components/Dashboard/Dashboard.css';
 import './components/Workout/Workout.css';
@@ -24,6 +25,7 @@ import './components/Common/Modal.css';
 import './components/Progress/Progress.css';
 import './components/Program/ProgramOverview.css';
 import './components/Program/WorkoutEditor.css';
+import './components/Common/InfoModal.css'; // --- AND THIS ---
 
 const NavItem = ({ icon: Icon, label, isActive, onClick, isMobile }) => {
   const baseStyle = { display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start', padding: isMobile ? '12px' : '12px 16px', borderRadius: '12px', transition: 'all 0.3s ease', cursor: 'pointer', border: 'none', background: isActive ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent', color: isActive ? '#ffffff' : 'var(--text-tertiary)', boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none', transform: isActive ? 'scale(1.02)' : 'scale(1)', width: '100%', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '12px', position: 'relative', overflow: 'hidden' };
@@ -87,6 +89,7 @@ export default function App() {
       )}
       {appState.isModalOpen && <ExerciseDetailModal />}
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
+      {appState.isInfoModalOpen && <InfoModal />} {/* --- ADD THIS LINE --- */}
       <TimerBar />
     </div>
   );

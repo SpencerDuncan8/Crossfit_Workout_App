@@ -267,3 +267,19 @@
   color: var(--text-primary);
   font-weight: 600;
 }
+/* ADD THESE STYLES AT THE END OF THE FILE */
+.conditioning-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-icon {
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.info-icon:hover {
+    color: #3b82f6; /* Blue accent */
+}

@@ -21,6 +21,9 @@ const initialAppState = {
   isModalOpen: false, modalContent: null, showConfetti: false,
   isWorkoutEditorOpen: false, editingInfo: null, 
   workoutToScheduleId: null,
+  // --- ADD THIS ---
+  isInfoModalOpen: false, 
+  infoModalContent: null,
 };
 
 const AppStateProviderComponent = ({ children }) => {
@@ -28,6 +31,15 @@ const AppStateProviderComponent = ({ children }) => {
   const { clearTimer } = useContext(TimerContext);
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
+
+  // --- ADD THESE NEW FUNCTIONS ---
+  const openInfoModal = (content) => {
+    updateAppState({ isInfoModalOpen: true, infoModalContent: content });
+  };
+  const closeInfoModal = () => {
+    updateAppState({ isInfoModalOpen: false, infoModalContent: null });
+  };
+  // --- END NEW FUNCTIONS ---
 
   const toggleUnitSystem = () => {
     setAppState(prev => ({
@@ -391,6 +403,9 @@ const AppStateProviderComponent = ({ children }) => {
       getPreviousExercisePerformance,
       getPreviousBlockPerformance, // Expose the new function
       removeWorkoutFromSchedule, 
+      // --- ADD THESE TO THE EXPORTED VALUE ---
+      openInfoModal,
+      closeInfoModal,
     }}>
       {children}
     </AppStateContext.Provider>
