@@ -3,36 +3,49 @@
 import React, { useContext } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AppStateContext } from '../../context/AppContext.jsx';
-
-const CustomTooltip = ({ active, payload }) => {
-  // THE FIX: The tooltip now shows the full, original date from the payload.
-  if (active && payload && payload.length) {
-    const fullDate = payload[0].payload.date; // Access the original date string
-    return (
-      <div className="custom-tooltip">
-        <p className="tooltip-label">{`Date: ${fullDate}`}</p>
-        <p className="tooltip-intro">{`Weight: ${payload[0].value.toFixed(1)} lbs`}</p>
-      </div>
-    );
-  }
-  return null;
-};
+import { lbsToKg, getUnitLabel } from '../../utils/unitUtils.js';
 
 const WeightChart = () => {
   const { appState } = useContext(AppStateContext);
+  const { weightHistory, unitSystem } = appState;
 
-  // THE FIX: The data is now mapped to include a formatted 'shortDate'.
-  const data = appState.weightHistory.map((entry) => {
-      const dateObj = new Date(entry.date);
-      const shortDate = dateObj.toLocaleDateString(undefined, { 
-          month: 'short', 
-          day: 'numeric',
-          timeZone: 'UTC' // Use UTC to prevent off-by-one day issues
-      });
-      return {
-          ...entry,
-          shortDate: shortDate
-      };
+  const isMetric = unitSystem === 'metric';
+  const unitLabel = getUnitLabel(unitSystem);
+
+  // This custom tooltip component can now access the unitLabel from its parent scope.
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const fullDate = payload[0].payload.date;
+      const weightValue = payload[0].value;
+      const formattedWeight = Math.round(weightValue); // Round to whole number
+
+      return (
+        <div className="custom-tooltip">
+          <p className="tooltip-label">{`Date: ${fullDate}`}</p>
+          <p className="tooltip-intro">{`Weight: ${formattedWeight} ${unitLabel}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Convert the data for the chart based on the selected unit system.
+  const data = weightHistory.map((entry) => {
+    const dateObj = new Date(entry.date);
+    const shortDate = dateObj.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC'
+    });
+    
+    // Convert weight for display
+    const displayWeight = isMetric ? lbsToKg(entry.weight) : entry.weight;
+
+    return {
+      date: entry.date, // Keep original date for the tooltip
+      displayWeight: displayWeight, // Use this converted value for the chart
+      shortDate: shortDate
+    };
   });
 
   const gridColor = 'var(--border-color)';
@@ -53,23 +66,22 @@ const WeightChart = () => {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-          {/* THE FIX: The X-Axis now uses 'shortDate' and the 'Entry' label is removed. */}
           <XAxis 
             dataKey="shortDate" 
             tick={{ fill: textColor, fontSize: 12 }} 
             tickLine={{ stroke: textColor }}
             axisLine={{ stroke: gridColor }}
-            interval="preserveStartEnd" // Helps prevent label clutter
+            interval="preserveStartEnd"
           />
           <YAxis 
             tick={{ fill: textColor, fontSize: 12 }}
             tickLine={{ stroke: textColor }}
             axisLine={{ stroke: gridColor }}
             domain={['dataMin - 2', 'dataMax + 2']}
+            tickFormatter={(tick) => Math.round(tick)} // Round Y-axis labels
           />
-          {/* THE FIX: The tooltip component is updated to handle the new data. */}
           <Tooltip content={<CustomTooltip />} />
-          <Area type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} fill="url(#colorWeight)" />
+          <Area type="monotone" dataKey="displayWeight" stroke="#10b981" strokeWidth={2} fill="url(#colorWeight)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
