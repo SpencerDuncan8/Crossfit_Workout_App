@@ -130,4 +130,32 @@
   color: #10b981;
   margin-right: 8px;
   vertical-align: middle; /* Aligns icon better with text */
+}/* ADD THESE STYLES TO THE END OF THE FILE */
+
+.summary-results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.summary-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-result-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.summary-result-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
 }

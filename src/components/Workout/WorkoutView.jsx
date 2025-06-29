@@ -56,13 +56,7 @@ const WorkoutView = ({ setActiveView }) => {
     if (timer.recordedTime !== null) {
       const chipperBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: Chipper');
       if (chipperBlock) {
-        setBlockProgress(prev => ({
-          ...prev,
-          [chipperBlock.id]: {
-            ...prev[chipperBlock.id],
-            recordedTime: formatTime(timer.recordedTime),
-          }
-        }));
+        handleBlockProgressUpdate(chipperBlock.id, 'recordedTime', formatTime(timer.recordedTime));
       }
     }
   }, [timer.recordedTime, activeWorkout]);
@@ -71,13 +65,7 @@ const WorkoutView = ({ setActiveView }) => {
     if (!timer.isActive && timer.laps.length > 0) {
       const rftBlock = activeWorkout?.blocks.find(b => b.type === 'Conditioning: RFT');
       if (rftBlock) {
-        setBlockProgress(prev => ({
-          ...prev,
-          [rftBlock.id]: {
-            ...prev[rftBlock.id],
-            laps: [...timer.laps], 
-          }
-        }));
+        handleBlockProgressUpdate(rftBlock.id, 'laps', [...timer.laps]);
       }
     }
   }, [timer.isActive, timer.laps, activeWorkout]);
@@ -147,7 +135,7 @@ const WorkoutView = ({ setActiveView }) => {
             return {
                 ...prev,
                 [blockId]: {
-                    ...prev[blockId],
+                    ...(prev[blockId] || {}), // THE FIX IS HERE
                     ...fieldOrData
                 }
             };
@@ -155,7 +143,7 @@ const WorkoutView = ({ setActiveView }) => {
         return {
             ...prev,
             [blockId]: {
-                ...prev[blockId],
+                ...(prev[blockId] || {}), // AND HERE
                 [fieldOrData]: value,
             },
         };
@@ -166,7 +154,7 @@ const WorkoutView = ({ setActiveView }) => {
     let sessionStats = {
       sets: 0,
       reps: 0,
-      weight: 0, // This is total volume in lbs
+      weight: 0,
       blockTimes: {},
       detailedProgress: exerciseProgress,
     };
@@ -191,7 +179,6 @@ const WorkoutView = ({ setActiveView }) => {
       }
       else if (progress && progress.completed) {
         sessionStats.sets++;
-        // For bodyweight exercises, find the target reps and add to total
         const [blockId, exId] = exerciseId.split('-');
         const block = activeWorkout.blocks.find(b => b.id === blockId);
         const exercise = block?.exercises.find(e => e.id === exId);
@@ -201,22 +188,24 @@ const WorkoutView = ({ setActiveView }) => {
       }
     });
     
-    sessionStats.blockTimes = blockProgress;
-
-    Object.values(blockProgress).forEach(blockData => {
-        if (blockData.laps && blockData.laps.length > 0) {
-            const lastLapTime = blockData.laps[blockData.laps.length - 1];
-            if (typeof lastLapTime === 'number') {
-                sessionStats.totalTime = formatTime(lastLapTime);
-            }
-        }
+    const finalBlockProgress = { ...blockProgress };
+    Object.keys(finalBlockProgress).forEach(blockId => {
+      const blockData = finalBlockProgress[blockId];
+      const blockDefinition = activeWorkout.blocks.find(b => b.id === blockId);
+      
+      if (blockDefinition?.type === 'Conditioning: RFT' && blockData.laps && blockData.laps.length > 0) {
+        const lastLapTimeInSeconds = blockData.laps[blockData.laps.length - 1];
+        blockData.recordedTime = formatTime(lastLapTimeInSeconds);
+      }
     });
+
+    sessionStats.blockTimes = finalBlockProgress;
 
     const isChipperRunning = activeWorkout.blocks.some(b => b.type === 'Conditioning: Chipper') && timer.isActive && timer.type === 'stopwatch' && timer.totalLaps === 0;
     if (isChipperRunning) {
         const chipperBlock = activeWorkout.blocks.find(b => b.type === 'Conditioning: Chipper');
         if (chipperBlock) {
-          sessionStats.blockTimes[chipperBlock.id] = { recordedTime: formatTime(timer.time) };
+          sessionStats.blockTimes[chipperBlock.id] = { ...sessionStats.blockTimes[chipperBlock.id], recordedTime: formatTime(timer.time) };
         }
         stopTimer();
     }

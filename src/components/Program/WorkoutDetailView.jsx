@@ -7,7 +7,7 @@ import { Check } from 'lucide-react';
 import './WorkoutDetailView.css';
 
 const WorkoutDetailView = ({ workout, completedData }) => {
-  const { appState } = useContext(AppStateContext); // Get global state
+  const { appState } = useContext(AppStateContext);
   
   if (!workout) return null;
 
@@ -18,7 +18,6 @@ const WorkoutDetailView = ({ workout, completedData }) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Prepare display values based on unit system
   const isMetric = appState.unitSystem === 'metric';
   const unitLabel = getUnitLabel(appState.unitSystem);
   
@@ -28,16 +27,37 @@ const WorkoutDetailView = ({ workout, completedData }) => {
       displayVolume = isMetric ? lbsToKg(volumeLbs).toFixed(1) : volumeLbs.toLocaleString();
   }
 
+  // --- FIX: Helper to generate specific titles for timed/scored blocks ---
+  const getBlockResultTitle = (blockType) => {
+    switch(blockType) {
+        case 'Conditioning: RFT': return 'RFT Time';
+        case 'Conditioning: Chipper': return 'Chipper Time';
+        case 'Conditioning: Tabata': return 'Tabata Score (Lowest Reps)';
+        case 'Conditioning: AMRAP': return 'AMRAP Score';
+        default: return 'Result';
+    }
+  }
+
   return (
     <div className="workout-detail-container">
       {completedData && (
         <div className="completed-summary">
           <h4>Workout Completed!</h4>
-          {completedData.totalTime && (
-            <h2 className="summary-total-time">
-                Total Time: {completedData.totalTime}
-            </h2>
-          )}
+          {/* --- FIX: Display specific timed/scored results --- */}
+          <div className="summary-results-grid">
+            {Object.keys(completedData.blockTimes || {}).map(blockId => {
+              const blockResult = completedData.blockTimes[blockId];
+              const blockDef = workout.blocks.find(b => b.id === blockId);
+              if (!blockDef || (!blockResult.recordedTime && !blockResult.score)) return null;
+
+              return (
+                <div key={blockId} className="summary-result-item">
+                  <span className="summary-result-label">{getBlockResultTitle(blockDef.type)}</span>
+                  <span className="summary-result-value">{blockResult.recordedTime || blockResult.score}</span>
+                </div>
+              );
+            })}
+          </div>
           <div className="summary-stats">
             <span>Sets: {completedData.sets}</span>
             <span>Reps: {completedData.reps}</span>
@@ -49,38 +69,13 @@ const WorkoutDetailView = ({ workout, completedData }) => {
       <div className="detail-blocks-container">
         {workout.blocks.map(block => {
           const completedBlockData = completedData?.blockTimes?.[block.id];
-          const recordedBlockTime = completedBlockData?.recordedTime;
-          const recordedScore = completedBlockData?.score;
           const shouldShowLapsForBlock = completedBlockData?.laps?.length > 0;
           const tabataRounds = completedBlockData?.rounds;
 
           return (
             <div key={block.id} className="detail-block-card">
               <h5 className="detail-block-title">{block.type.replace('Conditioning: ', '')}</h5>
-              {recordedBlockTime && (
-                 <div className="recorded-time-display review-mode">
-                    <span className="recorded-time-label">
-                      {block.type === 'Conditioning: Chipper' ? 'Chipper Time' : 'Block Time'}
-                    </span>
-                    <span className="recorded-time-value">{recordedBlockTime}</span>
-                 </div>
-              )}
-              {recordedScore && block.type === 'Conditioning: AMRAP' && (
-                 <div className="recorded-score-display review-mode">
-                    <span className="recorded-score-label">
-                      Score
-                    </span>
-                    <span className="recorded-score-value">{recordedScore}</span>
-                 </div>
-              )}
-              {recordedScore && block.type === 'Conditioning: Tabata' && (
-                 <div className="recorded-score-display review-mode">
-                    <span className="recorded-score-label">
-                      Tabata Score (Lowest Reps)
-                    </span>
-                    <span className="recorded-score-value">{recordedScore}</span>
-                 </div>
-              )}
+              
               <ul className="detail-exercise-list">
                 {block.type === 'Conditioning: EMOM' ? (
                   block.minutes.map((min, i) => <li key={i}><strong>Min {i + 1}:</strong> {min.task}</li>)
