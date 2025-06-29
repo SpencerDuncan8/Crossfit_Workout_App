@@ -1,6 +1,7 @@
 // src/components/Dashboard/MetricCard.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
+import { formatLargeNumber } from '../../utils/unitUtils.js';
 
 const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
   const [displayValue, setDisplayValue] = useState(0);
@@ -37,12 +38,17 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
   }, [value]);
 
   const formattedValue = (val) => {
-    // Special handling for weight cards when value is 0 or less
-    if (val <= 0 && (title.toLowerCase() === "current weight")) {
-        return '---';
+    // Special handling for placeholder on weight card
+    if (val <= 0 && title.toLowerCase() === "current weight") {
+      return '---';
+    }
+
+    // Use the new large number formatter for the Total Volume card
+    if (title === 'Total Volume') {
+      return formatLargeNumber(val);
     }
     
-    // Always round the value and format it. This removes the decimal.
+    // Default formatting for all other cards
     return Math.round(val).toLocaleString('en-US');
   };
 
