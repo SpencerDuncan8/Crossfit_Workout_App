@@ -83,6 +83,24 @@
 }
 
 .chart-title { font-size: 20px; font-weight: bold; color: var(--text-primary); margin-bottom: 24px; }
-.custom-tooltip { background-color: rgba(30, 41, 59, 0.9); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 8px; box-shadow: var(--shadow); color: var(--text-secondary); }
-.tooltip-label { font-weight: 600; margin-bottom: 5px; color: var(--text-primary); }
-.tooltip-intro { font-size: 14px; }
+
+/* --- TOOLTIP FIX STARTS HERE --- */
+.custom-tooltip {
+  background-color: rgba(30, 41, 59, 0.9); /* Keep the dark background */
+  border: 1px solid transparent; /* Remove the theme-based border */
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.tooltip-label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #ffffff; /* Always white for the label */
+}
+
+.tooltip-intro {
+  font-size: 14px;
+  color: #e1e8ed; /* Always light gray for the body text */
+}
+/* --- TOOLTIP FIX ENDS HERE --- */
