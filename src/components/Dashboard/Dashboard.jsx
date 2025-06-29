@@ -4,25 +4,67 @@ import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import MetricCard from './MetricCard.jsx';
 import WeightChart from './WeightChart.jsx';
-import { Weight, TrendingDown, Repeat, BarChart, CheckCircle, Dumbbell } from 'lucide-react';
+import { Weight, TrendingDown, Repeat, BarChart, CheckCircle, Dumbbell, TrendingUp } from 'lucide-react';
 import { lbsToKg, getUnitLabel } from '../../utils/unitUtils.js';
 import './Dashboard.css';
 
 const Dashboard = ({ setActiveView }) => {
   const { appState } = useContext(AppStateContext);
-  const { unitSystem } = appState;
+  const { unitSystem, startingWeight, currentWeight } = appState;
 
   const isMetric = unitSystem === 'metric';
   const unitLabel = getUnitLabel(unitSystem);
 
   const convertWeight = (lbs) => isMetric ? lbsToKg(lbs) : lbs;
 
-  const weightLost = appState.startingWeight > 0 ? appState.startingWeight - appState.currentWeight : 0;
+  let weightChangeCard;
+
+  if (startingWeight > 0 && currentWeight > 0) {
+    const weightChangeLbs = currentWeight - startingWeight;
+
+    if (weightChangeLbs > 0) {
+      // Weight Gained
+      weightChangeCard = {
+        icon: TrendingUp,
+        title: "Weight Gained",
+        value: convertWeight(weightChangeLbs),
+        unit: unitLabel,
+        color: "#8b5cf6" // A nice purple for gain
+      };
+    } else if (weightChangeLbs < 0) {
+      // Weight Lost
+      weightChangeCard = {
+        icon: TrendingDown,
+        title: "Weight Lost",
+        value: convertWeight(Math.abs(weightChangeLbs)),
+        unit: unitLabel,
+        color: "#2dd4bf" // The original teal color
+      };
+    } else {
+      // No change
+      weightChangeCard = {
+        icon: Weight,
+        title: "Weight Change",
+        value: 0,
+        unit: unitLabel,
+        color: "#6b7280"
+      };
+    }
+  } else {
+    // Default state if weights aren't set yet
+    weightChangeCard = {
+      icon: TrendingDown,
+      title: "Weight Lost",
+      value: 0,
+      unit: unitLabel,
+      color: "#2dd4bf"
+    };
+  }
 
   const metricCardsData = [
     { icon: CheckCircle, title: "Total Workouts", value: appState.totalWorkoutsCompleted, unit: "Done", color: "#10b981" },
-    { icon: Weight, title: "Current Weight", value: convertWeight(appState.currentWeight), unit: unitLabel, color: "#3b82f6" },
-    { icon: TrendingDown, title: "Weight Lost", value: convertWeight(weightLost), unit: unitLabel, color: "#2dd4bf" },
+    { icon: Weight, title: "Current Weight", value: convertWeight(currentWeight), unit: unitLabel, color: "#3b82f6" },
+    weightChangeCard,
     { icon: Dumbbell, title: "Total Volume", value: convertWeight(appState.totalLbsLifted), unit: unitLabel, color: "#fb923c" },
     { icon: BarChart, title: "Total Sets", value: appState.totalSets, unit: "", color: "#ef4444" },
     { icon: Repeat, title: "Total Reps", value: appState.totalReps, unit: "", color: "#8b5cf6" },
@@ -36,11 +78,11 @@ const Dashboard = ({ setActiveView }) => {
           <p>Here's a snapshot of your current progress.</p>
         </div>
       </div>
-      
+
       <div className="metrics-grid">
         {metricCardsData.map((card, index) => ( <MetricCard key={index} {...card} /> ))}
       </div>
-      
+
       <WeightChart />
 
       <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '12px', padding: '24px', boxShadow: 'var(--shadow)', border: '1px solid var(--border-color)' }}>

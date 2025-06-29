@@ -38,7 +38,7 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
 
   const formattedValue = (val) => {
     // Special handling for weight cards when value is 0 or less
-    if (val <= 0 && (title.toLowerCase().includes("weight"))) {
+    if (val <= 0 && (title.toLowerCase() === "current weight")) {
         return '---';
     }
     
