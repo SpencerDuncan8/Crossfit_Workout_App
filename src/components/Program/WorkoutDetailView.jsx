@@ -38,31 +38,43 @@ const WorkoutDetailView = ({ workout, completedData }) => {
     }
   }
 
+  const timedResults = (completedData?.blockTimes
+    ? Object.keys(completedData.blockTimes).map(blockId => {
+        const blockResult = completedData.blockTimes[blockId];
+        const blockDef = workout.blocks.find(b => b.id === blockId);
+        if (!blockDef || (!blockResult.recordedTime && !blockResult.score)) return null;
+
+        return (
+          <div key={blockId} className="summary-result-item">
+            <span className="summary-result-label">{getBlockResultTitle(blockDef.type)}</span>
+            <span className="summary-result-value">{blockResult.recordedTime || blockResult.score}</span>
+          </div>
+        );
+      })
+    : []).filter(Boolean);
+
   return (
     <div className="workout-detail-container">
       {completedData && (
         <div className="completed-summary">
           <h4>Workout Completed!</h4>
-          {/* --- FIX: Display specific timed/scored results --- */}
-          <div className="summary-results-grid">
-            {Object.keys(completedData.blockTimes || {}).map(blockId => {
-              const blockResult = completedData.blockTimes[blockId];
-              const blockDef = workout.blocks.find(b => b.id === blockId);
-              if (!blockDef || (!blockResult.recordedTime && !blockResult.score)) return null;
+          
+          {timedResults.length > 0 && (
+            <div className="summary-results-grid">
+              {timedResults}
+            </div>
+          )}
 
-              return (
-                <div key={blockId} className="summary-result-item">
-                  <span className="summary-result-label">{getBlockResultTitle(blockDef.type)}</span>
-                  <span className="summary-result-value">{blockResult.recordedTime || blockResult.score}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="summary-stats">
-            <span>Sets: {completedData.sets}</span>
-            <span>Reps: {completedData.reps}</span>
-            <span>Volume: {displayVolume} {unitLabel}</span>
-          </div>
+          {completedData.sets > 0 && (
+            <div className="summary-stats-section">
+              <h5 className="summary-stats-title">Strength & Volume</h5>
+              <div className="summary-stats">
+                <span>Sets: {completedData.sets}</span>
+                <span>Reps: {completedData.reps}</span>
+                <span>Volume: {displayVolume} {unitLabel}</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -136,9 +136,25 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.summary-stats-section {
+  /* This section has no top margin or border by default */
+}
+
+/* This adds a separator ONLY if the stats section comes after the timed results */
+.summary-results-grid + .summary-stats-section {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.summary-stats-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
+  text-align: center;
 }
 
 .summary-result-item {
