@@ -389,3 +389,53 @@
 .info-icon:hover {
     color: #3b82f6; /* Blue accent */
 }
+/* --- Add to the end of the file --- */
+.exercise-card-bw-sets {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bw-set-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.bw-set-row.completed {
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
+.bw-set-row.completed .set-number {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.bw-set-checkbox {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.bw-set-row.completed .bw-set-checkbox {
+  color: #10b981;
+}
+/* ADD THIS TO THE END OF THE FILE */
+.bw-set-target {
+  margin-left: auto;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.bw-set-row.completed .bw-set-target {
+  color: var(--text-tertiary);
+}

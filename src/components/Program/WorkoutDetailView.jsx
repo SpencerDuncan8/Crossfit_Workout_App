@@ -27,7 +27,6 @@ const WorkoutDetailView = ({ workout, completedData }) => {
       displayVolume = isMetric ? lbsToKg(volumeLbs).toFixed(1) : volumeLbs.toLocaleString();
   }
 
-  // --- FIX: Helper to generate specific titles for timed/scored blocks ---
   const getBlockResultTitle = (blockType) => {
     switch(blockType) {
         case 'Conditioning: RFT': return 'RFT Time';
@@ -94,7 +93,10 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                 ) : 
                 (
                   (block.exercises || []).map((ex, i) => {
+                    // --- START OF FIX ---
+                    // Updated the tracked block types to include Bodyweight
                     const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
+                    // --- END OF FIX ---
 
                     if (completedData?.detailedProgress && trackedBlockTypes.includes(block.type)) {
                       const exerciseId = `${block.id}-${ex.id}`;
@@ -124,8 +126,10 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                             </li>
                           );
                         }
-
-                        case 'Accessory / Carry': {
+                        // --- START OF FIX ---
+                        // Added case to handle Bodyweight display, similar to Accessory/Carry.
+                        case 'Accessory / Carry':
+                        case 'Bodyweight': {
                           const completedSets = progress.sets?.filter(s => s.completed);
                           if (!completedSets || completedSets.length === 0) return null;
                           return (
@@ -135,16 +139,7 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                             </li>
                           );
                         }
-                        
-                        case 'Bodyweight': {
-                          if (!progress.completed) return null;
-                          return (
-                            <li key={i}>
-                              <Check size={16} className="completed-item-marker" />
-                              <strong>{ex.name}</strong>
-                            </li>
-                          );
-                        }
+                        // --- END OF FIX ---
                         default:
                           return null;
                       }

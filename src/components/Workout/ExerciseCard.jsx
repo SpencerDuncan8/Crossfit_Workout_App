@@ -89,29 +89,37 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
     } 
   };
   
+  // --- START OF FIX ---
+  // The Bodyweight card now displays a list of trackable sets.
   if (blockType === 'Bodyweight') {
-    const isCompleted = progress?.completed || false;
-    const unitText = trackingType === 'duration' ? 'SECS' : 'REPS';
-
-    const handleCheckboxClick = () => {
-      onSetUpdate(fullExerciseId, null, 'completed', !isCompleted);
-    };
-
     return (
-      <div className={`exercise-card-bw ${isCompleted ? 'completed' : ''}`}>
-        <div className="bw-main-row">
-          <button className="bw-checkbox" onClick={handleCheckboxClick}>
-            {isCompleted ? <Check size={24} /> : <Square size={24} />}
-          </button>
-          <div className="bw-info">
-            <h4 className="bw-name clickable" onClick={handleExerciseClick}>{name}</h4>
-            <p className="bw-target">{value} {unitText}</p>
-          </div>
-          {hasExerciseDetails(id) && <HelpCircle size={20} className="help-icon clickable" onClick={handleExerciseClick} />}
+      <div className="exercise-card-bw">
+        <div className="bw-info clickable" onClick={handleExerciseClick}>
+            <h4 className="bw-name">{name}</h4>
+            {hasExerciseDetails(id) && <HelpCircle size={20} className="help-icon" />}
+        </div>
+        <div className="exercise-card-bw-sets">
+          {progress?.sets.map((set, index) => {
+            const definitionSet = exercise.sets[index];
+            const unitText = definitionSet.trackingType === 'duration' ? 'secs' : 'reps';
+            return (
+              <div key={set.id} className={`bw-set-row ${set.completed ? 'completed' : ''}`}>
+                <button 
+                  className="bw-set-checkbox"
+                  onClick={() => onSetUpdate(fullExerciseId, index, 'completed', !set.completed)}
+                >
+                  {set.completed ? <Check size={20} /> : <Square size={20} />}
+                </button>
+                <span className="set-number">Set {index + 1}</span>
+                <span className="bw-set-target">{definitionSet.value} {unitText}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
   }
+  // --- END OF FIX ---
   
   if (blockType === 'Accessory / Carry') {
     return (

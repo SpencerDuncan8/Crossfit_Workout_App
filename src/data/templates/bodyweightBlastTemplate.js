@@ -26,9 +26,20 @@ export const bodyweightBlastTemplate = {
         {
           id: generateUniqueId(), type: 'Bodyweight',
           exercises: [
-            { id: 'push-ups', name: '3 Sets of Push-ups', trackingType: 'reps', value: 'AMRAP' },
-            { id: 'air-squats', name: '3 Sets of Squats', trackingType: 'reps', value: '20' },
-            { id: 'plank', name: '2 Sets of Planks', trackingType: 'duration', value: '60' },
+            { id: 'push-ups', name: 'Push-ups', sets: [
+                { id: generateUniqueId(), value: '15', trackingType: 'reps' },
+                { id: generateUniqueId(), value: '12', trackingType: 'reps' },
+                { id: generateUniqueId(), value: '10', trackingType: 'reps' },
+            ]},
+            { id: 'air-squats', name: 'Squats', sets: [
+                { id: generateUniqueId(), value: '20', trackingType: 'reps' },
+                { id: generateUniqueId(), value: '20', trackingType: 'reps' },
+                { id: generateUniqueId(), value: '20', trackingType: 'reps' },
+            ]},
+            { id: 'plank', name: 'Plank', sets: [
+                { id: generateUniqueId(), value: '60', trackingType: 'duration' },
+                { id: generateUniqueId(), value: '60', trackingType: 'duration' },
+            ]},
           ],
         },
         {
@@ -68,7 +79,10 @@ export const bodyweightBlastTemplate = {
         },
         {
           id: generateUniqueId(), type: 'Bodyweight',
-          exercises: [ { id: 'shoulder-taps', name: '2 Sets of Plank Shoulder Taps', trackingType: 'reps', value: '40' } ]
+          exercises: [ { id: 'shoulder-taps', name: 'Plank Shoulder Taps', sets: [
+              { id: generateUniqueId(), value: '40', trackingType: 'reps' },
+              { id: generateUniqueId(), value: '40', trackingType: 'reps' },
+          ] } ]
         },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'tricep-stretch', name: 'Tricep Stretch (30s each)' } ] }
       ]
@@ -115,9 +129,21 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jumping-jack', name: 'Jumping Jacks (60s)' }, { id: 'torso-twists', name: 'Torso Twists (30s)' } ] },
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  { id: 'bodyweight-bulgarian-split-squats', name: '3 Sets of Bulgarian Split Squats (L)', trackingType: 'reps', value: '12' },
-                  { id: 'bodyweight-bulgarian-split-squats', name: '3 Sets of Bulgarian Split Squats (R)', trackingType: 'reps', value: '12' },
-                  { id: 'push-ups', name: '3 Sets of Decline Push-ups', trackingType: 'reps', value: 'AMRAP' },
+                  { id: 'bodyweight-bulgarian-split-squats', name: 'Bulgarian Split Squats (L)', sets: [
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                  ]},
+                  { id: 'bodyweight-bulgarian-split-squats', name: 'Bulgarian Split Squats (R)', sets: [
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                  ]},
+                  { id: 'push-ups', name: 'Decline Push-ups', sets: [
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                  ]},
               ]
           },
           { id: generateUniqueId(), type: 'Cardio', exercises: [ { id: 'jump-rope', name: 'Jog in Place or Jump Rope', duration: 10 } ] }
@@ -200,8 +226,17 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: 'pogo-hops', name: 'Pogo Hops (60s)'}, {id: 'air-squats', name: 'Bodyweight Squats (20 reps)'}]},
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  { id: 'jump-squats', name: '4 Sets of Jumping Squats', trackingType: 'reps', value: '15'},
-                  { id: 'plyometric-push-ups', name: '3 Sets of Plyo Push-ups', trackingType: 'reps', value: 'AMRAP'},
+                  { id: 'jump-squats', name: 'Jumping Squats', sets: [
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                  ]},
+                  { id: 'plyometric-push-ups', name: 'Plyo Push-ups', sets: [
+                      {id: generateUniqueId(), value: '10', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '10', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '10', trackingType: 'reps'},
+                  ]},
               ]
           },
           { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 12,
@@ -227,9 +262,19 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: 'bird-dog', name: 'Bird-dog (10 each side)'}, {id: 'dead-bug', name: 'Dead-bug (10 each side)'}]},
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  {id: 'sit-up', name: '3 Sets of Sit-ups', trackingType: 'reps', value: '30'},
-                  {id: 'plank', name: '2 Sets of Side Plank (L)', trackingType: 'duration', value: '45'},
-                  {id: 'plank', name: '2 Sets of Side Plank (R)', trackingType: 'duration', value: '45'},
+                  {id: 'sit-up', name: 'Sit-ups', sets: [
+                      {id: generateUniqueId(), value: '30', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '30', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '30', trackingType: 'reps'},
+                  ]},
+                  {id: 'plank', name: 'Side Plank (L)', sets: [
+                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                  ]},
+                  {id: 'plank', name: 'Side Plank (R)', sets: [
+                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                  ]},
               ]
           }
       ]
@@ -287,8 +332,17 @@ export const bodyweightBlastTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Bodyweight',
               exercises: [
-                  {id: 'pistol-squats-box', name: '5 Sets of Pistol Squats (to a box, alternating)', trackingType: 'reps', value: '8'},
-                  {id: 'glute-bridges', name: '2 Sets of Glute Bridges', trackingType: 'reps', value: '25'}
+                  {id: 'pistol-squats-box', name: 'Pistol Squats (to a box, alternating)', sets: [
+                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                  ]},
+                  {id: 'glute-bridges', name: 'Glute Bridges', sets: [
+                      {id: generateUniqueId(), value: '25', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '25', trackingType: 'reps'},
+                  ]}
               ]
           },
           { id: generateUniqueId(), type: 'Cardio', exercises: [ {id: 'wall-sit', name: 'Wall Sit', duration: '5'} ] }

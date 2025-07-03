@@ -303,3 +303,23 @@
 .action-btn.start-btn:hover { background-color: #059669; }
 .action-btn.delete-btn { background-color: transparent; color: var(--text-tertiary); }
 .action-btn.delete-btn:hover { background-color: #ef4444; color: #fff; }
+/* --- Add to the end of the file --- */
+.bodyweight-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-grow: 1;
+}
+/* ADD THIS AT THE END OF THE FILE */
+.bodyweight-set-row {
+  justify-content: space-between;
+}
+
+.bodyweight-set-row .tracking-type-toggle {
+  margin-right: auto;
+  margin-left: 16px;
+}
+
+.bodyweight-set-row .reps-input {
+  width: 80px;
+}

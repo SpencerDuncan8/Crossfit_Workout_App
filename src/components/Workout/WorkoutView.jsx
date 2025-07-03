@@ -74,36 +74,39 @@ const WorkoutView = ({ setActiveView }) => {
     if (activeWorkout) {
       const initialProgress = {};
       activeWorkout.blocks.forEach(block => {
-        if (block.type === 'Strength' && block.exercises) {
+        if ((block.type === 'Strength' || block.type === 'Bodyweight') && block.exercises) {
           block.exercises.forEach(exercise => {
             const exerciseId = `${block.id}-${exercise.id}`;
             const oneRepMaxLbs = appState.oneRepMaxes[exercise.id] || 0;
             initialProgress[exerciseId] = {
               sets: exercise.sets.map(set => {
-                let targetWeight = '';
-                let percentageInfo = null;
-                const loadStr = String(set.load || '');
-                if (loadStr.includes('%')) {
-                  const percentage = parseFloat(loadStr.replace('%', '')) / 100;
-                  if (!isNaN(percentage)) {
-                    percentageInfo = { percent: percentage * 100, oneRepMax: oneRepMaxLbs };
-                    targetWeight = String(calculateAndRoundTargetWeight(oneRepMaxLbs, percentage, appState.unitSystem));
+                let progressSet = { id: set.id, completed: false };
+                if (block.type === 'Strength') {
+                  let targetWeight = '';
+                  let percentageInfo = null;
+                  const loadStr = String(set.load || '');
+                  if (loadStr.includes('%')) {
+                    const percentage = parseFloat(loadStr.replace('%', '')) / 100;
+                    if (!isNaN(percentage)) {
+                      percentageInfo = { percent: percentage * 100, oneRepMax: oneRepMaxLbs };
+                      targetWeight = String(calculateAndRoundTargetWeight(oneRepMaxLbs, percentage, appState.unitSystem));
+                    }
+                  } else {
+                    targetWeight = loadStr;
                   }
-                } else {
-                  targetWeight = loadStr;
+                  progressSet = { ...progressSet, weight: targetWeight, reps: set.reps, percentageInfo };
+                } else if (block.type === 'Bodyweight') {
+                  // --- START OF FIX ---
+                  // This was the missing piece. We now correctly initialize the progress
+                  // state with the value and tracking type from the exercise definition.
+                  progressSet = { ...progressSet, value: set.value, trackingType: set.trackingType };
+                  // --- END OF FIX ---
                 }
-                return {
-                  id: set.id,
-                  completed: false,
-                  weight: targetWeight,
-                  reps: set.reps,
-                  percentageInfo: percentageInfo,
-                };
+                return progressSet;
               })
             };
           });
         }
-        if (block.type === 'Bodyweight' && block.exercises) { block.exercises.forEach(exercise => { const exerciseId = `${block.id}-${exercise.id}`; initialProgress[exerciseId] = { completed: false }; }); }
         if (block.type === 'Accessory / Carry' && block.exercises) { block.exercises.forEach(exercise => { const exerciseId = `${block.id}-${exercise.id}`; const numSets = parseInt(exercise.sets, 10) || 1; initialProgress[exerciseId] = { sets: Array.from({ length: numSets }, (_, i) => ({ id: `${exerciseId}-set-${i}`, completed: false })) }; }); }
       });
       setExerciseProgress(initialProgress);
@@ -122,9 +125,6 @@ const WorkoutView = ({ setActiveView }) => {
         newSets[setIndex] = { ...newSets[setIndex], [field]: value };
         newProgress[exerciseId] = { ...newProgress[exerciseId], sets: newSets };
       }
-      else if (newProgress[exerciseId] && field === 'completed') {
-        newProgress[exerciseId] = { ...newProgress[exerciseId], completed: value };
-      }
       return newProgress;
     });
   };
@@ -135,7 +135,7 @@ const WorkoutView = ({ setActiveView }) => {
             return {
                 ...prev,
                 [blockId]: {
-                    ...(prev[blockId] || {}), // THE FIX IS HERE
+                    ...(prev[blockId] || {}),
                     ...fieldOrData
                 }
             };
@@ -143,7 +143,7 @@ const WorkoutView = ({ setActiveView }) => {
         return {
             ...prev,
             [blockId]: {
-                ...(prev[blockId] || {}), // AND HERE
+                ...(prev[blockId] || {}),
                 [fieldOrData]: value,
             },
         };
@@ -162,29 +162,33 @@ const WorkoutView = ({ setActiveView }) => {
     Object.keys(exerciseProgress).forEach(exerciseId => {
       const progress = exerciseProgress[exerciseId];
       if (progress && progress.sets) {
-        progress.sets.forEach(set => {
-          if (set.completed) {
+        const [blockId] = exerciseId.split('-');
+        const block = activeWorkout.blocks.find(b => b.id === blockId);
+
+        progress.sets.forEach((progressSet) => {
+          if (progressSet.completed) {
             sessionStats.sets++;
-            if (set.reps && set.weight) {
-              const reps = parseInt(set.reps, 10) || 0;
-              let weightInLbs = parseFloat(set.weight) || 0;
+
+            if (block.type === 'Strength') {
+              const reps = parseInt(progressSet.reps, 10) || 0;
+              let weightInLbs = parseFloat(progressSet.weight) || 0;
               if (appState.unitSystem === 'metric') {
                 weightInLbs = kgToLbs(weightInLbs);
               }
               sessionStats.reps += reps;
               sessionStats.weight += reps * weightInLbs;
+            } else if (block.type === 'Bodyweight') {
+              // --- START OF FIX ---
+              // The calculation now correctly reads from the live `progressSet`
+              // which was properly initialized in the `useEffect` hook above.
+              if (progressSet.trackingType === 'reps') {
+                const reps = parseInt(progressSet.value, 10) || 0;
+                sessionStats.reps += reps;
+              }
+              // --- END OF FIX ---
             }
           }
         });
-      }
-      else if (progress && progress.completed) {
-        sessionStats.sets++;
-        const [blockId, exId] = exerciseId.split('-');
-        const block = activeWorkout.blocks.find(b => b.id === blockId);
-        const exercise = block?.exercises.find(e => e.id === exId);
-        if (exercise?.trackingType === 'reps') {
-          sessionStats.reps += parseInt(exercise.value, 10) || 0;
-        }
       }
     });
     
