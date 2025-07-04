@@ -1,0 +1,63 @@
+/* src/components/Auth/CheckoutForm.css */
+
+.checkout-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+#payment-element {
+  margin-bottom: 24px;
+}
+
+/* Style for the submit button */
+.payment-submit-btn {
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.payment-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+}
+
+.payment-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Spinner for the button when loading */
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error message styling */
+#payment-message {
+  color: #ef4444;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+  margin-top: -12px;
+}

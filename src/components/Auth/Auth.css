@@ -104,3 +104,58 @@
   text-align: center;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
+
+/* --- NEW STYLES FOR OVERWRITE WARNING --- */
+
+.auth-warning-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.auth-warning-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.auth-warning-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.auth-action-btn {
+  flex-grow: 1;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  border: none;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.auth-action-btn.danger {
+  background-color: #ef4444;
+  color: #fff;
+}
+.auth-action-btn.danger:hover {
+  background-color: #dc2626;
+}

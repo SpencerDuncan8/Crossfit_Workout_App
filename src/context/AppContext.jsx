@@ -111,16 +111,8 @@ const AppStateProviderComponent = ({ children }) => {
   };
 
   const logIn = (email, password) => {
-    // Before logging in, check if there's local data.
-    if (appState.totalWorkoutsCompleted > 0 || appState.programs.length > 0) {
-        const wantsToOverwrite = window.confirm(
-            "You have unsynced local data. Logging in will replace this local data with your saved cloud data. Are you sure you want to continue?"
-        );
-        if (!wantsToOverwrite) {
-            // Throw an error to stop the login process if the user cancels
-            throw new Error("Login cancelled by user.");
-        }
-    }
+    // THE FIX: The UI confirmation logic has been removed from here.
+    // This function now only handles the Firebase call.
     return signInWithEmailAndPassword(auth, email, password);
   };
   
