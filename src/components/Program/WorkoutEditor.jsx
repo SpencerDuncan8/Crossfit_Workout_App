@@ -27,9 +27,6 @@ const WorkoutEditor = () => {
       }
 
       if (workoutToLoad) {
-        // --- FIX: DATA MIGRATION ---
-        // This automatically converts old "Tabata" blocks to the new "Intervals" format on load.
-        // This prevents the app from crashing when editing old workouts.
         let needsUpdate = false;
         workoutToLoad.blocks = workoutToLoad.blocks.map(block => {
           if (block.type === 'Conditioning: Tabata' && block.hasOwnProperty('work')) {
@@ -42,7 +39,6 @@ const WorkoutEditor = () => {
         if (needsUpdate) {
           console.log("Migrated old Tabata blocks to new Intervals format.");
         }
-        // --- END FIX ---
         
         setWorkout(workoutToLoad);
       }
@@ -70,11 +66,18 @@ const WorkoutEditor = () => {
           exercises: [{ id: generateUniqueId(), name: '', sets: [{ id: generateUniqueId(), reps: '10' }] }]
         };
         break;
+      // --- START OF FIX ---
+      // This ensures a new Bodyweight block is created with the correct 'sets' array structure.
       case 'Bodyweight':
-        newBlock.exercises = [{ id: generateUniqueId(), name: '', trackingType: 'reps', value: '15' }];
+        newBlock.exercises = [{ 
+          id: generateUniqueId(), 
+          name: '', 
+          sets: [{ id: generateUniqueId(), value: '10', trackingType: 'reps' }] 
+        }];
         break;
+      // --- END OF FIX ---
       case 'Accessory / Carry':
-        newBlock.exercises = [{ id: generateUniqueId(), name: 'Farmer\'s Carry', weight: '50', value: '100', unit: 'meters' }];
+        newBlock.exercises = [{ id: generateUniqueId(), name: 'Farmer\'s Carry', sets: '3', weight: '50', value: '100', unit: 'meters' }];
         break;
       case 'Conditioning: AMRAP':
         newBlock = { ...newBlock, duration: 15 };
@@ -89,7 +92,6 @@ const WorkoutEditor = () => {
         newBlock = { ...newBlock, minutes: [{ id: generateUniqueId(), task: '' }] };
         break;
       case 'Conditioning: Intervals':
-        // --- FIX: Ensure new Intervals blocks have an empty exercises array ---
         newBlock = { ...newBlock, work: 30, rest: 15, rounds: 5, exercises: [] };
         break;
       case 'Conditioning: Tabata':
