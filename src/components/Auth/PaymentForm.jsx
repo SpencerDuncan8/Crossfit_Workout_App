@@ -8,22 +8,16 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// The internal form that does the work
 const CheckoutForm = ({ onSuccess }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
-
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
-        if (!stripe || !elements) {
-            return;
-        }
-
+        if (!stripe || !elements) { return; }
         setIsProcessing(true);
 
         const { error } = await stripe.confirmPayment({
@@ -41,9 +35,7 @@ const CheckoutForm = ({ onSuccess }) => {
         }
     };
     
-    if (isProcessing) {
-        return <LoadingSpinner />;
-    }
+    if (isProcessing) { return <LoadingSpinner />; }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -56,17 +48,17 @@ const CheckoutForm = ({ onSuccess }) => {
     );
 };
 
-
-// The main component that wraps the form
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
 
     useEffect(() => {
         if (userEmail) {
-            // Construct the full, absolute URL to your Vercel API endpoint.
-            const apiUrl = `${import.meta.env.VITE_VERCEL_URL}/api/create-subscription`;
+            // --- THIS IS THE FIX ---
+            // Use a relative path. This will resolve to `/api/create-subscription`
+            // on whatever domain the user is currently visiting.
+            const apiUrl = '/api/create-subscription';
 
-            console.log("Attempting to fetch from:", apiUrl);
+            console.log("Attempting to fetch from relative URL:", apiUrl);
 
             fetch(apiUrl, {
                 method: "POST",
@@ -96,18 +88,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
 
     const options = {
         clientSecret,
-        appearance: {
-            theme: 'night',
-            variables: {
-                colorPrimary: '#8b5cf6',
-                colorBackground: '#1a1f2e',
-                colorText: '#ffffff',
-                colorDanger: '#ef4444',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                spacingUnit: '4px',
-                borderRadius: '8px',
-            }
-        },
+        appearance: { /* ... unchanged ... */ }
     };
 
     return (

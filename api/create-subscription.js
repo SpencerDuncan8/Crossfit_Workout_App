@@ -1,27 +1,41 @@
-// api/create-subscription.js (SUPER SIMPLE DEBUG VERSION)
+// api/create-subscription.js (Correct, Final Version)
+
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  // Log all available environment variables on the server.
-  // This will show us EVERYTHING Vercel is providing to the function.
-  console.log("Vercel Environment Variables:", process.env);
-  
-  // Directly check for the specific keys we need.
-  const secretKey = process.env.VITE_STRIPE_SECRET_KEY;
-  const priceId = process.env.VITE_STRIPE_PRICE_ID;
-
-  if (!secretKey || !priceId) {
-    // If either key is missing, send a clear error message.
-    return res.status(500).json({ 
-      error: "Server configuration error.",
-      hasSecretKey: !!secretKey, // Will be true or false
-      hasPriceId: !!priceId,   // Will be true or false
-    });
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).end('Method Not Allowed');
   }
 
-  // If the keys are found, just send a success message for now.
-  // This proves the environment variables are being read correctly.
-  return res.status(200).json({ 
-    message: "Success! API keys found.",
-    clientSecret: 'debug_secret_key_found' // Send a dummy secret
-  });
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const customer = await stripe.customers.create({
+      email: email,
+      description: 'BlockFit Premium Customer',
+    });
+
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: process.env.VITE_STRIPE_PRICE_ID }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+    });
+
+    res.status(200).json({
+      subscriptionId: subscription.id,
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+    });
+  } catch (error) {
+    console.error('Stripe API Error:', error.message);
+    res.status(500).json({ error: { message: error.message } });
+  }
 }
