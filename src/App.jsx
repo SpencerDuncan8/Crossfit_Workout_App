@@ -83,7 +83,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { width, height } = useWindowSize();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false); // --- NEW STATE ---
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -91,13 +91,10 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  useEffect(() => {
-    if (currentUser && isAuthModalOpen) {
-      setIsAuthModalOpen(false);
-    }
-  }, [currentUser, isAuthModalOpen]);
-  
-  // --- NEW HANDLER FUNCTIONS ---
+  // --- THIS IS THE FIX: The problematic useEffect has been removed. ---
+  // The Auth component is now solely responsible for closing the modal
+  // after its entire internal flow (credentials -> payment) is complete.
+
   const handleLogoutClick = () => {
     setIsLogoutConfirmOpen(true);
   };
@@ -106,7 +103,6 @@ export default function App() {
     logOut();
     setIsLogoutConfirmOpen(false);
   };
-  // --- END NEW HANDLERS ---
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -160,12 +156,10 @@ export default function App() {
         </>
       )}
 
-      {/* Auth Modal */}
       <Modal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)}>
          <Auth closeModal={() => setIsAuthModalOpen(false)} />
       </Modal>
 
-      {/* --- NEW LOGOUT CONFIRMATION MODAL --- */}
       <Modal isOpen={isLogoutConfirmOpen} onClose={() => setIsLogoutConfirmOpen(false)} title="Confirm Logout">
         <div className="modal-form-container">
             <p className="modal-confirm-text">
@@ -181,7 +175,6 @@ export default function App() {
             </div>
         </div>
       </Modal>
-      {/* --- END NEW MODAL --- */}
 
       {appState.isModalOpen && <ExerciseDetailModal />}
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}

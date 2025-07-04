@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { db, auth } from '../firebase/config.js';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+// --- MODIFIED: Added `updateDoc` for changing a single field ---
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -17,6 +18,7 @@ import { generateUniqueId } from '../utils/idUtils.js';
 export const AppStateContext = createContext();
 export const ThemeContext = createContext();
 
+// --- MODIFIED: Added `isPremium` flag to the initial state ---
 const initialAppState = {
   startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
   weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
@@ -31,9 +33,9 @@ const initialAppState = {
   workoutToScheduleId: null,
   isInfoModalOpen: false,
   infoModalContent: null,
+  isPremium: false, // Tracks if the user has completed payment
 };
 
-// --- NEW HELPER FUNCTIONS ---
 const saveToFirestore = async (uid, data) => {
   if (!uid) return;
   try {
@@ -66,67 +68,76 @@ const AppStateProviderComponent = ({ children }) => {
   const [authLoading, setAuthLoading] = useState(true);
   const { clearTimer } = useContext(TimerContext);
 
-  // --- REWIRED AUTH STATE LISTENER ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // User logged in
         setCurrentUser(user);
         const cloudData = await loadFromFirestore(user.uid);
         if (cloudData) {
-          // Overwrite local state with cloud data
           setAppState(prev => ({ ...prev, ...cloudData }));
         }
       } else {
-        // User logged out
         setCurrentUser(null);
-        // We don't clear local state here, user can continue in anonymous mode
       }
       setAuthLoading(false);
     });
     return () => unsubscribe();
-  }, []); // Note: setAppState is stable and doesn't need to be a dependency
+  }, []); 
 
-  // --- REWIRED AUTOSAVE EFFECT ---
-  // Now it only saves to Firestore if a user is logged in.
-  // The usePersistentState hook handles localStorage saving automatically.
   useEffect(() => {
     if (authLoading || !currentUser) return;
-    
     const handler = setTimeout(() => {
       saveToFirestore(currentUser.uid, appState);
     }, 1500);
-
     return () => clearTimeout(handler);
   }, [appState, currentUser, authLoading]);
 
-  // --- UPDATED AUTH FUNCTIONS ---
+  // --- MODIFIED: `signUp` now sets a default premium status ---
   const signUp = async (email, password) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    // This is the MIGRATION step.
-    // We take the current state (from localStorage) and save it to the new user's Firestore doc.
-    await saveToFirestore(user.uid, appState);
+    // On first signup, save their current local state but mark them as not premium yet.
+    const dataToSave = { ...appState, isPremium: false };
+    await saveToFirestore(user.uid, dataToSave);
     return userCredential;
   };
 
   const logIn = (email, password) => {
-    // THE FIX: The UI confirmation logic has been removed from here.
-    // This function now only handles the Firebase call.
+    if (appState.totalWorkoutsCompleted > 0 || appState.programs.length > 0) {
+        const wantsToOverwrite = window.confirm(
+            "You have unsynced local data. Logging in will replace this local data with your saved cloud data. Are you sure you want to continue?"
+        );
+        if (!wantsToOverwrite) {
+            throw new Error("Login cancelled by user.");
+        }
+    }
     return signInWithEmailAndPassword(auth, email, password);
   };
   
   const logOut = async () => {
     await signOut(auth);
     clearTimer();
-    // After logging out, reset the state to a clean slate for the next anonymous session.
+    // Reset to initial state for a clean anonymous session
     setAppState(initialAppState);
+  };
+
+  // --- NEW: Function to call after successful payment ---
+  const updateUserPremiumStatus = async (uid, status) => {
+    if (!uid) return;
+    try {
+        const userDocRef = doc(db, 'users', uid);
+        await updateDoc(userDocRef, { isPremium: status });
+        // Update local state immediately for instant UI feedback
+        updateAppState({ isPremium: status });
+        console.log(`User ${uid} premium status updated to ${status}`);
+    } catch (error) {
+        console.error("Error updating premium status:", error);
+    }
   };
 
   const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
 
-  // --- ALL YOUR EXISTING FUNCTIONS REMAIN THE SAME ---
-  // (No changes needed for the functions below, just copy-paste them)
+  // --- All other functions remain unchanged ---
   const openInfoModal = (content) => {
     updateAppState({ isInfoModalOpen: true, infoModalContent: content });
   };
@@ -287,6 +298,8 @@ const AppStateProviderComponent = ({ children }) => {
     selectWorkoutToSchedule, clearWorkoutToSchedule, autoScheduleProgram, updateOneRepMax,
     toggleUnitSystem, hasExerciseDetails, getPreviousExercisePerformance, getPreviousBlockPerformance,
     removeWorkoutFromSchedule, openInfoModal, closeInfoModal,
+    // --- NEW: Export the premium status update function ---
+    updateUserPremiumStatus,
   };
 
   return (
