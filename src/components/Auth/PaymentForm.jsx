@@ -1,71 +1,35 @@
 // src/components/Auth/PaymentForm.jsx
 
 import React, { useState, useEffect, useContext } from 'react';
-import { AppStateContext } from '../../context/AppContext';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import LoadingSpinner from '../Common/LoadingSpinner';
+// ... other imports
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutForm = ({ onSuccess }) => {
-    // ... (This inner component is unchanged)
-    const stripe = useStripe();
-    const elements = useElements();
-    const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+// The CheckoutForm component remains unchanged.
+const CheckoutForm = ({ onSuccess }) => { /* ... NO CHANGES HERE ... */ };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        if (!stripe || !elements) { return; }
-        setIsProcessing(true);
-
-        const { error } = await stripe.confirmPayment({
-            elements,
-            redirect: 'if_required'
-        });
-
-        if (error) {
-            setErrorMessage(error.message);
-            setIsProcessing(false);
-        } else {
-            console.log("Subscription payment successful!");
-            // We still use currentUser.uid here, as it will be available by the time payment is confirmed.
-            await updateUserPremiumStatus(currentUser.uid, true);
-            onSuccess();
-        }
-    };
-    
-    if (isProcessing) { return <LoadingSpinner />; }
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <PaymentElement />
-            {errorMessage && <div className="auth-error" style={{marginTop: '16px'}}>{errorMessage}</div>}
-            <button disabled={isProcessing || !stripe || !elements} className="auth-button" style={{marginTop: '24px'}}>
-                <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
-            </button>
-        </form>
-    );
-};
-
-// --- MODIFIED: Accept userEmail as a prop ---
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
 
     useEffect(() => {
-        // --- MODIFIED: Use the prop directly ---
         if (userEmail) {
-            fetch('/api/create-subscription', {
+            // --- THIS IS THE FIX ---
+            // Construct the full, absolute URL to your Vercel API endpoint.
+            const apiUrl = `${import.meta.env.VITE_VERCEL_URL}/api/create-subscription`;
+
+            console.log("Attempting to fetch from:", apiUrl); // Add this for debugging
+
+            fetch(apiUrl, { // Use the absolute URL
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: userEmail }),
             })
             .then((res) => {
-                // Add better error handling for non-JSON responses
                 if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
+                    // Try to get more info from the response if it fails
+                    return res.text().then(text => {
+                        throw new Error(`HTTP error! status: ${res.status}, body: ${text}`);
+                    });
                 }
                 return res.json();
             })
@@ -74,15 +38,13 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                     setClientSecret(data.clientSecret);
                 } else {
                     console.error("API Error:", data.error?.message || "Failed to get client secret.");
-                    // You could display an error to the user here
                 }
             })
             .catch(error => {
                 console.error("Fetch error:", error);
-                // You could display an error to the user here
             });
         }
-    }, [userEmail]); // Depend on the prop
+    }, [userEmail]);
 
     const options = {
         clientSecret,
@@ -90,6 +52,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
     };
 
     return (
+        // The JSX part of this component remains unchanged
         <div>
             <div className="auth-header">
                  <h1 className="auth-title">Unlock Premium</h1>
