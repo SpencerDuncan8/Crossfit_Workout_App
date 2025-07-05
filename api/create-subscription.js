@@ -1,6 +1,5 @@
 import Stripe from 'stripe';
 
-// Initializes with the SECRET key (no prefix)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
@@ -27,9 +26,16 @@ export default async function handler(req, res) {
 
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      // Uses the PRICE ID (no prefix)
       items: [{ price: process.env.STRIPE_PRICE_ID }],
-      payment_behavior: 'default_incomplete',
+      
+      // =========================== THE FIX IS HERE ===========================
+      // We change 'default_incomplete' to 'allow_incomplete'.
+      // 'allow_incomplete' is the standard behavior. It tells Stripe to
+      // attempt the first payment immediately. If it needs a payment method,
+      // it will correctly generate a PaymentIntent for us to use.
+      payment_behavior: 'allow_incomplete', 
+      // =====================================================================
+
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
     });
