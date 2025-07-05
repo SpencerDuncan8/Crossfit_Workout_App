@@ -8,7 +8,7 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutForm = ({ onSuccess, intentType, subscriptionId }) => {
+const CheckoutForm = ({ onSuccess }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -17,95 +17,68 @@ const CheckoutForm = ({ onSuccess, intentType, subscriptionId }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        console.log('=== FORM SUBMISSION STARTED ===');
-        
+
         if (!stripe || !elements) {
-            console.error('Stripe not ready:', { stripe: !!stripe, elements: !!elements });
+            console.log('Stripe.js has not yet loaded.');
             return;
         }
 
         setIsProcessing(true);
-        console.log('Processing payment, type:', intentType);
+        setErrorMessage('');
 
-        try {
-            let result;
+        console.log('Confirming payment...');
+
+        const { error, paymentIntent } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // Return URL for redirect-based payment methods
+                return_url: `${window.location.origin}/payment-success`,
+            },
+            // Prevent redirect for card payments
+            redirect: 'if_required',
+        });
+
+        if (error) {
+            console.error('Payment error:', error);
+            setErrorMessage(error.message || 'An unexpected error occurred.');
+            setIsProcessing(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+            console.log('Payment succeeded!');
             
-            if (intentType === 'setup') {
-                console.log('Confirming SetupIntent...');
-                result = await stripe.confirmSetup({
-                    elements,
-                    confirmParams: {
-                        return_url: window.location.origin,
-                    },
-                    redirect: 'if_required'
-                });
-            } else {
-                console.log('Confirming PaymentIntent...');
-                result = await stripe.confirmPayment({
-                    elements,
-                    confirmParams: {
-                        return_url: window.location.origin,
-                    },
-                    redirect: 'if_required'
-                });
-            }
-
-            console.log('Confirmation result:', result);
-
-            if (result.error) {
-                console.error('Stripe error:', result.error);
-                setErrorMessage(result.error.message);
-                setIsProcessing(false);
-            } else {
-                console.log('Payment confirmed successfully!');
-                console.log('PaymentIntent:', result.paymentIntent);
-                
-                // If it was a setup intent, activate the subscription
-                if (intentType === 'setup' && subscriptionId) {
-                    console.log('Activating subscription...');
-                    try {
-                        const response = await fetch('/api/activate-subscription', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ subscriptionId }),
-                        });
-                        
-                        const data = await response.json();
-                        if (!response.ok) {
-                            throw new Error(data.error?.message || 'Failed to activate subscription');
-                        }
-                        
-                        console.log('Subscription activated:', data);
-                    } catch (error) {
-                        console.error('Error activating subscription:', error);
-                        setErrorMessage('Payment method saved but subscription activation failed. Please contact support.');
-                        setIsProcessing(false);
-                        return;
-                    }
-                }
-                
-                // Update user status
-                console.log('Updating premium status...');
+            // Update user's premium status
+            try {
                 await updateUserPremiumStatus(currentUser.uid, true);
-                console.log('Calling onSuccess...');
                 onSuccess();
+            } catch (updateError) {
+                console.error('Error updating user status:', updateError);
+                setErrorMessage('Payment successful but failed to update account. Please contact support.');
+                setIsProcessing(false);
             }
-        } catch (error) {
-            console.error('Unexpected error:', error);
-            setErrorMessage('An unexpected error occurred. Please try again.');
+        } else {
+            console.log('Unexpected payment status:', paymentIntent?.status);
+            setErrorMessage('Payment processing incomplete. Please try again.');
             setIsProcessing(false);
         }
     };
-    
-    if (isProcessing) { 
-        return <div style={{ minHeight: '150px' }}><LoadingSpinner /></div>; 
-    }
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement />
-            {errorMessage && <div className="auth-error" style={{marginTop: '16px'}}>{errorMessage}</div>}
-            <button disabled={isProcessing || !stripe || !elements} className="auth-button" style={{marginTop: '24px'}}>
+            <PaymentElement 
+                options={{
+                    layout: 'tabs',
+                    paymentMethodOrder: ['card']
+                }}
+            />
+            {errorMessage && (
+                <div className="auth-error" style={{ marginTop: '16px' }}>
+                    {errorMessage}
+                </div>
+            )}
+            <button 
+                disabled={!stripe || !elements || isProcessing} 
+                className="auth-button" 
+                style={{ marginTop: '24px' }}
+            >
                 <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
             </button>
         </form>
@@ -114,117 +87,102 @@ const CheckoutForm = ({ onSuccess, intentType, subscriptionId }) => {
 
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
-    const [intentType, setIntentType] = useState(null);
-    const [subscriptionId, setSubscriptionId] = useState(null);
-    const [fetchError, setFetchError] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const { darkMode } = useContext(ThemeContext);
 
-    // Debug logging when payment form is ready
     useEffect(() => {
-        if (clientSecret && intentType) {
-            console.log('=== PAYMENT FORM READY ===');
-            console.log('Client Secret:', clientSecret.substring(0, 30) + '...');
-            console.log('Intent Type:', intentType);
-            console.log('Subscription ID:', subscriptionId);
-        }
-    }, [clientSecret, intentType, subscriptionId]);
+        if (!userEmail) return;
 
-    useEffect(() => {
-        if (userEmail) {
-            console.log('=== FETCHING PAYMENT INTENT ===');
-            console.log('User email:', userEmail);
-            
-            setFetchError(null);
-            const apiUrl = '/api/create-subscription';
-            
-            fetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: userEmail }),
-            })
-            .then(async (res) => {
-                console.log('API Response status:', res.status);
-                const resBody = await res.json().catch(() => ({}));
-                console.log('API Response body:', resBody);
-                
-                if (!res.ok) {
-                    throw new Error(resBody.error?.message || `HTTP error! Status: ${res.status}`);
-                }
-                return resBody;
-            })
+        // Create PaymentIntent as soon as the component mounts
+        fetch('/api/create-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail }),
+        })
+            .then((res) => res.json())
             .then((data) => {
-                if (data.clientSecret) {
-                    console.log('Received client secret, type:', data.type);
+                if (data.error) {
+                    setError(data.error.message);
+                } else if (data.clientSecret) {
                     setClientSecret(data.clientSecret);
-                    setIntentType(data.type || 'payment');
-                    setSubscriptionId(data.subscriptionId);
                 } else {
-                    throw new Error("Failed to initialize payment session.");
+                    setError('Failed to initialize payment session.');
                 }
+                setLoading(false);
             })
-            .catch(error => {
-                console.error("Fetch error:", error);
-                setFetchError(error.message || 'A network error occurred. Please check your connection and try again.');
+            .catch((err) => {
+                console.error('Error:', err);
+                setError('Network error. Please check your connection and try again.');
+                setLoading(false);
             });
-        }
     }, [userEmail]);
 
     const appearance = {
-      theme: darkMode ? 'night' : 'stripe',
-      variables: {
-        colorPrimary: '#3b82f6', 
-        colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
-        colorText: darkMode ? '#ffffff' : '#111827', 
-        colorDanger: '#ef4444',
-        fontFamily: 'Inter, system-ui, sans-serif', 
-        spacingUnit: '4px', 
-        borderRadius: '8px',
-      }
-    };
-
-    const options = { 
-        clientSecret, 
-        appearance,
-        // Add additional options for SetupIntent if needed
-        ...(intentType === 'setup' && {
-            // SetupIntent specific options can go here
-        })
-    };
-
-    const renderContent = () => {
-        if (fetchError) {
-            return (
-                <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
-                    <strong>Could not initialize payment.</strong><br/>
-                    {fetchError}
-                </div>
-            );
+        theme: darkMode ? 'night' : 'stripe',
+        variables: {
+            colorPrimary: '#3b82f6',
+            colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
+            colorText: darkMode ? '#ffffff' : '#111827',
+            colorDanger: '#ef4444',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            spacingUnit: '4px',
+            borderRadius: '8px',
         }
-        if (!clientSecret) {
-            return (
-                <div style={{minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+    };
+
+    if (loading) {
+        return (
+            <div>
+                <div className="auth-header">
+                    <h1 className="auth-title">Unlock Premium</h1>
+                    <p className="auth-subtitle">Preparing payment form...</p>
+                </div>
+                <div style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <LoadingSpinner />
                 </div>
-            );
-        }
+            </div>
+        );
+    }
+
+    if (error) {
         return (
-            <Elements options={options} stripe={stripePromise}>
-                <CheckoutForm 
-                    onSuccess={onSuccess} 
-                    intentType={intentType}
-                    subscriptionId={subscriptionId}
-                />
-            </Elements>
+            <div>
+                <div className="auth-header">
+                    <h1 className="auth-title">Unlock Premium</h1>
+                    <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+                </div>
+                <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
+                    <strong>Could not initialize payment.</strong><br />
+                    {error}
+                </div>
+            </div>
+        );
+    }
+
+    if (!clientSecret) {
+        return (
+            <div>
+                <div className="auth-header">
+                    <h1 className="auth-title">Unlock Premium</h1>
+                    <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+                </div>
+                <div className="auth-error" style={{ textAlign: 'center' }}>
+                    Failed to load payment form. Please refresh and try again.
+                </div>
+            </div>
         );
     }
 
     return (
         <div>
             <div className="auth-header">
-                 <h1 className="auth-title">Unlock Premium</h1>
-                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+                <h1 className="auth-title">Unlock Premium</h1>
+                <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
-            {renderContent()}
+            <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
+                <CheckoutForm onSuccess={onSuccess} />
+            </Elements>
         </div>
     );
 };
