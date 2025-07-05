@@ -17,45 +17,90 @@ const CheckoutForm = ({ onSuccess, intentType, subscriptionId }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        if (!stripe || !elements) { return; }
+        console.log('=== FORM SUBMISSION STARTED ===');
+        
+        if (!stripe || !elements) {
+            console.error('Stripe not ready:', { stripe: !!stripe, elements: !!elements });
+            return;
+        }
+
         setIsProcessing(true);
+        console.log('Processing payment, type:', intentType);
 
         try {
+            // Validate the form first
+            const { error: submitError } = await elements.submit();
+            if (submitError) {
+                console.error('Form validation error:', submitError);
+                setErrorMessage(submitError.message);
+                setIsProcessing(false);
+                return;
+            }
+
             let result;
             
             if (intentType === 'setup') {
-                // Handle SetupIntent confirmation
+                console.log('Confirming SetupIntent...');
                 result = await stripe.confirmSetup({
                     elements,
+                    confirmParams: {
+                        return_url: window.location.origin,
+                    },
                     redirect: 'if_required'
                 });
             } else {
-                // Handle PaymentIntent confirmation
+                console.log('Confirming PaymentIntent...');
                 result = await stripe.confirmPayment({
                     elements,
+                    confirmParams: {
+                        return_url: window.location.origin,
+                    },
                     redirect: 'if_required'
                 });
             }
 
+            console.log('Confirmation result:', result);
+
             if (result.error) {
-                setErrorMessage(result.error.type === "card_error" || result.error.type === "validation_error" 
-                    ? result.error.message 
-                    : "An unexpected error occurred.");
+                console.error('Stripe error:', result.error);
+                setErrorMessage(result.error.message);
                 setIsProcessing(false);
             } else {
-                console.log(`${intentType === 'setup' ? 'Setup' : 'Payment'} successful!`);
+                console.log('Payment confirmed successfully!');
+                console.log('PaymentIntent:', result.paymentIntent);
                 
-                // If it was a setup intent, we might need to activate the subscription
-                // This depends on your backend implementation
+                // If it was a setup intent, activate the subscription
                 if (intentType === 'setup' && subscriptionId) {
-                    console.log('Payment method attached to subscription:', subscriptionId);
+                    console.log('Activating subscription...');
+                    try {
+                        const response = await fetch('/api/activate-subscription', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ subscriptionId }),
+                        });
+                        
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.error?.message || 'Failed to activate subscription');
+                        }
+                        
+                        console.log('Subscription activated:', data);
+                    } catch (error) {
+                        console.error('Error activating subscription:', error);
+                        setErrorMessage('Payment method saved but subscription activation failed. Please contact support.');
+                        setIsProcessing(false);
+                        return;
+                    }
                 }
                 
+                // Update user status
+                console.log('Updating premium status...');
                 await updateUserPremiumStatus(currentUser.uid, true);
+                console.log('Calling onSuccess...');
                 onSuccess();
             }
         } catch (error) {
-            console.error('Error during confirmation:', error);
+            console.error('Unexpected error:', error);
             setErrorMessage('An unexpected error occurred. Please try again.');
             setIsProcessing(false);
         }
@@ -83,8 +128,21 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
     const [fetchError, setFetchError] = useState(null);
     const { darkMode } = useContext(ThemeContext);
 
+    // Debug logging when payment form is ready
+    useEffect(() => {
+        if (clientSecret && intentType) {
+            console.log('=== PAYMENT FORM READY ===');
+            console.log('Client Secret:', clientSecret.substring(0, 30) + '...');
+            console.log('Intent Type:', intentType);
+            console.log('Subscription ID:', subscriptionId);
+        }
+    }, [clientSecret, intentType, subscriptionId]);
+
     useEffect(() => {
         if (userEmail) {
+            console.log('=== FETCHING PAYMENT INTENT ===');
+            console.log('User email:', userEmail);
+            
             setFetchError(null);
             const apiUrl = '/api/create-subscription';
             
@@ -94,7 +152,10 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 body: JSON.stringify({ email: userEmail }),
             })
             .then(async (res) => {
+                console.log('API Response status:', res.status);
                 const resBody = await res.json().catch(() => ({}));
+                console.log('API Response body:', resBody);
+                
                 if (!res.ok) {
                     throw new Error(resBody.error?.message || `HTTP error! Status: ${res.status}`);
                 }
@@ -102,6 +163,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
             })
             .then((data) => {
                 if (data.clientSecret) {
+                    console.log('Received client secret, type:', data.type);
                     setClientSecret(data.clientSecret);
                     setIntentType(data.type || 'payment');
                     setSubscriptionId(data.subscriptionId);
