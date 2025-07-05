@@ -1,6 +1,10 @@
+
 // api/create-subscription.js
 
 const Stripe = require('stripe');
+
+// --- A hardcoded version number to prove this code is live ---
+const SCRIPT_VERSION = "1.2_FINAL";
 
 module.exports = async (req, res) => {
   // Set CORS headers for every response.
@@ -8,7 +12,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle the browser's preflight OPTIONS request.
+  // Handle the browser's preflight OPTIONS request first.
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -16,26 +20,24 @@ module.exports = async (req, res) => {
   // Ensure the method is POST for all other requests.
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: { message: 'Method Not Allowed' } });
+    return res.status(405).json({ error: { message: 'Method Not Allowed' }, version: SCRIPT_VERSION });
   }
 
   try {
-    // --- FIX: Move initialization and key checks inside the try block ---
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const priceId = process.env.STRIPE_PRICE_ID;
 
-    // Check for keys *before* trying to use them.
+    // Check for keys before trying to use them.
     if (!stripeSecretKey || !priceId) {
       console.error("Server configuration error: Stripe environment variables are missing.");
-      return res.status(500).json({ error: { message: "Payment system is not configured. Please contact support." } });
+      return res.status(500).json({ error: { message: "Payment system is not configured. Please contact support." }, version: SCRIPT_VERSION });
     }
     
-    // Initialize Stripe here, safely inside the try block.
     const stripe = new Stripe(stripeSecretKey);
 
     const { email } = req.body;
     if (!email) {
-      return res.status(400).json({ error: { message: 'Email is required.' } });
+      return res.status(400).json({ error: { message: 'Email is required.' }, version: SCRIPT_VERSION });
     }
 
     // Find or Create customer to prevent duplicates
@@ -57,10 +59,11 @@ module.exports = async (req, res) => {
 
     res.status(200).json({
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      version: SCRIPT_VERSION,
     });
     
   } catch (error) {
     console.error('Stripe API Error:', error.message);
-    res.status(500).json({ error: { message: `Server error: ${error.message}` } });
+    res.status(500).json({ error: { message: `Server error: ${error.message}` }, version: SCRIPT_VERSION });
   }
 };
