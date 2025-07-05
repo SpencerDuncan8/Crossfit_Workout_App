@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: { message: 'Email is required.' } });
     }
 
-    // Find or Create customer to prevent duplicates
+    // Find or Create customer
     let customer;
     const customers = await stripe.customers.list({ email: email, limit: 1 });
     if (customers.data.length > 0) {
@@ -46,107 +46,99 @@ export default async function handler(req, res) {
       console.log('Created new customer:', customer.id);
     }
 
-    // Check for existing incomplete subscriptions to avoid duplicates
-    const existingSubscriptions = await stripe.subscriptions.list({
+    // Check for existing active subscription
+    const activeSubscriptions = await stripe.subscriptions.list({
       customer: customer.id,
-      status: 'incomplete',
-      limit: 10
+      status: 'active',
+      limit: 1
     });
 
-    console.log('Found', existingSubscriptions.data.length, 'incomplete subscriptions');
+    if (activeSubscriptions.data.length > 0) {
+      console.log('Customer already has active subscription');
+      return res.status(400).json({ 
+        error: { message: 'You already have an active subscription.' } 
+      });
+    }
 
-    // Try to reuse an existing incomplete subscription with a payment intent
-    for (const subscription of existingSubscriptions.data) {
-      if (subscription.latest_invoice) {
-        const invoice = await stripe.invoices.retrieve(
-          subscription.latest_invoice,
-          { expand: ['payment_intent'] }
+    // Check for existing incomplete subscription with a usable payment intent
+    const incompleteSubscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: 'incomplete',
+      limit: 1,
+      expand: ['data.latest_invoice.payment_intent']
+    });
+
+    if (incompleteSubscriptions.data.length > 0) {
+      const existingSub = incompleteSubscriptions.data[0];
+      console.log('Found existing incomplete subscription:', existingSub.id);
+      
+      // Check if it has a usable payment intent
+      if (existingSub.latest_invoice?.payment_intent?.client_secret &&
+          existingSub.latest_invoice.payment_intent.status === 'requires_payment_method') {
+        console.log('Reusing existing subscription payment intent');
+        return res.status(200).json({
+          clientSecret: existingSub.latest_invoice.payment_intent.client_secret,
+          subscriptionId: existingSub.id,
+          type: 'payment'
+        });
+      }
+      
+      // Cancel the unusable incomplete subscription
+      console.log('Canceling unusable incomplete subscription');
+      await stripe.subscriptions.cancel(existingSub.id);
+    }
+
+    // Create new subscription - let Stripe handle payment intent creation
+    console.log('Creating new subscription...');
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        save_default_payment_method: 'on_subscription',
+        payment_method_types: ['card']
+      },
+      expand: ['latest_invoice.payment_intent']
+    });
+
+    console.log('Subscription created:', subscription.id);
+    console.log('Invoice status:', subscription.latest_invoice?.status);
+    console.log('Payment intent status:', subscription.latest_invoice?.payment_intent?.status);
+
+    // Verify we have a payment intent
+    if (!subscription.latest_invoice?.payment_intent?.client_secret) {
+      console.error('No payment intent created with subscription');
+      
+      // Try to finalize the invoice to force payment intent creation
+      if (subscription.latest_invoice?.status === 'draft') {
+        console.log('Finalizing draft invoice...');
+        const finalizedInvoice = await stripe.invoices.finalizeInvoice(
+          subscription.latest_invoice.id
         );
         
-        // Check if this subscription has a valid payment intent we can use
-        if (invoice.payment_intent?.status === 'requires_payment_method' && 
-            invoice.payment_intent?.client_secret) {
-          console.log('Reusing existing subscription:', subscription.id);
+        // Retrieve the subscription again with payment intent
+        const updatedSub = await stripe.subscriptions.retrieve(
+          subscription.id,
+          { expand: ['latest_invoice.payment_intent'] }
+        );
+        
+        if (updatedSub.latest_invoice?.payment_intent?.client_secret) {
           return res.status(200).json({
-            clientSecret: invoice.payment_intent.client_secret,
+            clientSecret: updatedSub.latest_invoice.payment_intent.client_secret,
             subscriptionId: subscription.id,
             type: 'payment'
           });
         }
       }
-    }
-
-    // Cancel all incomplete subscriptions before creating a new one
-    for (const subscription of existingSubscriptions.data) {
-      console.log('Canceling incomplete subscription:', subscription.id);
-      await stripe.subscriptions.cancel(subscription.id);
-    }
-
-    // Create a new subscription
-    console.log('Creating new subscription for customer:', customer.id);
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      expand: ['latest_invoice.payment_intent'],
-      payment_settings: { 
-        payment_method_types: ['card'],
-        save_default_payment_method: 'on_subscription' 
-      },
-    });
-
-    console.log('Subscription created:', subscription.id);
-    console.log('Subscription status:', subscription.status);
-
-    // Check if payment intent was created
-    if (subscription.latest_invoice?.payment_intent?.client_secret) {
-      console.log('Payment intent created with subscription');
-      return res.status(200).json({
-        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-        subscriptionId: subscription.id,
-        type: 'payment'
-      });
-    }
-
-    // If no payment intent on invoice, manually create one
-    if (subscription.latest_invoice) {
-      const invoiceId = typeof subscription.latest_invoice === 'string' 
-        ? subscription.latest_invoice 
-        : subscription.latest_invoice.id;
-        
-      const invoice = await stripe.invoices.retrieve(invoiceId);
       
-      if (invoice.amount_due > 0 && !invoice.payment_intent) {
-        console.log('Creating payment intent for invoice...');
-        
-        // Create a payment intent for this invoice
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: invoice.amount_due,
-          currency: invoice.currency,
-          customer: customer.id,
-          metadata: {
-            subscription_id: subscription.id,
-            invoice_id: invoice.id
-          },
-          automatic_payment_methods: {
-            enabled: true,
-          },
-        });
-        
-        console.log('Created payment intent:', paymentIntent.id);
-        
-        return res.status(200).json({
-          clientSecret: paymentIntent.client_secret,
-          subscriptionId: subscription.id,
-          type: 'payment'
-        });
-      }
+      // If still no payment intent, something is wrong
+      throw new Error('Failed to create payment intent for subscription');
     }
 
-    // This shouldn't happen, but handle it gracefully
-    console.error('Failed to create payment intent');
-    return res.status(500).json({ 
-      error: { message: 'Failed to create payment session. Please try again.' } 
+    return res.status(200).json({
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      subscriptionId: subscription.id,
+      type: 'payment'
     });
     
   } catch (error) {
