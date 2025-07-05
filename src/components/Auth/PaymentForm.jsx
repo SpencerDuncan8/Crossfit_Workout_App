@@ -28,15 +28,6 @@ const CheckoutForm = ({ onSuccess, intentType, subscriptionId }) => {
         console.log('Processing payment, type:', intentType);
 
         try {
-            // Validate the form first
-            const { error: submitError } = await elements.submit();
-            if (submitError) {
-                console.error('Form validation error:', submitError);
-                setErrorMessage(submitError.message);
-                setIsProcessing(false);
-                return;
-            }
-
             let result;
             
             if (intentType === 'setup') {
