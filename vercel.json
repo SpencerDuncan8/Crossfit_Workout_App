@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/create-subscription.cjs": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
