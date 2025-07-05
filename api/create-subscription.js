@@ -57,11 +57,12 @@ export default async function handler(req, res) {
 
     console.log('Subscription created:', subscription.id);
     console.log('Subscription status:', subscription.status);
-    console.log('Invoice amount due:', subscription.latest_invoice?.amount_due);
+    console.log('Invoice ID:', subscription.latest_invoice?.id);
+    console.log('Payment intent exists:', !!subscription.latest_invoice?.payment_intent);
 
     // Check if payment intent exists
     if (subscription.latest_invoice?.payment_intent?.client_secret) {
-      console.log('Payment intent found on invoice');
+      console.log('Payment intent found, client secret available');
       return res.status(200).json({
         clientSecret: subscription.latest_invoice.payment_intent.client_secret,
         subscriptionId: subscription.id,
@@ -69,33 +70,38 @@ export default async function handler(req, res) {
       });
     }
 
-    // If no payment intent, try to finalize the invoice
-    if (subscription.latest_invoice && !subscription.latest_invoice.payment_intent) {
-      console.log('No payment intent found, finalizing invoice...');
+    // If no payment intent but invoice exists, try to retrieve it directly
+    if (subscription.latest_invoice) {
+      console.log('No payment intent on subscription, retrieving invoice directly...');
       
       try {
-        // Finalize the invoice to create payment intent
-        const finalizedInvoice = await stripe.invoices.finalizeInvoice(subscription.latest_invoice.id);
+        const invoice = await stripe.invoices.retrieve(
+          typeof subscription.latest_invoice === 'string' 
+            ? subscription.latest_invoice 
+            : subscription.latest_invoice.id,
+          { expand: ['payment_intent'] }
+        );
         
-        // Retrieve the subscription again with expanded payment intent
-        const updatedSubscription = await stripe.subscriptions.retrieve(subscription.id, {
-          expand: ['latest_invoice.payment_intent']
-        });
-        
-        if (updatedSubscription.latest_invoice?.payment_intent?.client_secret) {
+        if (invoice.payment_intent?.client_secret) {
+          console.log('Payment intent found on retrieved invoice');
           return res.status(200).json({
-            clientSecret: updatedSubscription.latest_invoice.payment_intent.client_secret,
+            clientSecret: invoice.payment_intent.client_secret,
             subscriptionId: subscription.id,
             type: 'payment'
           });
         }
-      } catch (finalizeError) {
-        console.error('Error finalizing invoice:', finalizeError);
+        
+        console.log('Invoice status:', invoice.status);
+        console.log('Invoice amount_due:', invoice.amount_due);
+        console.log('Invoice payment_intent:', invoice.payment_intent);
+        
+      } catch (invoiceError) {
+        console.error('Error retrieving invoice:', invoiceError.message);
       }
     }
 
-    // Fallback: Create a SetupIntent if we still don't have a payment intent
-    console.log('Creating SetupIntent as fallback...');
+    // Last resort: Create a SetupIntent
+    console.log('No payment intent found, creating SetupIntent as fallback...');
     const setupIntent = await stripe.setupIntents.create({
       customer: customer.id,
       payment_method_types: ['card'],
