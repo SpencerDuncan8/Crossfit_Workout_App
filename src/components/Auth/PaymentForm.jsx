@@ -6,7 +6,6 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import LoadingSpinner from '../Common/LoadingSpinner';
 
-// This is correct: Initialize Stripe outside of the component render.
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const CheckoutForm = ({ onSuccess }) => {
@@ -23,25 +22,20 @@ const CheckoutForm = ({ onSuccess }) => {
 
         const { error } = await stripe.confirmPayment({
             elements,
-            redirect: 'if_required' // Prevents a full-page redirect.
+            redirect: 'if_required'
         });
 
         if (error) {
             setErrorMessage(error.type === "card_error" || error.type === "validation_error" ? error.message : "An unexpected error occurred.");
             setIsProcessing(false);
         } else {
-            // Payment was successful.
-            setErrorMessage('');
             console.log("Subscription payment successful!");
             await updateUserPremiumStatus(currentUser.uid, true);
-            onSuccess(); // This closes the modal.
+            onSuccess();
         }
     };
     
-    // The spinner inside the form is only for when the payment is being confirmed.
-    if (isProcessing) {
-        return <div style={{ minHeight: '150px' }}><LoadingSpinner /></div>;
-    }
+    if (isProcessing) { return <div style={{ minHeight: '150px' }}><LoadingSpinner /></div>; }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -56,12 +50,12 @@ const CheckoutForm = ({ onSuccess }) => {
 
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
-    const [fetchError, setFetchError] = useState(null); // --- NEW: State for fetch errors
+    const [fetchError, setFetchError] = useState(null);
     const { darkMode } = useContext(ThemeContext);
 
     useEffect(() => {
         if (userEmail) {
-            setFetchError(null); // Reset error on new attempt
+            setFetchError(null);
             const apiUrl = '/api/create-subscription';
             
             fetch(apiUrl, {
@@ -69,50 +63,41 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: userEmail }),
             })
-            .then(async (res) => { // Make this async to properly handle error bodies
+            .then(async (res) => {
+                const resBody = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    const errorBody = await res.json().catch(() => ({ error: { message: 'An unknown server error occurred.' }}));
-                    throw new Error(errorBody.error.message || `HTTP error! status: ${res.status}`);
+                    throw new Error(resBody.error?.message || `HTTP error! Status: ${res.status}`);
                 }
-                return res.json();
+                return resBody;
             })
             .then((data) => {
                 if (data.clientSecret) {
                     setClientSecret(data.clientSecret);
                 } else {
-                    // --- NEW: Handle cases where the API returns a 200 OK but no secret ---
-                    throw new Error("Failed to retrieve a valid payment session from the server.");
+                    throw new Error("Failed to initialize payment session.");
                 }
             })
             .catch(error => {
-                // --- NEW: Set the user-facing error message ---
                 console.error("Fetch error:", error);
-                setFetchError(error.message);
+                // --- THIS IS THE FIX for the "Error {}" message ---
+                // It provides a default message if the caught error object is empty.
+                setFetchError(error.message || 'A network error occurred. Please check your connection and try again.');
             });
         }
     }, [userEmail]);
 
-    // --- NEW: Stripe appearance object to match your app's theme ---
     const appearance = {
       theme: darkMode ? 'night' : 'stripe',
       variables: {
-        colorPrimary: '#3b82f6',
-        colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
-        colorText: darkMode ? '#ffffff' : '#111827',
-        colorDanger: '#ef4444',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        spacingUnit: '4px',
-        borderRadius: '8px',
+        colorPrimary: '#3b82f6', colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
+        colorText: darkMode ? '#ffffff' : '#111827', colorDanger: '#ef4444',
+        fontFamily: 'Inter, system-ui, sans-serif', spacingUnit: '4px', borderRadius: '8px',
       }
     };
 
-    const options = {
-        clientSecret,
-        appearance,
-    };
+    const options = { clientSecret, appearance };
 
     const renderContent = () => {
-        // --- NEW: Render error state if fetch fails ---
         if (fetchError) {
             return (
                 <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
@@ -121,8 +106,6 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 </div>
             );
         }
-
-        // Show loading spinner while waiting for the clientSecret
         if (!clientSecret) {
             return (
                 <div style={{minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -130,8 +113,6 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 </div>
             );
         }
-
-        // Show the payment form once the secret is loaded
         return (
             <Elements options={options} stripe={stripePromise}>
                 <CheckoutForm onSuccess={onSuccess} />
