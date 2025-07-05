@@ -1,4 +1,5 @@
 // src/components/Auth/PaymentForm.jsx
+// Simplified two-step approach: Save payment method first, then create subscription
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
@@ -8,7 +9,7 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutForm = ({ onSuccess }) => {
+const CheckoutForm = ({ onSuccess, customerId }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -18,57 +19,61 @@ const CheckoutForm = ({ onSuccess }) => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if (!stripe || !elements) {
-            console.log('Stripe.js has not yet loaded.');
-            return;
-        }
+        if (!stripe || !elements) return;
 
         setIsProcessing(true);
         setErrorMessage('');
 
-        console.log('Confirming payment...');
+        try {
+            // Step 1: Confirm the SetupIntent to save the payment method
+            console.log('Saving payment method...');
+            const { error, setupIntent } = await stripe.confirmSetup({
+                elements,
+                confirmParams: {
+                    return_url: window.location.href,
+                },
+                redirect: 'if_required'
+            });
 
-        const { error, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                // Return URL for redirect-based payment methods
-                return_url: `${window.location.origin}/payment-success`,
-            },
-            // Prevent redirect for card payments
-            redirect: 'if_required',
-        });
-
-        if (error) {
-            console.error('Payment error:', error);
-            setErrorMessage(error.message || 'An unexpected error occurred.');
-            setIsProcessing(false);
-        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-            console.log('Payment succeeded!');
-            
-            // Update user's premium status
-            try {
-                await updateUserPremiumStatus(currentUser.uid, true);
-                onSuccess();
-            } catch (updateError) {
-                console.error('Error updating user status:', updateError);
-                setErrorMessage('Payment successful but failed to update account. Please contact support.');
-                setIsProcessing(false);
+            if (error) {
+                throw new Error(error.message);
             }
-        } else {
-            console.log('Unexpected payment status:', paymentIntent?.status);
-            setErrorMessage('Payment processing incomplete. Please try again.');
+
+            console.log('Payment method saved:', setupIntent.payment_method);
+
+            // Step 2: Create the subscription with the saved payment method
+            console.log('Creating subscription...');
+            const response = await fetch('/api/complete-subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: customerId,
+                    paymentMethodId: setupIntent.payment_method
+                })
+            });
+
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error?.message || 'Failed to create subscription');
+            }
+
+            console.log('Subscription created successfully:', result);
+
+            // Step 3: Update user status in your app
+            await updateUserPremiumStatus(currentUser.uid, true);
+            onSuccess();
+
+        } catch (error) {
+            console.error('Error:', error);
+            setErrorMessage(error.message || 'An error occurred. Please try again.');
             setIsProcessing(false);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement 
-                options={{
-                    layout: 'tabs',
-                    paymentMethodOrder: ['card']
-                }}
-            />
+            <PaymentElement />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
                     {errorMessage}
@@ -87,6 +92,7 @@ const CheckoutForm = ({ onSuccess }) => {
 
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
+    const [customerId, setCustomerId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { darkMode } = useContext(ThemeContext);
@@ -94,26 +100,25 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
     useEffect(() => {
         if (!userEmail) return;
 
-        // Create PaymentIntent as soon as the component mounts
+        // Initialize payment setup
         fetch('/api/create-subscription', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: userEmail }),
         })
-            .then((res) => res.json())
-            .then((data) => {
+            .then(res => res.json())
+            .then(data => {
                 if (data.error) {
                     setError(data.error.message);
-                } else if (data.clientSecret) {
-                    setClientSecret(data.clientSecret);
                 } else {
-                    setError('Failed to initialize payment session.');
+                    setClientSecret(data.clientSecret);
+                    setCustomerId(data.customerId);
                 }
                 setLoading(false);
             })
-            .catch((err) => {
+            .catch(err => {
                 console.error('Error:', err);
-                setError('Network error. Please check your connection and try again.');
+                setError('Failed to initialize payment form.');
                 setLoading(false);
             });
     }, [userEmail]);
@@ -181,7 +186,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
-                <CheckoutForm onSuccess={onSuccess} />
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} />
             </Elements>
         </div>
     );
