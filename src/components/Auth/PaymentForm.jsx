@@ -1,11 +1,12 @@
 // src/components/Auth/PaymentForm.jsx
 
 import React, { useState, useEffect, useContext } from 'react';
-import { AppStateContext } from '../../context/AppContext';
+import { AppStateContext, ThemeContext } from '../../context/AppContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import LoadingSpinner from '../Common/LoadingSpinner';
 
+// This is correct: Initialize Stripe outside of the component render.
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const CheckoutForm = ({ onSuccess }) => {
@@ -22,20 +23,25 @@ const CheckoutForm = ({ onSuccess }) => {
 
         const { error } = await stripe.confirmPayment({
             elements,
-            redirect: 'if_required'
+            redirect: 'if_required' // Prevents a full-page redirect.
         });
 
         if (error) {
-            setErrorMessage(error.message);
+            setErrorMessage(error.type === "card_error" || error.type === "validation_error" ? error.message : "An unexpected error occurred.");
             setIsProcessing(false);
         } else {
+            // Payment was successful.
+            setErrorMessage('');
             console.log("Subscription payment successful!");
             await updateUserPremiumStatus(currentUser.uid, true);
-            onSuccess();
+            onSuccess(); // This closes the modal.
         }
     };
     
-    if (isProcessing) { return <LoadingSpinner />; }
+    // The spinner inside the form is only for when the payment is being confirmed.
+    if (isProcessing) {
+        return <div style={{ minHeight: '150px' }}><LoadingSpinner /></div>;
+    }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -50,26 +56,23 @@ const CheckoutForm = ({ onSuccess }) => {
 
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
+    const [fetchError, setFetchError] = useState(null); // --- NEW: State for fetch errors
+    const { darkMode } = useContext(ThemeContext);
 
     useEffect(() => {
         if (userEmail) {
-            // --- THIS IS THE FIX ---
-            // Use a relative path. This will resolve to `/api/create-subscription`
-            // on whatever domain the user is currently visiting.
+            setFetchError(null); // Reset error on new attempt
             const apiUrl = '/api/create-subscription';
-
-            console.log("Attempting to fetch from relative URL:", apiUrl);
-
+            
             fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: userEmail }),
             })
-            .then((res) => {
+            .then(async (res) => { // Make this async to properly handle error bodies
                 if (!res.ok) {
-                    return res.text().then(text => {
-                        throw new Error(`HTTP error! status: ${res.status}, body: ${text}`);
-                    });
+                    const errorBody = await res.json().catch(() => ({ error: { message: 'An unknown server error occurred.' }}));
+                    throw new Error(errorBody.error.message || `HTTP error! status: ${res.status}`);
                 }
                 return res.json();
             })
@@ -77,19 +80,64 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 if (data.clientSecret) {
                     setClientSecret(data.clientSecret);
                 } else {
-                    console.error("API Error:", data.error?.message || "Failed to get client secret.");
+                    // --- NEW: Handle cases where the API returns a 200 OK but no secret ---
+                    throw new Error("Failed to retrieve a valid payment session from the server.");
                 }
             })
             .catch(error => {
+                // --- NEW: Set the user-facing error message ---
                 console.error("Fetch error:", error);
+                setFetchError(error.message);
             });
         }
     }, [userEmail]);
 
+    // --- NEW: Stripe appearance object to match your app's theme ---
+    const appearance = {
+      theme: darkMode ? 'night' : 'stripe',
+      variables: {
+        colorPrimary: '#3b82f6',
+        colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
+        colorText: darkMode ? '#ffffff' : '#111827',
+        colorDanger: '#ef4444',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        spacingUnit: '4px',
+        borderRadius: '8px',
+      }
+    };
+
     const options = {
         clientSecret,
-        appearance: { /* ... unchanged ... */ }
+        appearance,
     };
+
+    const renderContent = () => {
+        // --- NEW: Render error state if fetch fails ---
+        if (fetchError) {
+            return (
+                <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
+                    <strong>Could not initialize payment.</strong><br/>
+                    {fetchError}
+                </div>
+            );
+        }
+
+        // Show loading spinner while waiting for the clientSecret
+        if (!clientSecret) {
+            return (
+                <div style={{minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <LoadingSpinner />
+                </div>
+            );
+        }
+
+        // Show the payment form once the secret is loaded
+        return (
+            <Elements options={options} stripe={stripePromise}>
+                <CheckoutForm onSuccess={onSuccess} />
+            </Elements>
+        );
+    }
 
     return (
         <div>
@@ -97,16 +145,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                  <h1 className="auth-title">Unlock Premium</h1>
                  <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
-            
-            {!clientSecret ? (
-                <div style={{minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                    <LoadingSpinner />
-                </div>
-            ) : (
-                <Elements options={options} stripe={stripePromise}>
-                    <CheckoutForm onSuccess={onSuccess} />
-                </Elements>
-            )}
+            {renderContent()}
         </div>
     );
 };
