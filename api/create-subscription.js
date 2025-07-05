@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       console.error("Server configuration error: Stripe environment variables are missing.");
       return res.status(500).json({ error: { message: "Payment system is not configured correctly. Please contact support." } });
     }
-    
+
     const stripe = new Stripe(stripeSecretKey);
 
     const { email } = req.body;
@@ -44,25 +44,29 @@ export default async function handler(req, res) {
       customer = await stripe.customers.create({ email, description: 'BlockFit Premium Customer' });
     }
 
-    // Create the subscription with immediate billing
+    console.log('Creating subscription for customer:', customer.id);
+
+    // Create the subscription - using different parameters to ensure payment intent creation
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
-      collection_method: 'charge_automatically',
-      trial_end: 'now' // This forces immediate billing
+      expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
+      payment_settings: { 
+        payment_method_types: ['card'],
+        save_default_payment_method: 'on_subscription' 
+      },
     });
 
     console.log('Subscription created:', subscription.id);
     console.log('Subscription status:', subscription.status);
-    console.log('Invoice ID:', subscription.latest_invoice?.id);
-    console.log('Payment intent exists:', !!subscription.latest_invoice?.payment_intent);
+    console.log('Latest invoice:', subscription.latest_invoice?.id);
+    console.log('Payment intent on invoice:', !!subscription.latest_invoice?.payment_intent);
+    console.log('Pending setup intent:', !!subscription.pending_setup_intent);
 
-    // Check if payment intent exists
+    // First, check if there's a payment intent on the invoice
     if (subscription.latest_invoice?.payment_intent?.client_secret) {
-      console.log('Payment intent found, client secret available');
+      console.log('Using payment intent from invoice');
       return res.status(200).json({
         clientSecret: subscription.latest_invoice.payment_intent.client_secret,
         subscriptionId: subscription.id,
@@ -70,38 +74,66 @@ export default async function handler(req, res) {
       });
     }
 
-    // If no payment intent but invoice exists, try to retrieve it directly
+    // Check if there's a pending setup intent (for $0 invoices or trials)
+    if (subscription.pending_setup_intent?.client_secret) {
+      console.log('Using pending setup intent from subscription');
+      return res.status(200).json({
+        clientSecret: subscription.pending_setup_intent.client_secret,
+        subscriptionId: subscription.id,
+        type: 'setup'
+      });
+    }
+
+    // If we have an invoice but no payment intent, we need to handle it
     if (subscription.latest_invoice) {
-      console.log('No payment intent on subscription, retrieving invoice directly...');
-      
-      try {
-        const invoice = await stripe.invoices.retrieve(
-          typeof subscription.latest_invoice === 'string' 
-            ? subscription.latest_invoice 
-            : subscription.latest_invoice.id,
-          { expand: ['payment_intent'] }
-        );
-        
-        if (invoice.payment_intent?.client_secret) {
-          console.log('Payment intent found on retrieved invoice');
-          return res.status(200).json({
-            clientSecret: invoice.payment_intent.client_secret,
-            subscriptionId: subscription.id,
-            type: 'payment'
-          });
-        }
-        
-        console.log('Invoice status:', invoice.status);
-        console.log('Invoice amount_due:', invoice.amount_due);
-        console.log('Invoice payment_intent:', invoice.payment_intent);
-        
-      } catch (invoiceError) {
-        console.error('Error retrieving invoice:', invoiceError.message);
+      const invoiceId = typeof subscription.latest_invoice === 'string' 
+        ? subscription.latest_invoice 
+        : subscription.latest_invoice.id;
+
+      console.log('Retrieving invoice details...');
+      const invoice = await stripe.invoices.retrieve(invoiceId);
+
+      console.log('Invoice details:');
+      console.log('- Status:', invoice.status);
+      console.log('- Amount due:', invoice.amount_due);
+      console.log('- Collection method:', invoice.collection_method);
+      console.log('- Billing reason:', invoice.billing_reason);
+
+      // For invoices with amount due, manually create the payment flow
+      if (invoice.amount_due > 0 && invoice.status === 'open') {
+        console.log('Creating payment intent for invoice manually...');
+
+        // Create a payment intent directly
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: invoice.amount_due,
+          currency: invoice.currency,
+          customer: customer.id,
+          metadata: {
+            subscription_id: subscription.id,
+            invoice_id: invoice.id
+          },
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
+
+        console.log('Created payment intent:', paymentIntent.id);
+
+        // Update the invoice to use this payment intent
+        await stripe.invoices.update(invoiceId, {
+          default_payment_method: paymentIntent.payment_method,
+        });
+
+        return res.status(200).json({
+          clientSecret: paymentIntent.client_secret,
+          subscriptionId: subscription.id,
+          type: 'payment'
+        });
       }
     }
 
-    // Last resort: Create a SetupIntent
-    console.log('No payment intent found, creating SetupIntent as fallback...');
+    // Final fallback: Create a SetupIntent
+    console.log('Creating SetupIntent as final fallback...');
     const setupIntent = await stripe.setupIntents.create({
       customer: customer.id,
       payment_method_types: ['card'],
@@ -116,11 +148,12 @@ export default async function handler(req, res) {
       subscriptionId: subscription.id,
       type: 'setup'
     });
-    
+
   } catch (error) {
     console.error('Stripe API Error:', error.message);
     console.error('Error type:', error.type);
     console.error('Error code:', error.code);
+    console.error('Full error:', error);
     return res.status(500).json({ error: { message: `Server error: ${error.message}` } });
   }
 }
