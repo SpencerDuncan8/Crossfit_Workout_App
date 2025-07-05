@@ -44,70 +44,48 @@ export default async function handler(req, res) {
       customer = await stripe.customers.create({ email, description: 'BlockFit Premium Customer' });
     }
 
-    // Create the subscription with expand to get all necessary objects
+    // Create the subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent', 'latest_invoice'],
+      expand: ['latest_invoice.payment_intent'],
     });
 
-    // Debug logging
     console.log('Subscription created:', subscription.id);
-    console.log('Subscription status:', subscription.status);
-    console.log('Latest invoice exists:', !!subscription.latest_invoice);
-    console.log('Latest invoice object type:', typeof subscription.latest_invoice);
-    
-    // Handle the case where latest_invoice might be a string ID instead of an object
-    let invoice = subscription.latest_invoice;
-    if (typeof invoice === 'string') {
-      console.log('Fetching invoice separately:', invoice);
-      invoice = await stripe.invoices.retrieve(invoice, {
-        expand: ['payment_intent']
-      });
-    }
+    console.log('Invoice amount due:', subscription.latest_invoice?.amount_due);
 
-    // Check if payment_intent exists
-    if (!invoice || !invoice.payment_intent || !invoice.payment_intent.client_secret) {
-      console.error('Payment intent issue:', {
-        invoice_exists: !!invoice,
-        payment_intent_exists: !!invoice?.payment_intent,
-        client_secret_exists: !!invoice?.payment_intent?.client_secret,
-        invoice_status: invoice?.status,
-        payment_intent_status: invoice?.payment_intent?.status
+    let clientSecret;
+
+    // Check if there's a payment intent on the invoice
+    if (subscription.latest_invoice?.payment_intent?.client_secret) {
+      clientSecret = subscription.latest_invoice.payment_intent.client_secret;
+      console.log('Using payment intent from invoice');
+    } else {
+      // No payment intent - create a SetupIntent instead
+      console.log('Creating SetupIntent for future payments');
+      
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customer.id,
+        payment_method_types: ['card'],
+        usage: 'off_session',
+        metadata: {
+          subscription_id: subscription.id
+        }
       });
 
-      // Try to finalize the invoice if it's in draft status
-      if (invoice && invoice.status === 'draft') {
-        console.log('Finalizing draft invoice...');
-        invoice = await stripe.invoices.finalizeInvoice(invoice.id, {
-          expand: ['payment_intent']
-        });
-      }
-
-      // Final check after potential finalization
-      if (!invoice?.payment_intent?.client_secret) {
-        return res.status(500).json({ 
-          error: { 
-            message: 'Failed to create payment session. Please contact support.',
-            details: process.env.NODE_ENV === 'development' ? {
-              invoice_status: invoice?.status,
-              payment_intent_exists: !!invoice?.payment_intent
-            } : undefined
-          } 
-        });
-      }
+      clientSecret = setupIntent.client_secret;
     }
 
     return res.status(200).json({
-      clientSecret: invoice.payment_intent.client_secret,
+      clientSecret: clientSecret,
+      subscriptionId: subscription.id,
+      type: clientSecret.startsWith('seti_') ? 'setup' : 'payment'
     });
     
   } catch (error) {
     console.error('Stripe API Error:', error.message);
-    console.error('Error type:', error.type);
-    console.error('Error code:', error.code);
     return res.status(500).json({ error: { message: `Server error: ${error.message}` } });
   }
 }
