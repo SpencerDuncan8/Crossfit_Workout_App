@@ -1,126 +1,63 @@
-// api/create-subscription.js
-
 import Stripe from 'stripe';
 
+// Initialize Stripe with your secret key from environment variables
+const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
+
 export default async function handler(req, res) {
-  // Set CORS headers for every response
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.blockfit.app');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle the browser's preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // Ensure the method is POST for all other requests
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: { message: 'Method Not Allowed' } });
+    return res.status(405).end('Method Not Allowed');
   }
 
   try {
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const priceId = process.env.STRIPE_PRICE_ID;
-
-    if (!stripeSecretKey || !priceId) {
-      console.error("Server configuration error: Stripe environment variables are missing.");
-      return res.status(500).json({ error: { message: "Payment system is not configured correctly. Please contact support." } });
-    }
-    
-    const stripe = new Stripe(stripeSecretKey);
-
     const { email } = req.body;
+
     if (!email) {
       return res.status(400).json({ error: { message: 'Email is required.' } });
     }
 
-    // Find or Create customer to prevent duplicates
+    // 1. Find an existing customer or create a new one.
     let customer;
-    const customers = await stripe.customers.list({ email: email, limit: 1 });
-    if (customers.data.length > 0) {
-      customer = customers.data[0];
+    const existingCustomers = await stripe.customers.list({ email: email, limit: 1 });
+
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
     } else {
-      customer = await stripe.customers.create({ email, description: 'BlockFit Premium Customer' });
+      customer = await stripe.customers.create({ email: email, name: email });
     }
 
-    // Create the subscription with immediate billing
+    // 2. Create the subscription.
+    // Ensure your STRIPE_PRICE_ID is set in your Vercel environment variables.
+    // It looks like `price_...` in your Stripe Dashboard.
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [{ price: priceId }],
+      items: [{ price: process.env.VITE_STRIPE_PRICE_ID }],
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
-      collection_method: 'charge_automatically',
-      trial_end: 'now' // This forces immediate billing
+      expand: ['latest_invoice.payment_intent'], // This is crucial!
     });
 
-    console.log('Subscription created:', subscription.id);
-    console.log('Subscription status:', subscription.status);
-    console.log('Invoice ID:', subscription.latest_invoice?.id);
-    console.log('Payment intent exists:', !!subscription.latest_invoice?.payment_intent);
+    // 3. Check for the Payment Intent and send its client_secret to the frontend.
+    const paymentIntent = subscription.latest_invoice.payment_intent;
 
-    // Check if payment intent exists
-    if (subscription.latest_invoice?.payment_intent?.client_secret) {
-      console.log('Payment intent found, client secret available');
-      return res.status(200).json({
-        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+    if (paymentIntent) {
+      res.status(200).json({
         subscriptionId: subscription.id,
-        type: 'payment'
+        clientSecret: paymentIntent.client_secret,
+        type: 'payment', // Explicitly tell the frontend this is a PaymentIntent
       });
+    } else {
+      // This path indicates a configuration error (e.g., a free trial on the price)
+      // Throwing an error is better than silently failing payment.
+      console.error('Subscription created without a PaymentIntent for a paid plan.');
+      throw new Error('Could not create payment for subscription. Please check Stripe configuration.');
     }
-
-    // If no payment intent but invoice exists, try to retrieve it directly
-    if (subscription.latest_invoice) {
-      console.log('No payment intent on subscription, retrieving invoice directly...');
-      
-      try {
-        const invoice = await stripe.invoices.retrieve(
-          typeof subscription.latest_invoice === 'string' 
-            ? subscription.latest_invoice 
-            : subscription.latest_invoice.id,
-          { expand: ['payment_intent'] }
-        );
-        
-        if (invoice.payment_intent?.client_secret) {
-          console.log('Payment intent found on retrieved invoice');
-          return res.status(200).json({
-            clientSecret: invoice.payment_intent.client_secret,
-            subscriptionId: subscription.id,
-            type: 'payment'
-          });
-        }
-        
-        console.log('Invoice status:', invoice.status);
-        console.log('Invoice amount_due:', invoice.amount_due);
-        console.log('Invoice payment_intent:', invoice.payment_intent);
-        
-      } catch (invoiceError) {
-        console.error('Error retrieving invoice:', invoiceError.message);
-      }
-    }
-
-    // Last resort: Create a SetupIntent
-    console.log('No payment intent found, creating SetupIntent as fallback...');
-    const setupIntent = await stripe.setupIntents.create({
-      customer: customer.id,
-      payment_method_types: ['card'],
-      usage: 'off_session',
-      metadata: {
-        subscription_id: subscription.id
-      }
-    });
-
-    return res.status(200).json({
-      clientSecret: setupIntent.client_secret,
-      subscriptionId: subscription.id,
-      type: 'setup'
-    });
-    
   } catch (error) {
     console.error('Stripe API Error:', error.message);
-    console.error('Error type:', error.type);
-    console.error('Error code:', error.code);
-    return res.status(500).json({ error: { message: `Server error: ${error.message}` } });
+    return res.status(500).json({
+      error: {
+        message: 'Failed to initialize payment session. ' + error.message,
+      },
+    });
   }
 }
