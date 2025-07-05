@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/create-subscription",
-      "destination": "/api/create-subscription.cjs"
-    }
-  ]
-}

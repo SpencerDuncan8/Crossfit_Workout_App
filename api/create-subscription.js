@@ -1,8 +1,8 @@
-// api/create-subscription.cjs
+// api/create-subscription.js
 
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // Set CORS headers for every response
   res.setHeader('Access-Control-Allow-Origin', 'https://www.blockfit.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -60,4 +60,4 @@ module.exports = async (req, res) => {
     console.error('Stripe API Error:', error.message);
     return res.status(500).json({ error: { message: `Server error: ${error.message}` } });
   }
-};
+}
