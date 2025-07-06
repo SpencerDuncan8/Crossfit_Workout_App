@@ -9,7 +9,8 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutForm = ({ onSuccess, customerId }) => {
+// MODIFICATION 1: Accept `userEmail` as a prop
+const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -70,15 +71,19 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
             setIsProcessing(false);
         }
     };
-    
-    // --- THIS IS THE FIX ---
-    // We define the payment element options here, changing 'always' to 'auto' for the name field.
+
+    // MODIFICATION 2: Define payment element options with `defaultValues`
     const paymentElementOptions = {
         fields: {
             billingDetails: {
-                name: 'auto',   // 'auto' will show the field when appropriate (which is the default for cards).
-                email: 'never', // This correctly hides the email field.
-                phone: 'never'  // This correctly hides the phone field.
+                name: 'auto',
+                email: 'never',
+                phone: 'never'
+            }
+        },
+        defaultValues: {
+            billingDetails: {
+                email: userEmail, // Pre-populate the email to resolve the integration error
             }
         },
         layout: 'tabs'
@@ -199,7 +204,8 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
-                <CheckoutForm onSuccess={onSuccess} customerId={customerId} />
+                {/* MODIFICATION 3: Pass the `userEmail` prop down */}
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} />
             </Elements>
         </div>
     );
