@@ -8,8 +8,7 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// This component is now correctly defined outside of the parent.
-const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
+const CheckoutForm = ({ onSuccess, customerId, userEmail, clientSecret }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -24,12 +23,16 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
         setErrorMessage('');
 
         try {
+            const { error: submitError } = await elements.submit();
+            if (submitError) {
+              throw submitError;
+            }
+
             const { error, setupIntent } = await stripe.confirmSetup({
                 elements,
+                clientSecret,
                 confirmParams: {
                     return_url: `${window.location.origin}/payment-complete`,
-                    // THE FIX, PART 1: Explicitly pass billing details with the payment method
-                    // to ensure data consistency.
                     payment_method_data: {
                         billing_details: {
                             email: userEmail,
@@ -42,7 +45,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
             if (error) {
                 throw new Error(error.message || "An error occurred during payment setup.");
             }
-
+            
             if (setupIntent.status === 'succeeded') {
                 const response = await fetch('/api/complete-subscription', {
                     method: 'POST',
@@ -90,8 +93,6 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
     );
 };
 
-
-// MAIN COMPONENT
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
     const [customerId, setCustomerId] = useState(null);
@@ -123,60 +124,30 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 setLoading(false);
             });
     }, [userEmail]);
-
-    // THE FIX, PART 2: Memoize the options object and provide default values
-    // to pre-fill the form, which stabilizes the component.
+    
     const options = useMemo(() => {
         if (!clientSecret) return undefined;
         
         return {
             clientSecret,
+            // THE FIX: This line explicitly disables the "Link by Stripe" feature
+            // which is causing the input field interference.
+            paymentMethodCreation: 'manual',
             appearance: {
                 theme: darkMode ? 'night' : 'stripe',
-                variables: {
-                    colorPrimary: '#3b82f6',
-                    colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
-                    colorText: darkMode ? '#ffffff' : '#111827',
-                    colorDanger: '#ef4444',
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    spacingUnit: '4px',
-                    borderRadius: '8px',
-                }
             },
-            // Pre-filling the email stabilizes the form. We also hide the field
-            // since the user has already provided it.
-            defaultValues: {
-                billingDetails: {
-                    email: userEmail
-                }
-            }
         };
-    }, [clientSecret, darkMode, userEmail]);
+    }, [clientSecret, darkMode]);
 
     if (loading) {
-        return (
-            <div>
-                <div className="auth-header">
-                    <h1 className="auth-title">Unlock Premium</h1>
-                    <p className="auth-subtitle">Preparing payment form...</p>
-                </div>
-                <div style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <LoadingSpinner />
-                </div>
-            </div>
-        );
+        return <div style={{ minHeight: '200px' }}><LoadingSpinner /></div>;
     }
 
     if (error || !clientSecret || !options) {
         return (
-            <div>
-                <div className="auth-header">
-                    <h1 className="auth-title">Unlock Premium</h1>
-                </div>
-                <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
-                    <strong>Could not initialize payment.</strong><br />
-                    {error || 'Please refresh and try again.'}
-                </div>
+            <div className="auth-error" style={{ textAlign: 'center' }}>
+                <strong>Could not initialize payment.</strong><br />
+                {error || 'Please refresh and try again.'}
             </div>
         );
     }
@@ -188,8 +159,12 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={options} stripe={stripePromise}>
-                {/* THE FIX, PART 3: Pass userEmail down to the CheckoutForm */}
-                <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} />
+                <CheckoutForm 
+                  onSuccess={onSuccess} 
+                  customerId={customerId} 
+                  userEmail={userEmail} 
+                  clientSecret={clientSecret} 
+                />
             </Elements>
         </div>
     );
