@@ -125,13 +125,8 @@ body {
     margin-left: 0;
     padding: 80px 16px 100px 16px;
   }
-}/* src/App.css */
+}
 
-/* ... (all your existing css) ... */
-
-@import './components/Auth/CheckoutForm.css';
-/* Add to your global CSS or component styles */
-.StripeElement input {
+.StripeElement input, .StripeElement iframe {
     pointer-events: auto !important;
-    user-select: text !important;
 }
