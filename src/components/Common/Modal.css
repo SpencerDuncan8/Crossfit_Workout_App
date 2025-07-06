@@ -13,10 +13,9 @@
 }
 
 .modal-container {
-  background: rgba(42, 49, 65, 0.8); /* Semi-transparent background */
-  backdrop-filter: blur(10px); /* The "glass" effect */
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* THE FIX: backdrop-filter has been removed. A solid background is used instead. */
+  background: var(--bg-secondary); 
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   width: 100%;
   max-width: 600px;
