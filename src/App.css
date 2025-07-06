@@ -31,11 +31,42 @@ body.dark-theme {
   --modal-close-btn-bg-hover: var(--bg-tertiary);
 }
 
-/* --- Global Styles --- */
-* {
-  box-sizing: border-box;
+/* --- IMPROVED Global Styles (less aggressive) --- */
+/* 
+CHANGED: Instead of using *, target specific elements to avoid 
+interfering with third-party components like Stripe
+*/
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, 
+blockquote, pre, a, abbr, acronym, address, big, cite, 
+code, del, dfn, em, img, ins, kbd, q, s, samp, small, 
+strike, strong, sub, sup, tt, var, b, u, i, center, 
+dl, dt, dd, ol, ul, li, fieldset, form, label, legend, 
+table, caption, tbody, tfoot, thead, tr, th, td, 
+article, aside, canvas, details, embed, figure, 
+figcaption, footer, header, hgroup, menu, nav, 
+output, ruby, section, summary, time, mark, audio, video {
   margin: 0;
   padding: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+
+/* Target your app's elements specifically */
+.app *, 
+.app *::before, 
+.app *::after {
+  box-sizing: border-box;
+}
+
+/* EXCEPTION: Don't apply global styles to third-party components */
+.stripe-container,
+.stripe-container *,
+iframe[name^="__privateStripeFrame"],
+iframe[src*="stripe.com"] {
+  /* Let Stripe handle its own styling */
+  box-sizing: revert !important;
+  margin: revert !important;
+  padding: revert !important;
 }
 
 body {
@@ -125,13 +156,7 @@ body {
     margin-left: 0;
     padding: 80px 16px 100px 16px;
   }
-}/* src/App.css */
-
-/* ... (all your existing css) ... */
-
-@import './components/Auth/CheckoutForm.css';
-/* Add to your global CSS or component styles */
-.StripeElement input {
-    pointer-events: auto !important;
-    user-select: text !important;
 }
+
+/* IMPORTANT: Import the Stripe fix CSS - remove the old @import line if it exists */
+@import './components/Auth/CheckoutForm.css';

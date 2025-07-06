@@ -2,13 +2,13 @@
 
 A premium web application to guide your fitness journey. Get started immediately with professionally designed programs or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
 
-## 🎯 Current Status: Cloud Sync Implemented ☁️
+## 🎯 Current Status: Stripe Integration Complete ✅
 
-The application now supports both local-only use for free-tier users and full cloud synchronization for registered members. This hybrid approach allows new users to get started immediately without an account, with a seamless path to upgrade and sync their data across devices.
+The application now features a complete freemium model with secure payment processing. Users can experience the full app locally before upgrading to premium for cloud synchronization.
 
--   **Goal:** Provide a full-featured experience without requiring immediate sign-up, while enabling powerful cross-device synchronization for registered users.
--   **Method:** The free tier of the app saves all user-generated data directly to their browser's **`localStorage`**. This allows for a complete, single-device experience. When a user creates a permanent account, the app performs a **one-time migration** of all their local data to **Cloud Firestore**, linking it to their new account for cloud sync.
--   **Next Step:** Integrating Stripe for premium features and monetization.
+-   **Goal:** Provide a full-featured experience without requiring immediate sign-up, while enabling powerful cross-device synchronization for paid subscribers.
+-   **Method:** The free tier saves all user data in **`localStorage`** for single-device use. Premium users get **Firebase Authentication** + **Cloud Firestore** sync across all devices.
+-   **Security:** Users only gain cloud access **after** successful payment completion. Email addresses are captured for follow-up even if payment is abandoned.
 
 ## 🗺️ Project Roadmap
 
@@ -22,31 +22,43 @@ The project is being developed in distinct phases to ensure a high-quality, user
 
 *   **Phase 2: User Authentication & Cloud Sync** - ✅ **Complete**
     *   **Complete:** Implemented user accounts using **Firebase Authentication**.
-    *   **Complete:** Implemented a one-time data migration for free-tier users who sign up, moving their data from `localStorage` to **Cloud Firestore** to enable cross-device data synchronization.
+    *   **Complete:** Implemented a one-time data migration for premium users, moving their data from `localStorage` to **Cloud Firestore** to enable cross-device data synchronization.
 
-*   **Phase 3: Premium Tier & Monetization** - **Next Up**
-    *   **Planned:** Integrate **Stripe** for secure payment processing.
-    *   **Planned:** Launch a "Premium" subscription tier that unlocks advanced features.
+*   **Phase 3: Premium Tier & Monetization** - ✅ **Complete**
+    *   **Complete:** Integrated **Stripe** for secure payment processing.
+    *   **Complete:** Launched "Premium" subscription tier ($4.99/month) that unlocks cloud sync.
+    *   **Complete:** Secure payment flow - users only get access after successful payment.
 
-*   **Phase 4: Social & Community Features** - **Future**
+*   **Phase 4: Social & Community Features** - **Next Up**
     *   **Planned:** Ability for premium users to share their custom programs with the community.
     *   **Planned:** Leaderboards for benchmark workouts.
 
 ## 💰 Monetization & Business Model
 
-The application will follow a **Freemium** model to allow users to experience the core value of the app before committing to a subscription.
+The application follows a **Freemium** model with a secure payment gateway to prevent unauthorized access.
 
 *   **Free Tier:**
     *   Full access to the workout editor, calendar, and all tracking features.
-    *   A limited number of custom programs (e.g., 3).
+    *   Limited to 3 custom programs.
     *   Access to a small selection of template programs.
     *   **All data is stored locally in the browser's `localStorage`**.
+    *   No account required - immediate access to core functionality.
 
-*   **Premium Tier ($4.99/month - tentative):**
-    *   **Cloud Data Sync:** All data (programs, logs, progress) is migrated from your local device and then saved to the cloud, making it accessible on any device.
+*   **Premium Tier ($4.99/month):**
+    *   **Secure Account Creation:** Firebase user account created only after successful payment.
+    *   **Cloud Data Sync:** All local data is automatically migrated to the cloud upon signup.
+    *   **Cross-Device Access:** Access your programs, logs, and progress from any device.
     *   **Unlimited Custom Programs:** Create and save as many workout programs as you want.
     *   **Full Template Library:** Unlock the complete library of professionally designed program templates.
-    *   **Future Social Features:** Access to community features like program sharing and leaderboards as they are released.
+    *   **Future Social Features:** Early access to community features as they are released.
+
+## 🔒 Payment Security
+
+*   **Stripe Integration:** Industry-standard payment processing with PCI compliance.
+*   **No Premature Access:** Users cannot access premium features before payment completion.
+*   **Email Capture:** User emails are stored for marketing follow-up even if payment is abandoned.
+*   **One-Time Migration:** Local data is seamlessly transferred to cloud storage upon successful payment.
+*   **Automatic Premium Status:** User accounts are immediately activated with premium features post-payment.
 
 ## 🚀 Features
 
@@ -89,14 +101,55 @@ The application will follow a **Freemium** model to allow users to experience th
 - **Responsive Design:** A mobile-first design ensures a seamless experience on any device.
 
 ## 💻 Technical Stack
-- **Framework:** React
+- **Framework:** React 18 with Vite bundler
 - **State Management:** React Context API (with custom hooks for persistent state)
-- **Bundler:** Vite
 - **Styling:** CSS with variables for theming
 - **Backend:** Firebase (Authentication & Cloud Firestore)
-- **Planned Payments:** Stripe
+- **Payments:** Stripe (SetupIntent + Subscriptions API)
+- **Deployment:** Vercel (Frontend + Serverless Functions)
 - **Libraries:**
   - `recharts` for progress charts
   - `lucide-react` for icons
   - `react-compare-slider` for photo comparison
   - `react-confetti` for workout completion celebration
+  - `@stripe/stripe-js` and `@stripe/react-stripe-js` for payment processing
+
+## 🏗️ Architecture
+
+### Payment Flow
+1. **Free Usage:** Users can immediately use all features with localStorage
+2. **Signup:** Email/password collected but no Firebase account created
+3. **Payment:** Stripe processes payment and stores customer data
+4. **Account Creation:** Firebase user created only after successful payment
+5. **Data Migration:** Local data automatically synced to cloud storage
+6. **Premium Access:** Full cross-device synchronization activated
+
+### Data Storage
+- **Free Tier:** Browser localStorage for single-device persistence
+- **Premium Tier:** Firebase Firestore for cloud synchronization
+- **Migration:** Seamless one-time transfer from local to cloud storage
+
+## 🚀 Getting Started
+
+### For Users
+1. Visit the app and start using it immediately (no signup required)
+2. Create programs, plan workouts, and track your progress locally
+3. When ready for cross-device sync, upgrade to Premium
+4. Your local data automatically transfers to the cloud
+
+### For Developers
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables for Firebase and Stripe
+4. Run development server: `npm run dev`
+5. Deploy to Vercel for production
+
+## 📱 Mobile Support
+- Progressive Web App (PWA) capabilities
+- Responsive design optimized for mobile devices
+- Touch-friendly interface for workout tracking
+- Offline functionality for free tier users
+
+---
+
+**BlockFit** - Transform your fitness journey with intelligent program design and effortless progress tracking.

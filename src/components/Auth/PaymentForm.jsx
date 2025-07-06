@@ -5,6 +5,7 @@ import { AppStateContext, ThemeContext } from '../../context/AppContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import LoadingSpinner from '../Common/LoadingSpinner';
+import './CheckoutForm.css'; // Import the CSS fix
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -14,6 +15,42 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
     const { createUserAfterPayment } = useContext(AppStateContext);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+
+    // Effect to ensure Stripe elements are properly interactive
+    useEffect(() => {
+        if (!stripe || !elements) return;
+        
+        const timer = setTimeout(() => {
+            // Force interaction capability on Stripe elements
+            const stripeFrames = document.querySelectorAll('iframe[name^="__privateStripeFrame"]');
+            stripeFrames.forEach(frame => {
+                if (frame.style) {
+                    frame.style.pointerEvents = 'auto';
+                    frame.style.userSelect = 'auto';
+                }
+            });
+            
+            // Specifically target phone inputs that might be problematic
+            const phoneInputs = document.querySelectorAll('input[type="tel"], input[name="phone"]');
+            phoneInputs.forEach(input => {
+                input.style.pointerEvents = 'auto';
+                input.style.userSelect = 'text';
+                input.style.webkitUserSelect = 'text';
+                input.removeAttribute('disabled');
+                
+                // Add event listeners to ensure proper functionality
+                input.addEventListener('focus', (e) => {
+                    e.stopPropagation();
+                });
+                
+                input.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            });
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [stripe, elements]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -68,26 +105,42 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
         } catch (error) {
             console.error('Error:', error);
             setErrorMessage(error.message || 'An error occurred. Please try again.');
+        } finally {
             setIsProcessing(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <PaymentElement />
-            {errorMessage && (
-                <div className="auth-error" style={{ marginTop: '16px' }}>
-                    {errorMessage}
+        <div className="stripe-container">
+            <form onSubmit={handleSubmit}>
+                {/* CRITICAL: Use the stripe-elements-wrapper class */}
+                <div className="stripe-elements-wrapper">
+                    <PaymentElement 
+                        options={{
+                            // Additional options to help with input functionality
+                            layout: 'tabs',
+                            defaultValues: {
+                                billingDetails: {
+                                    email: userEmail,
+                                }
+                            }
+                        }}
+                    />
                 </div>
-            )}
-            <button 
-                disabled={!stripe || !elements || isProcessing} 
-                className="auth-button" 
-                style={{ marginTop: '24px' }}
-            >
-                <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
-            </button>
-        </form>
+                {errorMessage && (
+                    <div className="auth-error" style={{ marginTop: '16px' }}>
+                        {errorMessage}
+                    </div>
+                )}
+                <button 
+                    disabled={!stripe || !elements || isProcessing} 
+                    className="auth-button" 
+                    style={{ marginTop: '24px' }}
+                >
+                    <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
+                </button>
+            </form>
+        </div>
     );
 };
 
@@ -134,7 +187,41 @@ const PaymentForm = ({ onSuccess, userEmail, userPassword }) => {
             fontFamily: 'Inter, system-ui, sans-serif',
             spacingUnit: '4px',
             borderRadius: '8px',
+        },
+        rules: {
+            '.Input': {
+                fontSize: '16px',
+                pointerEvents: 'auto',
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+                touchAction: 'manipulation',
+            },
+            '.Input:focus': {
+                outline: 'none',
+                pointerEvents: 'auto',
+            },
+            // Specifically target Stripe Link elements
+            '.p-Link .Input': {
+                pointerEvents: 'auto',
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+            },
+            // Target phone number inputs specifically
+            '.Input[data-testid="phone-number-input"]': {
+                pointerEvents: 'auto',
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+                touchAction: 'manipulation',
+            }
         }
+    };
+
+    const elementsOptions = {
+        clientSecret,
+        appearance,
+        fonts: [{
+            cssSrc: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+        }]
     };
 
     if (loading) {
@@ -186,7 +273,7 @@ const PaymentForm = ({ onSuccess, userEmail, userPassword }) => {
                 <h1 className="auth-title">Unlock Premium</h1>
                 <p className="auth-subtitle">Final step! Complete payment to activate your account.</p>
             </div>
-            <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
+            <Elements options={elementsOptions} stripe={stripePromise}>
                 <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} userPassword={userPassword} />
             </Elements>
         </div>
