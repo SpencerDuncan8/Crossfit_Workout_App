@@ -127,6 +127,13 @@ body {
   }
 }
 
-.StripeElement input, .StripeElement iframe {
-    pointer-events: auto !important;
+/* 
+  This rule targets the container for the Stripe Payment Element by its ID
+  and any iframes inside it. This ensures that pointer events are not
+  blocked, allowing users to click and type into all fields, including
+  the phone number input.
+*/
+#payment-element,
+#payment-element iframe {
+  pointer-events: auto !important;
 }
