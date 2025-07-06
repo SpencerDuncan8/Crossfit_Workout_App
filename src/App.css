@@ -128,12 +128,10 @@ body {
 }
 
 /* 
-  This rule targets the container for the Stripe Payment Element by its ID
-  and any iframes inside it. This ensures that pointer events are not
-  blocked, allowing users to click and type into all fields, including
-  the phone number input.
+  This rule targets any iframe inside the auth modal. Since the Stripe
+  Payment Element uses iframes for its fields, this ensures that pointer
+  events are not blocked, allowing users to click and type into them.
 */
-#payment-element,
-#payment-element iframe {
+.auth-card iframe {
   pointer-events: auto !important;
 }
