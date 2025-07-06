@@ -1,5 +1,4 @@
 // src/components/Auth/PaymentForm.jsx
-// No field customization - using default PaymentElement
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
@@ -9,10 +8,10 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutForm = ({ onSuccess, customerId }) => {
+const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
     const stripe = useStripe();
     const elements = useElements();
-    const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
+    const { createUserAfterPayment } = useContext(AppStateContext);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -48,7 +47,9 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     customerId: customerId,
-                    paymentMethodId: setupIntent.payment_method
+                    paymentMethodId: setupIntent.payment_method,
+                    userEmail: userEmail,
+                    userPassword: userPassword
                 })
             });
 
@@ -60,8 +61,8 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
 
             console.log('Subscription created successfully:', result);
 
-            // Step 3: Update user status in your app
-            await updateUserPremiumStatus(currentUser.uid, true);
+            // Step 3: Create Firebase user and update premium status
+            await createUserAfterPayment(userEmail, userPassword);
             onSuccess();
 
         } catch (error) {
@@ -90,7 +91,7 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
     );
 };
 
-const PaymentForm = ({ onSuccess, userEmail }) => {
+const PaymentForm = ({ onSuccess, userEmail, userPassword }) => {
     const [clientSecret, setClientSecret] = useState(null);
     const [customerId, setCustomerId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -155,7 +156,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
             <div>
                 <div className="auth-header">
                     <h1 className="auth-title">Unlock Premium</h1>
-                    <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+                    <p className="auth-subtitle">Account setup failed. Please try again.</p>
                 </div>
                 <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
                     <strong>Could not initialize payment.</strong><br />
@@ -170,7 +171,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
             <div>
                 <div className="auth-header">
                     <h1 className="auth-title">Unlock Premium</h1>
-                    <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+                    <p className="auth-subtitle">Final step! Complete payment to activate your account.</p>
                 </div>
                 <div className="auth-error" style={{ textAlign: 'center' }}>
                     Failed to load payment form. Please refresh and try again.
@@ -183,10 +184,10 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
         <div>
             <div className="auth-header">
                 <h1 className="auth-title">Unlock Premium</h1>
-                <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+                <p className="auth-subtitle">Final step! Complete payment to activate your account.</p>
             </div>
             <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
-                <CheckoutForm onSuccess={onSuccess} customerId={customerId} />
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} userPassword={userPassword} />
             </Elements>
         </div>
     );

@@ -1,5 +1,4 @@
 // api/complete-subscription.js
-// Creates the subscription after payment method is saved
 
 import Stripe from 'stripe';
 
@@ -19,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const { customerId, paymentMethodId } = req.body;
+    const { customerId, paymentMethodId, userEmail } = req.body;
 
     if (!customerId || !paymentMethodId) {
       return res.status(400).json({ 
@@ -42,7 +41,11 @@ export default async function handler(req, res) {
       customer: customerId,
       items: [{ price: process.env.STRIPE_PRICE_ID }],
       default_payment_method: paymentMethodId,
-      expand: ['latest_invoice.payment_intent']
+      expand: ['latest_invoice.payment_intent'],
+      metadata: {
+        userEmail: userEmail, // Store email for reference
+        premiumUser: 'true'
+      }
     });
 
     console.log('Subscription created:', subscription.id);
@@ -77,8 +80,12 @@ export default async function handler(req, res) {
         });
       } catch (payError) {
         console.error('Error paying invoice:', payError);
+        
+        // Cancel the subscription if payment fails
+        await stripe.subscriptions.cancel(subscription.id);
+        
         return res.status(400).json({ 
-          error: { message: 'Subscription created but payment failed. Please check your payment method.' }
+          error: { message: 'Payment failed. Please check your payment method and try again.' }
         });
       }
     }

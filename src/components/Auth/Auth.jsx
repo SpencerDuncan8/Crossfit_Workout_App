@@ -7,7 +7,7 @@ import './Auth.css';
 import PaymentForm from './PaymentForm';
 
 const Auth = ({ closeModal }) => {
-  const { signUp, logIn } = useContext(AppStateContext);
+  const { logIn } = useContext(AppStateContext); // Remove signUp from here
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,11 +23,10 @@ const Auth = ({ closeModal }) => {
         await logIn(email, password);
         closeModal();
       } else {
-        await signUp(email, password);
+        // NEW: Don't create Firebase user yet, just proceed to payment
         setAuthStep('payment');
       }
     } catch (err) {
-      // ... (error handling is unchanged)
       let message = "An unknown error occurred.";
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         message = 'Invalid email or password.';
@@ -50,7 +49,6 @@ const Auth = ({ closeModal }) => {
 
       {authStep === 'credentials' ? (
         <>
-          {/* ... (credentials form is unchanged) ... */}
           <div className="auth-header">
             <h1 className="auth-title">Sync to Cloud</h1>
             <p className="auth-subtitle">
@@ -62,7 +60,7 @@ const Auth = ({ closeModal }) => {
             <input type="password" className="auth-input" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             {error && <p className="auth-error">{error}</p>}
             <button type="submit" className="auth-button">
-              {isLogin ? 'Log In' : 'Sign Up & Continue'}
+              {isLogin ? 'Log In' : 'Continue to Payment'}
             </button>
           </form>
           <div className="auth-toggle-text">
@@ -73,8 +71,7 @@ const Auth = ({ closeModal }) => {
           </div>
         </>
       ) : (
-        // --- MODIFIED: Pass the email as a prop ---
-        <PaymentForm onSuccess={closeModal} userEmail={email} />
+        <PaymentForm onSuccess={closeModal} userEmail={email} userPassword={password} />
       )}
     </div>
   );
