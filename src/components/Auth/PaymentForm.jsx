@@ -1,5 +1,5 @@
 // src/components/Auth/PaymentForm.jsx
-// Updated with name field only and no email/phone fields
+// Simplified two-step approach: Save payment method first, then create subscription
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
@@ -53,7 +53,7 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
             });
 
             const result = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(result.error?.message || 'Failed to create subscription');
             }
@@ -73,18 +73,7 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement 
-                options={{
-                    fields: {
-                        billingDetails: {
-                            name: 'always',     // Always show name field
-                            email: 'never',     // Hide email field
-                            phone: 'never',     // Hide phone field
-                            address: 'never'    // Hide address fields
-                        }
-                    }
-                }}
-            />
+            <PaymentElement />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
                     {errorMessage}

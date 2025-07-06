@@ -1,5 +1,5 @@
 // api/complete-subscription.js
-// Updated to save the billing name to the customer
+// Creates the subscription after payment method is saved
 
 import Stripe from 'stripe';
 
@@ -30,27 +30,12 @@ export default async function handler(req, res) {
     console.log('Creating subscription for customer:', customerId);
     console.log('Payment method:', paymentMethodId);
 
-    // Get the payment method details to extract the billing name
-    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
-    const billingName = paymentMethod.billing_details?.name;
-
-    // Update the customer with the name if provided
-    if (billingName) {
-      await stripe.customers.update(customerId, {
-        name: billingName,
-        invoice_settings: {
-          default_payment_method: paymentMethodId
-        }
-      });
-      console.log('Updated customer name:', billingName);
-    } else {
-      // Just update the payment method if no name
-      await stripe.customers.update(customerId, {
-        invoice_settings: {
-          default_payment_method: paymentMethodId
-        }
-      });
-    }
+    // Set the payment method as default for the customer
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId
+      }
+    });
 
     // Create the subscription
     const subscription = await stripe.subscriptions.create({
