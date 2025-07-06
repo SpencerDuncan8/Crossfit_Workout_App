@@ -1,5 +1,5 @@
 // src/components/Auth/PaymentForm.jsx
-// Updated with correct field options to fix black screen error
+// Simplified version with default PaymentElement (shows all standard fields)
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
@@ -73,18 +73,7 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement 
-                options={{
-                    fields: {
-                        billingDetails: {
-                            name: 'auto',      // Show name field when needed
-                            email: 'never',    // Hide email field
-                            phone: 'never',    // Hide phone field
-                            address: 'never'   // Hide address fields
-                        }
-                    }
-                }}
-            />
+            <PaymentElement />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
                     {errorMessage}
