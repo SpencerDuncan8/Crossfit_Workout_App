@@ -130,3 +130,8 @@ body {
 /* ... (all your existing css) ... */
 
 @import './components/Auth/CheckoutForm.css';
+/* Add to your global CSS or component styles */
+.StripeElement input {
+    pointer-events: auto !important;
+    user-select: text !important;
+}
