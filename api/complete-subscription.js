@@ -1,98 +1,68 @@
-// api/complete-subscription.js
-// Creates the subscription after payment method is saved
+// /api/complete-subscription.js
 
-import Stripe from 'stripe';
+// This is a Vercel Serverless Function.
+// It assumes you have `stripe` installed as a dependency.
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.blockfit.app');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).end('Method Not Allowed');
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: { message: 'Method Not Allowed' } });
+  const { customerId, paymentMethodId } = req.body;
+
+  if (!customerId || !paymentMethodId) {
+    return res.status(400).json({ error: { message: 'Missing customerId or paymentMethodId.' } });
   }
 
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const { customerId, paymentMethodId } = req.body;
+    // --- Step 1: Get the customer name from the payment method details ---
+    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+    const customerName = paymentMethod.billing_details.name;
 
-    if (!customerId || !paymentMethodId) {
-      return res.status(400).json({ 
-        error: { message: 'Customer ID and Payment Method ID are required.' } 
+    // --- Step 2: Update the Stripe Customer with the new name (if provided) ---
+    if (customerName) {
+      await stripe.customers.update(customerId, {
+        name: customerName,
       });
+      console.log(`Updated customer ${customerId} name to: ${customerName}`);
     }
 
-    console.log('Creating subscription for customer:', customerId);
-    console.log('Payment method:', paymentMethodId);
-
-    // Set the payment method as default for the customer
+    // --- Step 3: Attach the payment method and set it as default ---
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
     await stripe.customers.update(customerId, {
       invoice_settings: {
-        default_payment_method: paymentMethodId
-      }
+        default_payment_method: paymentMethodId,
+      },
     });
 
-    // Create the subscription
+    // --- Step 4: Create the subscription ---
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
-      items: [{ price: process.env.STRIPE_PRICE_ID }],
-      default_payment_method: paymentMethodId,
-      expand: ['latest_invoice.payment_intent']
+      items: [
+        {
+          // IMPORTANT: Replace with your actual Price ID from your Stripe Dashboard
+          // or set it as an environment variable STRIPE_PRICE_ID
+          price: process.env.STRIPE_PRICE_ID,
+        },
+      ],
+      // This helps handle payments that require 3D Secure or other authentication steps
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
     });
 
-    console.log('Subscription created:', subscription.id);
-    console.log('Status:', subscription.status);
+    console.log(`Subscription ${subscription.id} created for customer ${customerId}.`);
 
-    // Check if subscription is active
-    if (subscription.status === 'active') {
-      return res.status(200).json({
-        success: true,
-        subscription: {
-          id: subscription.id,
-          status: subscription.status
-        }
-      });
-    }
-
-    // If not active, try to pay the invoice
-    if (subscription.latest_invoice && subscription.status === 'incomplete') {
-      const invoiceId = typeof subscription.latest_invoice === 'string'
-        ? subscription.latest_invoice
-        : subscription.latest_invoice.id;
-
-      try {
-        await stripe.invoices.pay(invoiceId);
-        
-        return res.status(200).json({
-          success: true,
-          subscription: {
-            id: subscription.id,
-            status: 'active'
-          }
-        });
-      } catch (payError) {
-        console.error('Error paying invoice:', payError);
-        return res.status(400).json({ 
-          error: { message: 'Subscription created but payment failed. Please check your payment method.' }
-        });
-      }
-    }
-
-    return res.status(200).json({
-      success: true,
-      subscription: {
-        id: subscription.id,
-        status: subscription.status
-      }
+    res.status(200).json({
+      subscriptionId: subscription.id,
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
     });
-    
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Stripe API Error:', error.message);
     return res.status(500).json({ error: { message: error.message } });
   }
 }

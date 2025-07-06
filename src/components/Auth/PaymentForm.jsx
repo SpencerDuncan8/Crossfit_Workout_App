@@ -73,15 +73,24 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement />
+            <PaymentElement options={{
+                fields: {
+                    billingDetails: {
+                        name: 'always', // Always show the name field
+                        email: 'never',   // Never show the email field
+                        phone: 'never'    // Never show the phone field
+                    }
+                },
+                layout: 'tabs'
+            }} />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
                     {errorMessage}
                 </div>
             )}
-            <button 
-                disabled={!stripe || !elements || isProcessing} 
-                className="auth-button" 
+            <button
+                disabled={!stripe || !elements || isProcessing}
+                className="auth-button"
                 style={{ marginTop: '24px' }}
             >
                 <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
