@@ -181,18 +181,15 @@ const AppStateProviderComponent = ({ children }) => {
   };
   
   const createProgram = (name) => {
-    const newProgram = { id: generateUniqueId(), name: name, description: "A collection of your custom workouts.", workouts: [] };
+    const newProgram = { id: generateUniqueId(), name: name, description: "A collection of your custom workouts.", workouts: [], isTemplate: false };
     setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
     return newProgram.id;
   };
   
-  const copyProgram = (originalProgram) => {
-    const deepCopy = JSON.parse(JSON.stringify(originalProgram));
-    deepCopy.id = generateUniqueId();
-    deepCopy.name = `${originalProgram.name} (Copy)`;
-    deepCopy.workouts = deepCopy.workouts.map(w => ({ ...w, id: generateUniqueId() }));
-    setAppState(prev => ({ ...prev, programs: [...prev.programs, deepCopy] }));
-    return deepCopy.id;
+  const copyProgram = (programToCopy) => {
+    const newProgram = { ...JSON.parse(JSON.stringify(programToCopy)), id: generateUniqueId(), name: `${programToCopy.name} (Copy)`, isTemplate: false };
+    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
+    alert(`"${programToCopy.name}" was copied to your programs.`);
   };
   
   const deleteProgram = (programId) => {
@@ -200,74 +197,89 @@ const AppStateProviderComponent = ({ children }) => {
   };
   
   const updateProgram = (programId, updates) => {
-    setAppState(prev => ({
-      ...prev,
-      programs: prev.programs.map(p => p.id === programId ? { ...p, ...updates } : p)
-    }));
+    setAppState(prev => ({ ...prev, programs: prev.programs.map(p => p.id === programId ? { ...p, ...updates } : p) }));
   };
   
-  const saveCustomWorkout = (programId, workout) => {
+  const saveCustomWorkout = (programId, workoutToSave) => {
     setAppState(prev => {
-      const programs = prev.programs.map(program => {
-        if (program.id === programId) {
-          const existingIndex = program.workouts.findIndex(w => w.id === workout.id);
-          let updatedWorkouts;
-          if (existingIndex >= 0) {
-            updatedWorkouts = program.workouts.map((w, i) => i === existingIndex ? workout : w);
-          } else {
-            updatedWorkouts = [...program.workouts, workout];
-          }
-          return { ...program, workouts: updatedWorkouts };
-        }
-        return program;
-      });
-      return { ...prev, programs };
+        const updatedPrograms = prev.programs.map(program => {
+            if (program.id === programId) {
+                const newProgram = { ...program };
+                const workoutIndex = newProgram.workouts.findIndex(w => w.id === workoutToSave.id);
+                if (workoutIndex > -1) { newProgram.workouts[workoutIndex] = workoutToSave; } else { newProgram.workouts.push(workoutToSave); }
+                return newProgram;
+            }
+            return program;
+        });
+        return { ...prev, programs: updatedPrograms };
     });
+  };
+  
+  // FIXED: This function now works correctly again
+  const loadProgramTemplate = (template) => {
+    if (appState.programs.some(p => p.id === template.id)) { 
+        alert(`"${template.name}" has already been added to your programs. You can copy it again to create another version.`); 
+        return; 
+    }
+    const newProgram = { 
+        id: template.id,
+        name: template.name, 
+        description: template.description, 
+        workouts: template.workouts, 
+        isTemplate: false, 
+        daysPerWeek: template.daysPerWeek, 
+    };
+    const updatedPrograms = [...appState.programs, newProgram];
+    updateAppState({ programs: updatedPrograms });
   };
   
   const deleteCustomWorkout = (programId, workoutId) => {
-    setAppState(prev => ({
-      ...prev,
-      programs: prev.programs.map(p => 
-        p.id === programId 
-          ? { ...p, workouts: p.workouts.filter(w => w.id !== workoutId) }
-          : p
-      )
-    }));
-  };
-  
-  const openWorkoutEditor = (programId, workoutId = null) => {
-    updateAppState({
-      isWorkoutEditorOpen: true,
-      editingInfo: { programId, workoutId }
+    setAppState(prev => {
+        const updatedPrograms = prev.programs.map(program => {
+            if (program.id === programId) { return { ...program, workouts: program.workouts.filter(w => w.id !== workoutId) }; }
+            return program;
+        });
+        return { ...prev, programs: updatedPrograms };
     });
   };
   
-  const closeWorkoutEditor = () => {
-    updateAppState({
-      isWorkoutEditorOpen: false,
-      editingInfo: null
-    });
-  };
+  const openWorkoutEditor = (programId, workoutId) => { updateAppState({ isWorkoutEditorOpen: true, editingInfo: { programId, workoutId } }); };
+  const closeWorkoutEditor = () => { updateAppState({ isWorkoutEditorOpen: false, editingInfo: null }); };
   
-  const loadProgramTemplate = (template) => {
-    const newProgram = {
-      ...template,
-      id: generateUniqueId(),
-      workouts: template.workouts.map(w => ({ ...w, id: generateUniqueId() }))
+  const autoScheduleProgram = (workoutsToSchedule, daysPerWeek = 5) => {
+    let currentSchedule = { ...appState.workoutSchedule }; 
+    let currentDate = new Date(); 
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const findNextAvailableDate = (startDate) => {
+      let date = new Date(startDate);
+      while (true) { 
+        const dayOfWeek = date.getDay(); 
+        if (dayOfWeek === 0 || dayOfWeek === 6) { 
+          date.setDate(date.getDate() + (dayOfWeek === 6 ? 2 : 1)); 
+          continue; 
+        } 
+        return date; 
+      }
     };
-    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
-  };
-  
-  const openExerciseModal = (exerciseName) => {
-    const exerciseData = getExerciseByName(exerciseName);
-    if (exerciseData) {
-      updateAppState({ isModalOpen: true, modalContent: exerciseData });
+    
+    let scheduleDate = findNextAvailableDate(currentDate); 
+    let workoutIndex = 0;
+    
+    for (const workout of workoutsToSchedule) {
+      const dateString = scheduleDate.toISOString().split('T')[0];
+      const daySchedule = currentSchedule[dateString] ? currentSchedule[dateString] : [];
+      const newEntry = { workoutId: workout.id, scheduleId: generateUniqueId() };
+      currentSchedule[dateString] = [...daySchedule, newEntry];
+      
+      workoutIndex++;
+      if (workoutIndex < workoutsToSchedule.length) {
+        scheduleDate.setDate(scheduleDate.getDate() + 1);
+        scheduleDate = findNextAvailableDate(scheduleDate);
+      }
     }
-  };
-  
-  const closeModal = () => {
-    updateAppState({ isModalOpen: false, modalContent: null });
+    
+    updateAppState({ workoutSchedule: currentSchedule });
   };
   
   const resetAllData = () => {
@@ -297,29 +309,33 @@ const AppStateProviderComponent = ({ children }) => {
   };
   
   const navigateToPrevScheduled = () => {
-    const dates = getScheduledDates().sort();
+    const dates = getScheduledDates(); 
     const currentIndex = dates.indexOf(appState.viewingDate);
-    if (currentIndex > 0) {
-      const prevDate = dates[currentIndex - 1];
-      const firstScheduleId = appState.workoutSchedule[prevDate]?.[0]?.scheduleId;
-      navigateToDate(prevDate, firstScheduleId);
+    if (currentIndex > 0) { 
+      const prevDateString = dates[currentIndex - 1]; 
+      const prevDaySchedule = appState.workoutSchedule[prevDateString]; 
+      if (prevDaySchedule && prevDaySchedule.length > 0) { 
+        navigateToDate(prevDateString, prevDaySchedule[0].scheduleId); 
+      } 
     }
   };
   
   const navigateToNextScheduled = () => {
-    const dates = getScheduledDates().sort();
+    const dates = getScheduledDates(); 
     const currentIndex = dates.indexOf(appState.viewingDate);
-    if (currentIndex < dates.length - 1) {
-      const nextDate = dates[currentIndex + 1];
-      const firstScheduleId = appState.workoutSchedule[nextDate]?.[0]?.scheduleId;
-      navigateToDate(nextDate, firstScheduleId);
+    if (currentIndex > -1 && currentIndex < dates.length - 1) { 
+      const nextDateString = dates[currentIndex + 1]; 
+      const nextDaySchedule = appState.workoutSchedule[nextDateString]; 
+      if (nextDaySchedule && nextDaySchedule.length > 0) { 
+        navigateToDate(nextDateString, nextDaySchedule[0].scheduleId); 
+      } 
     }
   };
   
   const getScheduledDates = () => {
     return Object.keys(appState.workoutSchedule).filter(date => 
       appState.workoutSchedule[date] && appState.workoutSchedule[date].length > 0
-    );
+    ).sort();
   };
   
   const selectWorkoutToSchedule = (workoutId) => {
@@ -330,52 +346,65 @@ const AppStateProviderComponent = ({ children }) => {
     updateAppState({ workoutToScheduleId: null });
   };
   
-  const autoScheduleProgram = (program) => {
-    const today = new Date();
-    const workoutSchedule = { ...appState.workoutSchedule };
-    
-    program.workouts.forEach((workout, index) => {
-      const scheduleDate = new Date(today);
-      scheduleDate.setDate(today.getDate() + index);
-      const dateString = scheduleDate.toISOString().split('T')[0];
-      
-      if (!workoutSchedule[dateString]) {
-        workoutSchedule[dateString] = [];
-      }
-      
-      workoutSchedule[dateString].push({
-        workoutId: workout.id,
-        scheduleId: generateUniqueId()
-      });
-    });
-    
-    updateAppState({ workoutSchedule });
-  };
-  
   const hasExerciseDetails = (exerciseName) => {
     return !!getExerciseByName(exerciseName);
   };
   
   const getPreviousExercisePerformance = (exerciseId, currentDate) => {
-    const logs = Object.entries(appState.workoutSchedule)
-      .filter(([date]) => date < currentDate)
-      .flatMap(([, schedules]) => schedules)
-      .filter(schedule => schedule.completedData)
-      .map(schedule => schedule.completedData)
-      .filter(data => data.exercises && data.exercises[exerciseId]);
-      
-    return logs.length > 0 ? logs[logs.length - 1].exercises[exerciseId] : null;
+    const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a)); 
+    const currentViewDate = new Date(currentDate);
+    
+    for (const date of sortedDates) {
+      const loopDate = new Date(date);
+      if (loopDate < currentViewDate) { 
+        const daySchedule = appState.workoutSchedule[date]; 
+        for (const entry of daySchedule) { 
+          if (entry.completedData?.detailedProgress) { 
+            for (const progressKey in entry.completedData.detailedProgress) { 
+              if (progressKey.endsWith(`-${exerciseId}`)) { 
+                return entry.completedData.detailedProgress[progressKey]; 
+              } 
+            } 
+          } 
+        } 
+      }
+    }
+    return null;
   };
   
   const getPreviousBlockPerformance = (blockId, blockType, currentDate) => {
-    const logs = Object.entries(appState.workoutSchedule)
-      .filter(([date]) => date < currentDate)
-      .flatMap(([, schedules]) => schedules)
-      .filter(schedule => schedule.completedData)
-      .map(schedule => schedule.completedData)
-      .filter(data => data.blocks && data.blocks[blockId]);
-      
-    return logs.length > 0 ? logs[logs.length - 1].blocks[blockId] : null;
+    const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a)); 
+    const currentViewDate = new Date(currentDate); 
+    let bestPerformance = null;
+    
+    const parseTimeToSeconds = (time) => { 
+      if (typeof time === 'number') return time; 
+      if (typeof time !== 'string' || !time.includes(':')) return Infinity; 
+      const parts = time.split(':'); 
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10); 
+    };
+    
+    for (const date of sortedDates) {
+      if (new Date(date) >= currentViewDate) continue;
+      const daySchedule = appState.workoutSchedule[date];
+      for (const entry of daySchedule) {
+        const blockData = entry.completedData?.blockTimes?.[blockId];
+        if (!blockData) continue;
+        
+        if (blockType === 'Conditioning: AMRAP' && blockData.score) {
+          if (!bestPerformance || blockData.score > bestPerformance.score) {
+            bestPerformance = blockData;
+          }
+        } else if ((blockType === 'Conditioning: RFT' || blockType === 'Conditioning: Chipper') && blockData.time) {
+          const currentTime = parseTimeToSeconds(blockData.time);
+          const bestTime = bestPerformance ? parseTimeToSeconds(bestPerformance.time) : Infinity;
+          if (currentTime < bestTime) {
+            bestPerformance = blockData;
+          }
+        }
+      }
+    }
+    return bestPerformance;
   };
   
   const removeWorkoutFromSchedule = (dateString, scheduleId) => {
@@ -389,6 +418,17 @@ const AppStateProviderComponent = ({ children }) => {
       }
       return { ...prev, workoutSchedule: newSchedule };
     });
+  };
+  
+  const openExerciseModal = (exerciseName) => {
+    const exerciseData = getExerciseByName(exerciseName);
+    if (exerciseData) {
+      updateAppState({ isModalOpen: true, modalContent: exerciseData });
+    }
+  };
+  
+  const closeModal = () => {
+    updateAppState({ isModalOpen: false, modalContent: null });
   };
   
   const addWeightEntry = (newWeight) => {
@@ -409,21 +449,21 @@ const AppStateProviderComponent = ({ children }) => {
   const completeWorkout = (dateString, scheduleId, stats) => {
     setAppState(prev => {
       const newSchedule = { ...prev.workoutSchedule };
-      const daySchedule = (newSchedule[dateString] || []).map(item => {
-        if (item.scheduleId === scheduleId) {
-          return { ...item, completedData: stats };
-        }
-        return item;
+      const daySchedule = (newSchedule[dateString] || []).map(item => { 
+        if (item.scheduleId === scheduleId) { 
+          return { ...item, completedData: stats }; 
+        } 
+        return item; 
       });
       newSchedule[dateString] = daySchedule;
-      return {
-        ...prev,
-        workoutSchedule: newSchedule,
-        totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1,
-        totalSets: prev.totalSets + (stats.sets || 0),
-        totalReps: prev.totalReps + (stats.reps || 0),
-        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0),
-        showConfetti: true,
+      return { 
+        ...prev, 
+        workoutSchedule: newSchedule, 
+        totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1, 
+        totalSets: prev.totalSets + (stats.sets || 0), 
+        totalReps: prev.totalReps + (stats.reps || 0), 
+        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0), 
+        showConfetti: true, 
       };
     });
     setTimeout(() => updateAppState({ showConfetti: false }), 5000);
@@ -433,7 +473,7 @@ const AppStateProviderComponent = ({ children }) => {
     currentUser,
     authLoading,
     signUp,
-    createUserAfterPayment, // NEW: Export the new function
+    createUserAfterPayment,
     logIn,
     logOut,
     appState,
