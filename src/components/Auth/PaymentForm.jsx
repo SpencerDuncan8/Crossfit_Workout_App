@@ -1,137 +1,184 @@
-/* src/App.css */
+// src/components/Auth/PaymentForm.jsx
 
-/* --- Theme Variables --- */
-body.light-theme {
-  --bg-primary: #f9fafb;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f3f4f6;
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-tertiary: #6b7280;
-  --border-color: #e5e7eb;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --modal-bg: rgba(249, 250, 251, 0.8);
-  --modal-border: rgba(0, 0, 0, 0.1);
-  --modal-close-btn-bg: rgba(0, 0, 0, 0.05);
-  --modal-close-btn-bg-hover: rgba(0, 0, 0, 0.1);
-}
+import React, { useState, useEffect, useContext, useMemo } from 'react';
+import { AppStateContext, ThemeContext } from '../../context/AppContext';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import LoadingSpinner from '../Common/LoadingSpinner';
 
-body.dark-theme {
-  --bg-primary: #0f1419;
-  --bg-secondary: #1a1f2e;
-  --bg-tertiary: #2a3141;
-  --text-primary: #ffffff;
-  --text-secondary: #e1e8ed;
-  --text-tertiary: #9ca3af;
-  --border-color: #2a3141;
-  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  --modal-bg: rgba(42, 49, 65, 0.8);
-  --modal-border: rgba(255, 255, 255, 0.1);
-  --modal-close-btn-bg: rgba(255, 255, 255, 0.1);
-  --modal-close-btn-bg-hover: var(--bg-tertiary);
-}
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-/* --- Global Styles --- */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+// DEFINED AS A SEPARATE COMPONENT
+const CheckoutForm = ({ onSuccess, customerId }) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
-body {
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (!stripe || !elements) return;
 
-/* --- Keyframe Animations --- */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+        setIsProcessing(true);
+        setErrorMessage('');
 
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
+        try {
+            // Step 1: Confirm the SetupIntent to save the payment method
+            const { error, setupIntent } = await stripe.confirmSetup({
+                elements,
+                confirmParams: {
+                    return_url: `${window.location.origin}/payment-complete`, // Good practice
+                },
+                redirect: 'if_required'
+            });
 
-/* --- App Layout --- */
-.app {
-  min-height: 100vh;
-}
+            if (error) {
+                throw new Error(error.message || "An error occurred during payment setup.");
+            }
 
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 250px;
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-}
+            if (setupIntent.status === 'succeeded') {
+                // Step 2: Create the subscription with the saved payment method
+                const response = await fetch('/api/complete-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerId: customerId,
+                        paymentMethodId: setupIntent.payment_method
+                    })
+                });
 
-.main-content {
-  transition: margin-left 0.3s ease;
-}
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error?.message || 'Failed to create subscription');
+                }
 
-.mobile-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
-}
+                // Step 3: Update user status in your app
+                await updateUserPremiumStatus(currentUser.uid, true);
+                onSuccess();
+            } else {
+                 throw new Error(`Payment setup failed. Status: ${setupIntent.status}`);
+            }
 
-.mobile-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  background-color: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-}
+        } catch (error) {
+            console.error('Error:', error);
+            setErrorMessage(error.message || 'An error occurred. Please try again.');
+            setIsProcessing(false);
+        }
+    };
 
-/* Responsive Layout */
-@media (min-width: 769px) {
-  .main-content {
-    margin-left: 250px;
-    padding: 32px;
-  }
-}
+    return (
+        <form onSubmit={handleSubmit}>
+            <PaymentElement />
+            {errorMessage && (
+                <div className="auth-error" style={{ marginTop: '16px' }}>
+                    {errorMessage}
+                </div>
+            )}
+            <button 
+                disabled={!stripe || !elements || isProcessing} 
+                className="auth-button" 
+                style={{ marginTop: '24px' }}
+            >
+                <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
+            </button>
+        </form>
+    );
+};
 
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    padding: 80px 16px 100px 16px;
-  }
-}
 
-/* 
-  This rule targets any iframe inside the auth modal. Since the Stripe
-  Payment Element uses iframes for its fields, this ensures that pointer
-  events are not blocked, allowing users to click and type into them.
-*/
-.auth-card iframe {
-  pointer-events: auto !important;
-}
+// MAIN COMPONENT
+const PaymentForm = ({ onSuccess, userEmail }) => {
+    const [clientSecret, setClientSecret] = useState(null);
+    const [customerId, setCustomerId] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { darkMode } = useContext(ThemeContext);
+
+    useEffect(() => {
+        if (!userEmail) return;
+
+        fetch('/api/create-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    setError(data.error.message);
+                } else {
+                    setClientSecret(data.clientSecret);
+                    setCustomerId(data.customerId);
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                setError('Failed to initialize payment form.');
+                setLoading(false);
+            });
+    }, [userEmail]);
+
+    const options = useMemo(() => {
+        if (!clientSecret) return undefined;
+        
+        return {
+            clientSecret,
+            appearance: {
+                theme: darkMode ? 'night' : 'stripe',
+                variables: {
+                    colorPrimary: '#3b82f6',
+                    colorBackground: darkMode ? '#1a1f2e' : '#ffffff',
+                    colorText: darkMode ? '#ffffff' : '#111827',
+                    colorDanger: '#ef4444',
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    spacingUnit: '4px',
+                    borderRadius: '8px',
+                }
+            }
+        };
+    }, [clientSecret, darkMode]);
+
+    if (loading) {
+        return (
+            <div>
+                <div className="auth-header">
+                    <h1 className="auth-title">Unlock Premium</h1>
+                    <p className="auth-subtitle">Preparing payment form...</p>
+                </div>
+                <div style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <LoadingSpinner />
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !clientSecret || !options) {
+        return (
+            <div>
+                <div className="auth-header">
+                    <h1 className="auth-title">Unlock Premium</h1>
+                </div>
+                <div className="auth-error" style={{ textAlign: 'center', lineHeight: 1.6 }}>
+                    <strong>Could not initialize payment.</strong><br />
+                    {error || 'Please refresh and try again.'}
+                </div>
+            </div>
+        );
+    }
+    
+    return (
+        <div>
+            <div className="auth-header">
+                <h1 className="auth-title">Unlock Premium</h1>
+                <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
+            </div>
+            <Elements options={options} stripe={stripePromise}>
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} />
+            </Elements>
+        </div>
+    );
+};
+
+export default PaymentForm;

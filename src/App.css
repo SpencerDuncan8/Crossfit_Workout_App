@@ -128,10 +128,10 @@ body {
 }
 
 /* 
-  This rule targets any iframe inside the auth modal. Since the Stripe
-  Payment Element uses iframes for its fields, this ensures that pointer
-  events are not blocked, allowing users to click and type into them.
+  This rule targets all Stripe-generated iframes by their unique name attribute.
+  This is the most reliable way to ensure pointer events are not blocked, allowing
+  users to click and type into all fields within the Payment Element.
 */
-.auth-card iframe {
+iframe[name^="__privateStripeFrame"] {
   pointer-events: auto !important;
 }
