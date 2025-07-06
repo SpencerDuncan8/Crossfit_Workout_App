@@ -1,5 +1,5 @@
 // src/components/Auth/PaymentForm.jsx
-// Simplified version with default PaymentElement (shows all standard fields)
+// No field customization - using default PaymentElement
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
