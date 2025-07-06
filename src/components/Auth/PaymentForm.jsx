@@ -70,19 +70,23 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
             setIsProcessing(false);
         }
     };
+    
+    // --- THIS IS THE FIX ---
+    // We define the payment element options here, changing 'always' to 'auto' for the name field.
+    const paymentElementOptions = {
+        fields: {
+            billingDetails: {
+                name: 'auto',   // 'auto' will show the field when appropriate (which is the default for cards).
+                email: 'never', // This correctly hides the email field.
+                phone: 'never'  // This correctly hides the phone field.
+            }
+        },
+        layout: 'tabs'
+    };
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement options={{
-                fields: {
-                    billingDetails: {
-                        name: 'always', // Always show the name field
-                        email: 'never',   // Never show the email field
-                        phone: 'never'    // Never show the phone field
-                    }
-                },
-                layout: 'tabs'
-            }} />
+            <PaymentElement options={paymentElementOptions} />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
                     {errorMessage}
