@@ -9,8 +9,7 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// MODIFICATION: Accept `userEmail` as a prop
-const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
+const CheckoutForm = ({ onSuccess, customerId }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -71,37 +70,18 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
             setIsProcessing(false);
         }
     };
-    
-    // --- THIS IS THE FINAL FIX ---
-    // We only configure the fields we need to, letting Stripe handle the defaults.
-    const paymentElementOptions = {
-        // By providing a default email, Stripe won't show the email field.
-        // By setting name to 'auto', Stripe will show the "Name on card" field.
-        // By omitting `phone`, Stripe will not show it by default.
-        fields: {
-            billingDetails: {
-                name: 'auto',
-            }
-        },
-        defaultValues: {
-            billingDetails: {
-                email: userEmail, 
-            }
-        },
-        layout: 'tabs'
-    };
 
     return (
         <form onSubmit={handleSubmit}>
-            <PaymentElement options={paymentElementOptions} />
+            <PaymentElement />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
                     {errorMessage}
                 </div>
             )}
-            <button
-                disabled={!stripe || !elements || isProcessing}
-                className="auth-button"
+            <button 
+                disabled={!stripe || !elements || isProcessing} 
+                className="auth-button" 
                 style={{ marginTop: '24px' }}
             >
                 <span>{isProcessing ? "Processing..." : "Subscribe for $4.99/month"}</span>
@@ -206,8 +186,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
-                {/* Pass the `userEmail` prop down to CheckoutForm */}
-                <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} />
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} />
             </Elements>
         </div>
     );
