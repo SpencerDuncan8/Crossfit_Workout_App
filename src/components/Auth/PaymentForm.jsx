@@ -8,7 +8,8 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutForm = ({ onSuccess, customerId, userEmail, clientSecret }) => {
+// STEP 1: Defined as a separate, stable component outside of the parent.
+const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -23,21 +24,10 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, clientSecret }) => {
         setErrorMessage('');
 
         try {
-            const { error: submitError } = await elements.submit();
-            if (submitError) {
-              throw submitError;
-            }
-
             const { error, setupIntent } = await stripe.confirmSetup({
                 elements,
-                clientSecret,
                 confirmParams: {
                     return_url: `${window.location.origin}/payment-complete`,
-                    payment_method_data: {
-                        billing_details: {
-                            email: userEmail,
-                        },
-                    },
                 },
                 redirect: 'if_required'
             });
@@ -45,7 +35,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, clientSecret }) => {
             if (error) {
                 throw new Error(error.message || "An error occurred during payment setup.");
             }
-            
+
             if (setupIntent.status === 'succeeded') {
                 const response = await fetch('/api/complete-subscription', {
                     method: 'POST',
@@ -56,26 +46,27 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, clientSecret }) => {
                     })
                 });
 
-                const result = await response.json();
+                const subscriptionResult = await response.json();
                 if (!response.ok) {
-                    throw new Error(result.error?.message || 'Failed to create subscription');
+                    throw new Error(subscriptionResult.error?.message || 'Failed to create subscription.');
                 }
 
                 await updateUserPremiumStatus(currentUser.uid, true);
                 onSuccess();
+
             } else {
-                 throw new Error(`Payment setup failed. Status: ${setupIntent.status}`);
+                 throw new Error(`Payment setup failed. Unexpected status: ${setupIntent.status}`);
             }
 
         } catch (error) {
-            console.error('Error:', error);
-            setErrorMessage(error.message || 'An error occurred. Please try again.');
+            console.error("PaymentForm Error:", error);
+            setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
             setIsProcessing(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form id="payment-form" onSubmit={handleSubmit}>
             <PaymentElement />
             {errorMessage && (
                 <div className="auth-error" style={{ marginTop: '16px' }}>
@@ -93,6 +84,8 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, clientSecret }) => {
     );
 };
 
+
+// Main component that provides the Stripe Elements context
 const PaymentForm = ({ onSuccess, userEmail }) => {
     const [clientSecret, setClientSecret] = useState(null);
     const [customerId, setCustomerId] = useState(null);
@@ -110,34 +103,43 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
         })
             .then(res => res.json())
             .then(data => {
-                if (data.error) {
-                    setError(data.error.message);
-                } else {
+                if (data.error) setError(data.error.message);
+                else {
                     setClientSecret(data.clientSecret);
                     setCustomerId(data.customerId);
                 }
-                setLoading(false);
             })
-            .catch(err => {
-                console.error('Error:', err);
-                setError('Failed to initialize payment form.');
-                setLoading(false);
-            });
+            .catch(err => setError('Failed to initialize payment form.'))
+            .finally(() => setLoading(false));
     }, [userEmail]);
     
+    // This is the definitive set of options to stabilize the PaymentElement.
     const options = useMemo(() => {
         if (!clientSecret) return undefined;
         
         return {
             clientSecret,
-            // THE FIX: This line explicitly disables the "Link by Stripe" feature
-            // which is causing the input field interference.
-            paymentMethodCreation: 'manual',
+            // STEP 2: Disable Stripe Link to prevent its UI conflicts
+            paymentMethodCreation: 'manual', 
+            // STEP 3: Pre-fill the user's email to stabilize the form
+            defaultValues: {
+                billingDetails: {
+                    email: userEmail,
+                }
+            },
             appearance: {
                 theme: darkMode ? 'night' : 'stripe',
+                variables: {
+                    colorPrimary: '#3b82f6',
+                },
+                fields: {
+                    billingDetails: {
+                        email: 'never', // Hides the email field since we pre-fill it
+                    }
+                }
             },
         };
-    }, [clientSecret, darkMode]);
+    }, [clientSecret, darkMode, userEmail]);
 
     if (loading) {
         return <div style={{ minHeight: '200px' }}><LoadingSpinner /></div>;
@@ -159,12 +161,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={options} stripe={stripePromise}>
-                <CheckoutForm 
-                  onSuccess={onSuccess} 
-                  customerId={customerId} 
-                  userEmail={userEmail} 
-                  clientSecret={clientSecret} 
-                />
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} />
             </Elements>
         </div>
     );
