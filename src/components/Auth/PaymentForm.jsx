@@ -8,8 +8,8 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// DEFINED AS A SEPARATE COMPONENT
-const CheckoutForm = ({ onSuccess, customerId }) => {
+// This component is now correctly defined outside of the parent.
+const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
     const stripe = useStripe();
     const elements = useElements();
     const { currentUser, updateUserPremiumStatus } = useContext(AppStateContext);
@@ -24,11 +24,17 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
         setErrorMessage('');
 
         try {
-            // Step 1: Confirm the SetupIntent to save the payment method
             const { error, setupIntent } = await stripe.confirmSetup({
                 elements,
                 confirmParams: {
-                    return_url: `${window.location.origin}/payment-complete`, // Good practice
+                    return_url: `${window.location.origin}/payment-complete`,
+                    // THE FIX, PART 1: Explicitly pass billing details with the payment method
+                    // to ensure data consistency.
+                    payment_method_data: {
+                        billing_details: {
+                            email: userEmail,
+                        },
+                    },
                 },
                 redirect: 'if_required'
             });
@@ -38,7 +44,6 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
             }
 
             if (setupIntent.status === 'succeeded') {
-                // Step 2: Create the subscription with the saved payment method
                 const response = await fetch('/api/complete-subscription', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -53,7 +58,6 @@ const CheckoutForm = ({ onSuccess, customerId }) => {
                     throw new Error(result.error?.message || 'Failed to create subscription');
                 }
 
-                // Step 3: Update user status in your app
                 await updateUserPremiumStatus(currentUser.uid, true);
                 onSuccess();
             } else {
@@ -120,6 +124,8 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
             });
     }, [userEmail]);
 
+    // THE FIX, PART 2: Memoize the options object and provide default values
+    // to pre-fill the form, which stabilizes the component.
     const options = useMemo(() => {
         if (!clientSecret) return undefined;
         
@@ -136,9 +142,16 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                     spacingUnit: '4px',
                     borderRadius: '8px',
                 }
+            },
+            // Pre-filling the email stabilizes the form. We also hide the field
+            // since the user has already provided it.
+            defaultValues: {
+                billingDetails: {
+                    email: userEmail
+                }
             }
         };
-    }, [clientSecret, darkMode]);
+    }, [clientSecret, darkMode, userEmail]);
 
     if (loading) {
         return (
@@ -175,7 +188,8 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={options} stripe={stripePromise}>
-                <CheckoutForm onSuccess={onSuccess} customerId={customerId} />
+                {/* THE FIX, PART 3: Pass userEmail down to the CheckoutForm */}
+                <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} />
             </Elements>
         </div>
     );
