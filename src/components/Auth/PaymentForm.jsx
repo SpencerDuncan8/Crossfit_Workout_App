@@ -9,7 +9,7 @@ import LoadingSpinner from '../Common/LoadingSpinner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// MODIFICATION: Pass `userEmail` as a prop
+// MODIFICATION: Accept `userEmail` as a prop
 const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -71,22 +71,21 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail }) => {
             setIsProcessing(false);
         }
     };
-
-    // --- THIS IS THE FIX ---
-    // We configure the fields and provide the email as a default value.
-    // This resolves the integration error and achieves the desired UI.
+    
+    // --- THIS IS THE FINAL FIX ---
+    // We only configure the fields we need to, letting Stripe handle the defaults.
     const paymentElementOptions = {
+        // By providing a default email, Stripe won't show the email field.
+        // By setting name to 'auto', Stripe will show the "Name on card" field.
+        // By omitting `phone`, Stripe will not show it by default.
         fields: {
             billingDetails: {
-                name: 'auto',   // This shows the 'Name on card' field.
-                phone: 'never'  // This hides the phone number field.
-                // We OMIT `email: 'never'` to avoid the conflict.
+                name: 'auto',
             }
         },
-        // We provide the email here. Stripe will use it without showing an input field.
         defaultValues: {
             billingDetails: {
-                email: userEmail,
+                email: userEmail, 
             }
         },
         layout: 'tabs'
@@ -207,7 +206,7 @@ const PaymentForm = ({ onSuccess, userEmail }) => {
                 <p className="auth-subtitle">Final step! Your account is ready. Subscribe to activate cloud sync.</p>
             </div>
             <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
-                {/* MODIFICATION: Pass the `userEmail` prop down to CheckoutForm */}
+                {/* Pass the `userEmail` prop down to CheckoutForm */}
                 <CheckoutForm onSuccess={onSuccess} customerId={customerId} userEmail={userEmail} />
             </Elements>
         </div>
