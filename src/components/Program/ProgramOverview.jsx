@@ -9,8 +9,8 @@ import Modal from '../Common/Modal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  const { appState, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
-  
+  const { appState, currentUser, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
+
   const [viewingProgramId, setViewingProgramId] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [editingProgramName, setEditingProgramName] = useState('');
@@ -35,11 +35,16 @@ const ProgramOverview = ({ setActiveView }) => {
     e.preventDefault();
     if (newProgramName.trim()) {
         const newProgramId = createProgram(newProgramName.trim());
-        setViewingProgramId(newProgramId);
-        setIsCreateModalOpen(false);
+        if (newProgramId) { // NEW: Only set viewing if program was actually created
+            setViewingProgramId(newProgramId);
+            setIsCreateModalOpen(false);
+        } else {
+            // NEW: Program creation was blocked due to limit, modal handled by createProgram
+            setIsCreateModalOpen(false);
+        }
     }
   };
-  
+
   const handleStartEditProgram = (program) => {
     setEditingProgramId(program.id);
     setEditingProgramName(program.name);
@@ -51,7 +56,7 @@ const ProgramOverview = ({ setActiveView }) => {
     updateProgram(editingProgramId, { name: editingProgramName, description: editingProgramDescription });
     setEditingProgramId(null);
   };
-  
+
   const handleLoadAndSchedule = (template) => {
     const isAlreadyLoaded = appState.programs.some(p => p.id === template.id);
     if (!isAlreadyLoaded) {
@@ -59,7 +64,7 @@ const ProgramOverview = ({ setActiveView }) => {
     }
     setScheduleConfirm(template); 
   };
-  
+
   const handleConfirmSchedule = () => {
     if (scheduleConfirm) {
       autoScheduleProgram(scheduleConfirm.workouts, scheduleConfirm.daysPerWeek);
@@ -79,6 +84,11 @@ const ProgramOverview = ({ setActiveView }) => {
   const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
 
+  // NEW: Premium status check and program count
+  const isPremium = appState.isPremium || currentUser?.isPremium;
+  const programCount = userPrograms.length;
+  const maxPrograms = 3;
+
   let currentView;
 
   if (viewingProgram) {
@@ -89,7 +99,7 @@ const ProgramOverview = ({ setActiveView }) => {
           <button className="back-to-programs-btn" onClick={() => setViewingProgramId(null)}>
             <ArrowLeft size={20}/> All Programs
           </button>
-          
+
           {isEditingThisProgram ? (
             <form onSubmit={handleSaveProgram} className="program-edit-form">
               <input
@@ -162,14 +172,22 @@ const ProgramOverview = ({ setActiveView }) => {
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1>My Programs</h1>
-            <p>Select a program to view its workouts.</p>
+            {/* NEW: Show program count for free users only */}
+            {!isPremium && (
+              <p>
+                Select a program to view its workouts. ({programCount}/{maxPrograms} programs)
+              </p>
+            )}
+            {isPremium && (
+              <p>Select a program to view its workouts.</p>
+            )}
           </div>
           <button className="create-workout-btn" onClick={handleCreateProgram}>
             <PlusCircle size={20} />
             <span>Create Program</span>
           </button>
         </div>
-        
+
         {userPrograms.length > 0 ? (
           <div className="programs-list">
               {userPrograms.map(program => (
@@ -259,7 +277,7 @@ const ProgramOverview = ({ setActiveView }) => {
           </div>
         </div>
       </Modal>
-      
+
       <Modal 
         isOpen={showSuccessModal} 
         onClose={() => setShowSuccessModal(false)} 

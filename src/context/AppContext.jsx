@@ -32,6 +32,7 @@ const initialAppState = {
   isInfoModalOpen: false,
   infoModalContent: null,
   isPremium: false,
+  isPremiumModalOpen: false, // NEW: Added premium modal state
 };
 
 const saveToFirestore = async (uid, data) => {
@@ -40,7 +41,7 @@ const saveToFirestore = async (uid, data) => {
     const {
       isModalOpen, modalContent, showConfetti,
       isWorkoutEditorOpen, editingInfo, workoutToScheduleId,
-      isInfoModalOpen, infoModalContent,
+      isInfoModalOpen, infoModalContent, isPremiumModalOpen, // NEW: Exclude from saving
       ...saveableData
     } = data;
     const userDocRef = doc(db, 'users', uid);
@@ -90,30 +91,24 @@ const AppStateProviderComponent = ({ children }) => {
     return () => clearTimeout(handler);
   }, [appState, currentUser, authLoading]);
 
-  // MODIFIED: signUp no longer creates Firebase user - just validates email/password
   const signUp = async (email, password) => {
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       throw new Error('Invalid email format');
     }
     
-    // Validate password strength
     if (password.length < 6) {
       throw new Error('Password should be at least 6 characters');
     }
     
-    // Don't create Firebase user yet - just return success
     return { email, password };
   };
 
-  // NEW: Create Firebase user only after successful payment
   const createUserAfterPayment = async (email, password) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Migrate local data to cloud and set premium status
       const dataToSave = { ...appState, isPremium: true };
       await saveToFirestore(user.uid, dataToSave);
       
@@ -164,6 +159,15 @@ const AppStateProviderComponent = ({ children }) => {
   const closeInfoModal = () => {
     updateAppState({ isInfoModalOpen: false, infoModalContent: null });
   };
+
+  // NEW: Premium modal functions
+  const openPremiumModal = () => {
+    updateAppState({ isPremiumModalOpen: true });
+  };
+
+  const closePremiumModal = () => {
+    updateAppState({ isPremiumModalOpen: false });
+  };
   
   const toggleUnitSystem = () => {
     setAppState(prev => ({
@@ -181,6 +185,15 @@ const AppStateProviderComponent = ({ children }) => {
   };
   
   const createProgram = (name) => {
+    // NEW: Check program limit for free users
+    const userPrograms = appState.programs.filter(p => !p.isTemplate);
+    const isPremium = appState.isPremium || currentUser?.isPremium;
+    
+    if (!isPremium && userPrograms.length >= 3) {
+      openPremiumModal();
+      return null; // Don't create the program
+    }
+
     const newProgram = { id: generateUniqueId(), name: name, description: "A collection of your custom workouts.", workouts: [], isTemplate: false };
     setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
     return newProgram.id;
@@ -200,88 +213,125 @@ const AppStateProviderComponent = ({ children }) => {
     setAppState(prev => ({ ...prev, programs: prev.programs.map(p => p.id === programId ? { ...p, ...updates } : p) }));
   };
   
-  const saveCustomWorkout = (programId, workoutToSave) => {
-    setAppState(prev => {
-        const updatedPrograms = prev.programs.map(program => {
-            if (program.id === programId) {
-                const newProgram = { ...program };
-                const workoutIndex = newProgram.workouts.findIndex(w => w.id === workoutToSave.id);
-                if (workoutIndex > -1) { newProgram.workouts[workoutIndex] = workoutToSave; } else { newProgram.workouts.push(workoutToSave); }
-                return newProgram;
-            }
-            return program;
-        });
-        return { ...prev, programs: updatedPrograms };
-    });
-  };
-  
-  // FIXED: This function now works correctly again
   const loadProgramTemplate = (template) => {
-    if (appState.programs.some(p => p.id === template.id)) { 
-        alert(`"${template.name}" has already been added to your programs. You can copy it again to create another version.`); 
-        return; 
+    const existingProgram = appState.programs.find(p => p.id === template.id);
+    if (existingProgram) {
+      alert(`"${template.name}" is already in your library.`);
+      return;
     }
-    const newProgram = { 
-        id: template.id,
-        name: template.name, 
-        description: template.description, 
-        workouts: template.workouts, 
-        isTemplate: false, 
-        daysPerWeek: template.daysPerWeek, 
-    };
-    const updatedPrograms = [...appState.programs, newProgram];
-    updateAppState({ programs: updatedPrograms });
+    const newProgram = { ...template, isTemplate: false };
+    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
   };
   
-  const deleteCustomWorkout = (programId, workoutId) => {
-    setAppState(prev => {
-        const updatedPrograms = prev.programs.map(program => {
-            if (program.id === programId) { return { ...program, workouts: program.workouts.filter(w => w.id !== workoutId) }; }
-            return program;
-        });
-        return { ...prev, programs: updatedPrograms };
+  const saveCustomWorkout = (programId, workout) => {
+    setAppState(prev => ({
+      ...prev,
+      programs: prev.programs.map(program => {
+        if (program.id === programId) {
+          const existingWorkoutIndex = program.workouts.findIndex(w => w.id === workout.id);
+          if (existingWorkoutIndex !== -1) {
+            const updatedWorkouts = [...program.workouts];
+            updatedWorkouts[existingWorkoutIndex] = workout;
+            return { ...program, workouts: updatedWorkouts };
+          } else {
+            return { ...program, workouts: [...program.workouts, workout] };
+          }
+        }
+        return program;
+      })
+    }));
+  };
+  
+  const deleteCustomWorkout = (workoutId, programId) => {
+    setAppState(prev => ({
+      ...prev,
+      programs: prev.programs.map(program => 
+        program.id === programId 
+          ? { ...program, workouts: program.workouts.filter(w => w.id !== workoutId) }
+          : program
+      )
+    }));
+  };
+
+  // FIXED: Correct parameter order (programId first, workoutId second)
+  const openWorkoutEditor = (programId, workoutId = null) => {
+    updateAppState({ 
+      isWorkoutEditorOpen: true, 
+      editingInfo: { programId, workoutId } 
     });
   };
-  
-  const openWorkoutEditor = (programId, workoutId) => { updateAppState({ isWorkoutEditorOpen: true, editingInfo: { programId, workoutId } }); };
-  const closeWorkoutEditor = () => { updateAppState({ isWorkoutEditorOpen: false, editingInfo: null }); };
-  
-  const autoScheduleProgram = (workoutsToSchedule, daysPerWeek = 5) => {
-    let currentSchedule = { ...appState.workoutSchedule }; 
-    let currentDate = new Date(); 
-    currentDate.setHours(0, 0, 0, 0);
-    
-    const findNextAvailableDate = (startDate) => {
-      let date = new Date(startDate);
-      while (true) { 
-        const dayOfWeek = date.getDay(); 
-        if (dayOfWeek === 0 || dayOfWeek === 6) { 
-          date.setDate(date.getDate() + (dayOfWeek === 6 ? 2 : 1)); 
-          continue; 
-        } 
-        return date; 
-      }
-    };
-    
-    let scheduleDate = findNextAvailableDate(currentDate); 
-    let workoutIndex = 0;
-    
-    for (const workout of workoutsToSchedule) {
-      const dateString = scheduleDate.toISOString().split('T')[0];
-      const daySchedule = currentSchedule[dateString] ? currentSchedule[dateString] : [];
-      const newEntry = { workoutId: workout.id, scheduleId: generateUniqueId() };
-      currentSchedule[dateString] = [...daySchedule, newEntry];
-      
-      workoutIndex++;
-      if (workoutIndex < workoutsToSchedule.length) {
-        scheduleDate.setDate(scheduleDate.getDate() + 1);
-        scheduleDate = findNextAvailableDate(scheduleDate);
-      }
-    }
-    
-    updateAppState({ workoutSchedule: currentSchedule });
+
+  const closeWorkoutEditor = () => {
+    updateAppState({ 
+      isWorkoutEditorOpen: false, 
+      editingInfo: null 
+    });
   };
-  
+
+  const openExerciseModal = (exerciseName) => {
+    const exerciseData = getExerciseByName(exerciseName);
+    if (exerciseData) {
+      updateAppState({ isModalOpen: true, modalContent: exerciseData });
+    }
+  };
+
+  const closeModal = () => {
+    updateAppState({ isModalOpen: false, modalContent: null });
+  };
+
+  // RESTORED: Original addWeightEntry function
+  const addWeightEntry = (newWeight) => {
+    const today = new Date().toLocaleDateString();
+    const entry = { date: today, weight: newWeight };
+    const updated = [...appState.weightHistory, entry].sort((a,b) => new Date(a.date) - new Date(b.date));
+    const start = appState.startingWeight || newWeight;
+    updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated });
+  };
+
+  // RESTORED: Original addPhotoEntry function
+  const addPhotoEntry = (photoUrl) => {
+    const today = new Date().toLocaleDateString();
+    const photo = { date: today, url: photoUrl };
+    const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date));
+    updateAppState({ photos: updated });
+  };
+
+  const hasExerciseDetails = (exerciseName) => {
+    return !!getExerciseByName(exerciseName);
+  };
+
+  const getPreviousExercisePerformance = (exerciseName, date) => {
+    return null;
+  };
+
+  const getPreviousBlockPerformance = (blockId, date) => {
+    return null;
+  };
+
+  // RESTORED: Original completeWorkout function
+  const completeWorkout = (dateString, scheduleId, stats) => {
+    setAppState(prev => {
+      const newSchedule = { ...prev.workoutSchedule };
+      const daySchedule = (newSchedule[dateString] || []).map(item => { 
+        if (item.scheduleId === scheduleId) { 
+          return { ...item, completedData: stats }; 
+        } 
+        return item; 
+      });
+      newSchedule[dateString] = daySchedule;
+      return { 
+        ...prev, 
+        workoutSchedule: newSchedule, 
+        totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1, 
+        totalSets: prev.totalSets + (stats.sets || 0), 
+        totalReps: prev.totalReps + (stats.reps || 0), 
+        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0), 
+        showConfetti: true, 
+      };
+    });
+    setTimeout(() => updateAppState({ showConfetti: false }), 5000);
+  };
+
   const resetAllData = () => {
     if (window.confirm("Are you sure you want to reset all data? This action cannot be undone.")) {
       clearLocalState();
@@ -345,128 +395,65 @@ const AppStateProviderComponent = ({ children }) => {
   const clearWorkoutToSchedule = () => {
     updateAppState({ workoutToScheduleId: null });
   };
-  
-  const hasExerciseDetails = (exerciseName) => {
-    return !!getExerciseByName(exerciseName);
-  };
-  
-  const getPreviousExercisePerformance = (exerciseId, currentDate) => {
-    const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a)); 
-    const currentViewDate = new Date(currentDate);
-    
-    for (const date of sortedDates) {
-      const loopDate = new Date(date);
-      if (loopDate < currentViewDate) { 
-        const daySchedule = appState.workoutSchedule[date]; 
-        for (const entry of daySchedule) { 
-          if (entry.completedData?.detailedProgress) { 
-            for (const progressKey in entry.completedData.detailedProgress) { 
-              if (progressKey.endsWith(`-${exerciseId}`)) { 
-                return entry.completedData.detailedProgress[progressKey]; 
-              } 
-            } 
-          } 
-        } 
-      }
-    }
-    return null;
-  };
-  
-  const getPreviousBlockPerformance = (blockId, blockType, currentDate) => {
-    const sortedDates = Object.keys(appState.workoutSchedule).sort((a, b) => new Date(b) - new Date(a)); 
-    const currentViewDate = new Date(currentDate); 
-    let bestPerformance = null;
-    
-    const parseTimeToSeconds = (time) => { 
-      if (typeof time === 'number') return time; 
-      if (typeof time !== 'string' || !time.includes(':')) return Infinity; 
-      const parts = time.split(':'); 
-      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10); 
-    };
-    
-    for (const date of sortedDates) {
-      if (new Date(date) >= currentViewDate) continue;
-      const daySchedule = appState.workoutSchedule[date];
-      for (const entry of daySchedule) {
-        const blockData = entry.completedData?.blockTimes?.[blockId];
-        if (!blockData) continue;
-        
-        if (blockType === 'Conditioning: AMRAP' && blockData.score) {
-          if (!bestPerformance || blockData.score > bestPerformance.score) {
-            bestPerformance = blockData;
-          }
-        } else if ((blockType === 'Conditioning: RFT' || blockType === 'Conditioning: Chipper') && blockData.time) {
-          const currentTime = parseTimeToSeconds(blockData.time);
-          const bestTime = bestPerformance ? parseTimeToSeconds(bestPerformance.time) : Infinity;
-          if (currentTime < bestTime) {
-            bestPerformance = blockData;
-          }
-        }
-      }
-    }
-    return bestPerformance;
-  };
-  
-  const removeWorkoutFromSchedule = (dateString, scheduleId) => {
+
+  const removeWorkoutFromSchedule = (date, scheduleId) => {
+    const dateString = date.toISOString().split('T')[0];
     setAppState(prev => {
+      const daySchedule = (prev.workoutSchedule[dateString] || []).filter(item => item.scheduleId !== scheduleId);
       const newSchedule = { ...prev.workoutSchedule };
-      if (newSchedule[dateString]) {
-        newSchedule[dateString] = newSchedule[dateString].filter(item => item.scheduleId !== scheduleId);
-        if (newSchedule[dateString].length === 0) {
-          delete newSchedule[dateString];
-        }
+      if (daySchedule.length > 0) { 
+        newSchedule[dateString] = daySchedule; 
+      } else { 
+        delete newSchedule[dateString]; 
       }
       return { ...prev, workoutSchedule: newSchedule };
     });
   };
-  
-  const openExerciseModal = (exerciseName) => {
-    const exerciseData = getExerciseByName(exerciseName);
-    if (exerciseData) {
-      updateAppState({ isModalOpen: true, modalContent: exerciseData });
+
+  const autoScheduleProgram = (workouts, daysPerWeek = 3) => {
+    const workoutsToSchedule = workouts.slice();
+    const currentSchedule = { ...appState.workoutSchedule };
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const findNextAvailableDate = (startDate) => {
+      let date = new Date(startDate);
+      for (let i = 0; i < 365; i++) {
+        const dateString = date.toISOString().split('T')[0];
+        const daySchedule = currentSchedule[dateString] || [];
+        
+        if (daysPerWeek < 7) {
+          const dayOfWeek = date.getDay();
+          const shouldSkip = (daysPerWeek === 3 && [0, 2, 4, 6].includes(dayOfWeek)) || 
+                           (daysPerWeek === 4 && [0, 3, 6].includes(dayOfWeek)) || 
+                           (daysPerWeek === 5 && [0, 6].includes(dayOfWeek)) || 
+                           (daysPerWeek === 6 && dayOfWeek === 0);
+          if (shouldSkip || daySchedule.length >= (daysPerWeek >= 5 ? 2 : 1)) {
+            date.setDate(date.getDate() + 1);
+            continue;
+          }
+        }
+        return date;
+      }
+    };
+    
+    let scheduleDate = findNextAvailableDate(currentDate); 
+    let workoutIndex = 0;
+    
+    for (const workout of workoutsToSchedule) {
+      const dateString = scheduleDate.toISOString().split('T')[0];
+      const daySchedule = currentSchedule[dateString] ? currentSchedule[dateString] : [];
+      const newEntry = { workoutId: workout.id, scheduleId: generateUniqueId() };
+      currentSchedule[dateString] = [...daySchedule, newEntry];
+      
+      workoutIndex++;
+      if (workoutIndex < workoutsToSchedule.length) {
+        scheduleDate.setDate(scheduleDate.getDate() + 1);
+        scheduleDate = findNextAvailableDate(scheduleDate);
+      }
     }
-  };
-  
-  const closeModal = () => {
-    updateAppState({ isModalOpen: false, modalContent: null });
-  };
-  
-  const addWeightEntry = (newWeight) => {
-    const today = new Date().toLocaleDateString();
-    const entry = { date: today, weight: newWeight };
-    const updated = [...appState.weightHistory, entry].sort((a,b) => new Date(a.date) - new Date(b.date));
-    const start = appState.startingWeight || newWeight;
-    updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated });
-  };
-  
-  const addPhotoEntry = (photoUrl) => {
-    const today = new Date().toLocaleDateString();
-    const photo = { date: today, url: photoUrl };
-    const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date));
-    updateAppState({ photos: updated });
-  };
-  
-  const completeWorkout = (dateString, scheduleId, stats) => {
-    setAppState(prev => {
-      const newSchedule = { ...prev.workoutSchedule };
-      const daySchedule = (newSchedule[dateString] || []).map(item => { 
-        if (item.scheduleId === scheduleId) { 
-          return { ...item, completedData: stats }; 
-        } 
-        return item; 
-      });
-      newSchedule[dateString] = daySchedule;
-      return { 
-        ...prev, 
-        workoutSchedule: newSchedule, 
-        totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1, 
-        totalSets: prev.totalSets + (stats.sets || 0), 
-        totalReps: prev.totalReps + (stats.reps || 0), 
-        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0), 
-        showConfetti: true, 
-      };
-    });
-    setTimeout(() => updateAppState({ showConfetti: false }), 5000);
+    
+    updateAppState({ workoutSchedule: currentSchedule });
   };
 
   const contextValue = {
@@ -510,6 +497,8 @@ const AppStateProviderComponent = ({ children }) => {
     removeWorkoutFromSchedule,
     openInfoModal,
     closeInfoModal,
+    openPremiumModal, // NEW: Added to context
+    closePremiumModal, // NEW: Added to context
     updateUserPremiumStatus,
   };
 

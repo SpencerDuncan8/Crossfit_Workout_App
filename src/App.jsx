@@ -1,7 +1,7 @@
 // src/App.jsx
 
 import React, { useState, useContext, useEffect } from 'react';
-import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen, LogOut, Cloud, UserCheck } from 'lucide-react';
+import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen, LogOut, Cloud, UserCheck, Crown, Star } from 'lucide-react';
 import { ThemeContext, AppStateContext } from './context/AppContext.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
 import WorkoutView from './components/Workout/WorkoutView.jsx';
@@ -47,38 +47,124 @@ const ThemeToggle = ({ isMobile }) => {
 };
 
 const AccountStatus = ({ openAuthModal, onLogoutClick }) => {
-    const { currentUser } = useContext(AppStateContext);
+    const { currentUser, appState, openPremiumModal } = useContext(AppStateContext);
+    const isPremium = appState.isPremium || currentUser?.isPremium;
 
     if (currentUser) {
         return (
             <div style={{padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: '12px'}}>
                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                     <div>
-                        <p style={{fontSize: '12px', color: 'var(--text-tertiary)'}}>Signed in as:</p>
+                        <p style={{fontSize: '12px', color: 'var(--text-tertiary)'}}>{isPremium ? 'Premium User:' : 'Signed in as:'}</p>
                         <p style={{fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px'}}>{currentUser.email}</p>
                     </div>
-                     <button onClick={onLogoutClick} title="Logout" style={{background:'none', border:'none', color:'var(--text-tertiary)', cursor:'pointer', padding:'8px', borderRadius:'50%'}} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><LogOut size={20}/></button>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        {isPremium && <Crown size={16} style={{color: '#fbbf24'}} />}
+                        <button onClick={onLogoutClick} title="Logout" style={{background:'none', border:'none', color:'var(--text-tertiary)', cursor:'pointer', padding:'8px', borderRadius:'50%'}} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><LogOut size={20}/></button>
+                    </div>
                 </div>
             </div>
         )
     }
     return (
-        <button onClick={openAuthModal} style={{width:'100%', padding:'12px', background:'var(--bg-tertiary)', border:'1px solid var(--border-color)', borderRadius:'12px', cursor:'pointer', textAlign:'left'}}>
+        <button onClick={openPremiumModal} style={{width:'100%', padding:'12px', background:'var(--bg-tertiary)', border:'1px solid var(--border-color)', borderRadius:'12px', cursor:'pointer', textAlign:'left'}}>
             <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                <div style={{background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', borderRadius:'8px', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center'}}>
-                    <Cloud size={20} color="white" />
+                <div style={{background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', borderRadius:'8px', padding:'8px', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                    <Crown size={20} color="white" />
                 </div>
                 <div>
-                    <p style={{fontWeight:'600', color:'var(--text-primary)'}}>Sync to Cloud</p>
-                    <p style={{fontSize:'12px', color:'var(--text-tertiary)'}}>Sign up or log in</p>
+                    <p style={{fontWeight:'600', color:'var(--text-primary)'}}>Upgrade to Premium</p>
+                    <p style={{fontSize:'12px', color:'var(--text-tertiary)'}}>Unlimited programs + sync</p>
                 </div>
             </div>
         </button>
     )
 }
 
+// NEW: Premium Modal Component
+const PremiumModal = ({ isOpen, onClose }) => {
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    
+    const handleUpgradeClick = () => {
+        onClose();
+        setIsAuthModalOpen(true);
+    };
+
+    return (
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} title="Upgrade to Premium">
+                <div className="modal-form-container">
+                    <div style={{textAlign: 'center', marginBottom: '24px'}}>
+                        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '16px'}}>
+                            <div style={{background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', borderRadius: '50%', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                <Crown size={32} color="white" />
+                            </div>
+                        </div>
+                        <h3 style={{fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px'}}>
+                            Program Limit Reached
+                        </h3>
+                        <p style={{color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5', marginBottom: '24px'}}>
+                            You've reached the free limit of 3 custom programs. Upgrade to Premium to unlock unlimited programs and cloud sync.
+                        </p>
+                    </div>
+
+                    <div style={{background: 'var(--bg-secondary)', borderRadius: '12px', padding: '20px', marginBottom: '24px'}}>
+                        <h4 style={{fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <Star size={20} style={{color: '#fbbf24'}} />
+                            Premium Features
+                        </h4>
+                        <ul style={{listStyle: 'none', padding: 0, margin: 0, color: 'var(--text-secondary)'}}>
+                            <li style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                                <div style={{width: '6px', height: '6px', borderRadius: '50%', background: '#10b981'}}></div>
+                                <span>Unlimited custom programs</span>
+                            </li>
+                            <li style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                                <div style={{width: '6px', height: '6px', borderRadius: '50%', background: '#10b981'}}></div>
+                                <span>Cloud sync across all devices</span>
+                            </li>
+                            <li style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                                <div style={{width: '6px', height: '6px', borderRadius: '50%', background: '#10b981'}}></div>
+                                <span>Access your data anywhere</span>
+                            </li>
+                            <li style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                <div style={{width: '6px', height: '6px', borderRadius: '50%', background: '#10b981'}}></div>
+                                <span>Future premium features</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style={{textAlign: 'center', marginBottom: '20px'}}>
+                        <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)'}}>
+                            $4.99<span style={{fontSize: '16px', fontWeight: 'normal', color: 'var(--text-secondary)'}}>/month</span>
+                        </div>
+                        <p style={{fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '4px'}}>
+                            Cancel anytime
+                        </p>
+                    </div>
+
+                    <div className="modal-actions">
+                        <button type="button" className="action-btn" onClick={onClose}>Maybe Later</button>
+                        <button 
+                            type="button" 
+                            className="action-btn schedule-btn" 
+                            onClick={handleUpgradeClick}
+                            style={{background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', borderColor: '#fbbf24'}}
+                        >
+                            Upgrade Now
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+            
+            <Modal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)}>
+                <Auth closeModal={() => setIsAuthModalOpen(false)} />
+            </Modal>
+        </>
+    );
+};
+
 export default function App() {
-  const { appState, authLoading, currentUser, logOut } = useContext(AppStateContext);
+  const { appState, authLoading, currentUser, logOut, closePremiumModal } = useContext(AppStateContext);
   const [activeView, setActiveView] = useState('program');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { width, height } = useWindowSize();
@@ -90,10 +176,6 @@ export default function App() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
-  // --- THIS IS THE FIX: The problematic useEffect has been removed. ---
-  // The Auth component is now solely responsible for closing the modal
-  // after its entire internal flow (credentials -> payment) is complete.
 
   const handleLogoutClick = () => {
     setIsLogoutConfirmOpen(true);
@@ -166,19 +248,21 @@ export default function App() {
                 Are you sure you want to log out? Any unsynced data will be lost.
             </p>
             <div className="modal-actions">
-                <button type="button" className="action-btn" onClick={() => setIsLogoutConfirmOpen(false)}>
-                    Cancel
-                </button>
-                <button type="button" className="action-btn danger-btn" onClick={handleConfirmLogout}>
-                    Yes, Log Out
-                </button>
+                <button type="button" className="action-btn" onClick={() => setIsLogoutConfirmOpen(false)}>Cancel</button>
+                <button type="button" className="action-btn danger-btn" onClick={handleConfirmLogout}>Log Out</button>
             </div>
         </div>
       </Modal>
 
-      {appState.isModalOpen && <ExerciseDetailModal />}
+      {/* NEW: Premium Modal */}
+      <PremiumModal 
+        isOpen={appState.isPremiumModalOpen} 
+        onClose={closePremiumModal} 
+      />
+
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
-      {appState.isInfoModalOpen && <InfoModal />}
+      {appState.isExerciseModalOpen && <ExerciseDetailModal exercise={appState.selectedExercise} />}
+      {appState.isInfoModalOpen && <InfoModal content={appState.infoModalContent} />}
       <TimerBar />
     </div>
   );
