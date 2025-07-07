@@ -50,9 +50,9 @@ const Auth = ({ closeModal }) => {
       {authStep === 'credentials' ? (
         <>
           <div className="auth-header">
-            <h1 className="auth-title">Sync to Cloud</h1>
+            <h1 className="auth-title">BlockFit Premium</h1>
             <p className="auth-subtitle">
-              {isLogin ? 'Log in to sync your data' : 'Create an account to save your progress'}
+                {isLogin ? 'Log in to upgrade to Premium' : 'Create your Premium account'}
             </p>
           </div>
           <form className="auth-form" onSubmit={handleSubmit}>

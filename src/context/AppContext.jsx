@@ -214,14 +214,24 @@ const AppStateProviderComponent = ({ children }) => {
   };
   
   const loadProgramTemplate = (template) => {
-    const existingProgram = appState.programs.find(p => p.id === template.id);
-    if (existingProgram) {
-      alert(`"${template.name}" is already in your library.`);
-      return;
-    }
-    const newProgram = { ...template, isTemplate: false };
-    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
-  };
+  const existingProgram = appState.programs.find(p => p.id === template.id);
+  if (existingProgram) {
+    alert(`"${template.name}" is already in your library.`);
+    return;
+  }
+  
+  // NEW: Check program limit for free users before loading template
+  const userPrograms = appState.programs.filter(p => !p.isTemplate);
+  const isPremium = appState.isPremium || currentUser?.isPremium;
+  
+  if (!isPremium && userPrograms.length >= 3) {
+    openPremiumModal();
+    return; // Don't load the template
+  }
+  
+  const newProgram = { ...template, isTemplate: false };
+  setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
+};
   
   const saveCustomWorkout = (programId, workout) => {
     setAppState(prev => ({
