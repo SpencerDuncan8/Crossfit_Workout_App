@@ -6,9 +6,9 @@ import { X } from 'lucide-react';
 import './Auth.css';
 import PaymentForm from './PaymentForm';
 
-const Auth = ({ closeModal }) => {
+  const Auth = ({ closeModal, defaultMode = "signin" }) => {
   const { logIn } = useContext(AppStateContext); // Remove signUp from here
-  const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(defaultMode === "signin");
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -52,7 +52,10 @@ const Auth = ({ closeModal }) => {
           <div className="auth-header">
             <h1 className="auth-title">BlockFit Premium</h1>
             <p className="auth-subtitle">
-                {isLogin ? 'Log in to upgrade to Premium' : 'Create your Premium account'}
+              {defaultMode === "upgrade" ? 
+                (isLogin ? 'Log in to upgrade to Premium' : 'Create your account to upgrade to Premium') :
+                (isLogin ? 'Log in to upgrade to Premium' : 'Create your Premium account')
+              }
             </p>
           </div>
           <form className="auth-form" onSubmit={handleSubmit}>
