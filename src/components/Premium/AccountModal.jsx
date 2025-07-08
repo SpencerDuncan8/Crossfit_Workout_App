@@ -9,35 +9,71 @@ const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout }) => 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleManageBilling = async () => {
-    setIsLoading(true);
-    try {
-      // Get the customer ID from the user's Stripe customer record
-      // You'll need to store this when the user first subscribes
-      const response = await fetch('/api/create-customer-portal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerId: currentUser.stripeCustomerId, // You'll need to store this
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.url) {
-        // Open Stripe's Customer Portal in a new tab
-        window.open(data.url, '_blank');
-      } else {
-        throw new Error('Failed to create portal session');
-      }
-    } catch (error) {
-      console.error('Error opening customer portal:', error);
-      alert('Sorry, there was an error opening the billing portal. Please try again.');
-    } finally {
-      setIsLoading(false);
+  console.log('=== DEBUGGING MANAGE BILLING ===');
+  console.log('currentUser:', currentUser);
+  console.log('currentUser.stripeCustomerId:', currentUser?.stripeCustomerId);
+  
+  setIsLoading(true);
+  try {
+    // Check if customer ID exists
+    if (!currentUser?.stripeCustomerId) {
+      throw new Error('No Stripe Customer ID found. User may need to re-subscribe.');
     }
-  };
+
+    console.log('Making API call to /api/create-customer-portal');
+    
+    const response = await fetch('/api/create-customer-portal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerId: currentUser.stripeCustomerId,
+      }),
+    });
+
+    console.log('Raw response:', response);
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+
+    // Get response text first to see what we actually received
+    const responseText = await response.text();
+    console.log('Raw response text:', responseText);
+
+    // Try to parse as JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse response as JSON:', parseError);
+      throw new Error(`API returned invalid JSON. Status: ${response.status}, Response: ${responseText}`);
+    }
+
+    console.log('Parsed response data:', data);
+    
+    if (!response.ok) {
+      throw new Error(`API Error (${response.status}): ${data.error || responseText}`);
+    }
+    
+    if (data.url) {
+      console.log('Opening portal URL:', data.url);
+      window.open(data.url, '_blank');
+    } else {
+      throw new Error(`No URL returned. Response: ${JSON.stringify(data)}`);
+    }
+  } catch (error) {
+    console.error('=== MANAGE BILLING ERROR ===');
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Full error object:', error);
+    console.error('Error stack:', error.stack);
+    
+    alert(`Billing portal error: ${error.message || 'Unknown error occurred'}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleDowngrade = async () => {
     setIsLoading(true);
