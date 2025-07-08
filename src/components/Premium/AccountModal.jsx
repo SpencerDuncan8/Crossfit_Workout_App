@@ -8,7 +8,9 @@ const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout }) => 
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleManageBilling = async () => {
+// Updated handleManageBilling function for AccountModal.jsx
+
+const handleManageBilling = async () => {
   console.log('=== DEBUGGING MANAGE BILLING ===');
   console.log('currentUser:', currentUser);
   console.log('currentUser.stripeCustomerId:', currentUser?.stripeCustomerId);
@@ -17,12 +19,15 @@ const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout }) => 
   try {
     // Check if customer ID exists
     if (!currentUser?.stripeCustomerId) {
-      throw new Error('No Stripe Customer ID found. User may need to re-subscribe.');
+      throw new Error('No Stripe Customer ID found. Please contact support or re-subscribe.');
     }
 
-    console.log('Making API call to /api/create-customer-portal');
+    console.log('Making API call to create customer portal');
     
-    const response = await fetch('/api/create-customer-portal', {
+    // Use the full URL for production deployment
+    const apiUrl = '/api/create-customer-portal';
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,49 +37,64 @@ const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout }) => 
       }),
     });
 
-    console.log('Raw response:', response);
     console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
+    console.log('Response OK:', response.ok);
 
-    // Get response text first to see what we actually received
-    const responseText = await response.text();
-    console.log('Raw response text:', responseText);
-
-    // Try to parse as JSON
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse response as JSON:', parseError);
-      throw new Error(`API returned invalid JSON. Status: ${response.status}, Response: ${responseText}`);
-    }
-
-    console.log('Parsed response data:', data);
-    
     if (!response.ok) {
-      throw new Error(`API Error (${response.status}): ${data.error || responseText}`);
+      // Try to get error details from response
+      let errorMessage = `HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.details || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, get text
+        try {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        } catch (textError) {
+          console.error('Could not parse error response:', textError);
+        }
+      }
+      throw new Error(`API Error: ${errorMessage}`);
     }
+
+    const data = await response.json();
+    console.log('Response data:', data);
     
     if (data.url) {
       console.log('Opening portal URL:', data.url);
-      window.open(data.url, '_blank');
+      // Open in same tab instead of new tab for better mobile experience
+      window.location.href = data.url;
     } else {
-      throw new Error(`No URL returned. Response: ${JSON.stringify(data)}`);
+      throw new Error('No portal URL returned from Stripe');
     }
+
   } catch (error) {
     console.error('=== MANAGE BILLING ERROR ===');
-    console.error('Error type:', typeof error);
-    console.error('Error constructor:', error.constructor.name);
     console.error('Error message:', error.message);
-    console.error('Full error object:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Full error:', error);
     
-    alert(`Billing portal error: ${error.message || 'Unknown error occurred'}`);
+    // Show user-friendly error message
+    let userMessage = 'Unable to open billing portal. ';
+    
+    if (error.message.includes('Customer not found')) {
+      userMessage += 'Your subscription may have been cancelled. Please contact support.';
+    } else if (error.message.includes('Customer ID')) {
+      userMessage += 'Account not properly linked to billing. Please contact support.';
+    } else if (error.message.includes('HTTP 404')) {
+      userMessage += 'Billing service temporarily unavailable. Please try again later.';
+    } else if (error.message.includes('HTTP 500')) {
+      userMessage += 'Server error. Please try again in a few moments.';
+    } else {
+      userMessage += 'Please try again or contact support if the problem persists.';
+    }
+    
+    alert(userMessage);
   } finally {
     setIsLoading(false);
   }
 };
-
+  
   const handleDowngrade = async () => {
     setIsLoading(true);
     try {
