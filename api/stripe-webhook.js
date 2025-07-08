@@ -5,6 +5,8 @@ import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { credential } from 'firebase-admin';
 
+console.log('=== STRIPE WEBHOOK LOADED ===');
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Initialize Firebase Admin (only if not already initialized)
