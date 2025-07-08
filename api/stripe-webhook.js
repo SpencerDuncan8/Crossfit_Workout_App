@@ -1,106 +1,120 @@
 // api/stripe-webhook.js
-// Debug version to identify signature verification issue
+// Version with raw body handling for Vercel
 
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  console.log('=== WEBHOOK DEBUG START ===');
+  // Log EVERYTHING first, before any processing
+  console.log('=== WEBHOOK ENTRY POINT ===');
+  console.log('Timestamp:', new Date().toISOString());
   console.log('Method:', req.method);
-  console.log('Headers:', Object.keys(req.headers));
+  console.log('URL:', req.url);
+  console.log('Headers present:', Object.keys(req.headers).join(', '));
   
-  if (req.method !== 'POST') {
-    console.log('Method not allowed:', req.method);
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
-    console.log('=== ENVIRONMENT CHECK ===');
-    console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-    console.log('STRIPE_SECRET_KEY starts with:', process.env.STRIPE_SECRET_KEY?.substring(0, 7));
-    console.log('STRIPE_WEBHOOK_SECRET exists:', !!process.env.STRIPE_WEBHOOK_SECRET);
-    console.log('STRIPE_WEBHOOK_SECRET starts with:', process.env.STRIPE_WEBHOOK_SECRET?.substring(0, 7));
+    if (req.method !== 'POST') {
+      console.log('Non-POST request - returning 405');
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
 
+    console.log('=== POST REQUEST PROCESSING ===');
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Content-Length:', req.headers['content-length']);
+    console.log('Stripe-Signature present:', !!req.headers['stripe-signature']);
+    
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    console.log('=== SIGNATURE CHECK ===');
-    console.log('Stripe signature header exists:', !!sig);
-    console.log('Webhook secret configured:', !!webhookSecret);
-
+    console.log('=== ENVIRONMENT VARIABLES ===');
+    console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+    console.log('STRIPE_WEBHOOK_SECRET exists:', !!webhookSecret);
+    
     if (!webhookSecret) {
-      console.error('❌ Missing STRIPE_WEBHOOK_SECRET');
+      console.error('Missing webhook secret');
       return res.status(500).json({ error: 'Webhook secret not configured' });
     }
 
     if (!sig) {
-      console.log('ℹ️ No stripe signature - manual test');
-      return res.status(200).json({ 
-        message: 'Webhook endpoint working!',
-        note: 'No Stripe signature found - this is a manual test'
-      });
+      console.log('No Stripe signature found');
+      return res.status(400).json({ error: 'No Stripe signature' });
     }
 
-    // Try to verify webhook signature with detailed error logging
+    console.log('=== BODY PROCESSING ===');
+    
+    // Get raw body - Vercel should provide this as req.body for webhooks
+    let body;
+    if (Buffer.isBuffer(req.body)) {
+      body = req.body;
+      console.log('Body is Buffer, length:', body.length);
+    } else if (typeof req.body === 'string') {
+      body = Buffer.from(req.body, 'utf8');
+      console.log('Body is string, converted to Buffer, length:', body.length);
+    } else {
+      body = Buffer.from(JSON.stringify(req.body), 'utf8');
+      console.log('Body is object, stringified and converted, length:', body.length);
+    }
+
+    console.log('=== SIGNATURE VERIFICATION ===');
     let event;
     try {
-      console.log('🔍 Attempting signature verification...');
-      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-      console.log('✅ Webhook signature verified successfully!');
-      console.log('📝 Event type:', event.type);
-      console.log('📝 Event ID:', event.id);
+      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+      console.log('✅ Signature verification successful!');
+      console.log('Event type:', event.type);
+      console.log('Event ID:', event.id);
     } catch (err) {
-      console.error('❌ SIGNATURE VERIFICATION FAILED');
-      console.error('Error name:', err.name);
+      console.error('❌ Signature verification failed:');
       console.error('Error message:', err.message);
-      console.error('Error code:', err.code);
-      console.error('Webhook secret length:', webhookSecret.length);
-      console.error('Signature header length:', sig.length);
+      console.error('Error type:', err.constructor.name);
+      console.error('Webhook secret prefix:', webhookSecret.substring(0, 10) + '...');
+      console.error('Signature prefix:', sig.substring(0, 20) + '...');
+      console.error('Body length:', body.length);
       
-      // Return detailed error for debugging
       return res.status(400).json({ 
         error: 'Webhook signature verification failed',
-        details: err.message,
-        debugInfo: {
-          webhookSecretLength: webhookSecret.length,
-          signatureHeaderLength: sig.length,
-          webhookSecretPrefix: webhookSecret.substring(0, 7)
-        }
+        details: err.message
       });
     }
 
-    // If we get here, signature verification succeeded
-    console.log('🎉 Processing webhook event:', event.type);
-    
-    if (event.type === 'customer.subscription.deleted') {
-      const subscription = event.data.object;
-      console.log('📞 Subscription cancelled:', subscription.id);
-      console.log('👤 Customer ID:', subscription.customer);
-      console.log('⏳ Would update user premium status (Firebase disabled for testing)');
+    console.log('=== EVENT PROCESSING ===');
+    console.log('Processing event:', event.type);
+
+    // Handle different event types
+    switch (event.type) {
+      case 'customer.subscription.deleted':
+        console.log('🔴 Subscription cancelled:', event.data.object.id);
+        console.log('Customer ID:', event.data.object.customer);
+        break;
+      case 'customer.subscription.updated':
+        console.log('🔄 Subscription updated:', event.data.object.id);
+        console.log('Status:', event.data.object.status);
+        break;
+      default:
+        console.log('ℹ️ Unhandled event type:', event.type);
     }
 
+    console.log('=== SUCCESSFUL COMPLETION ===');
     res.status(200).json({ 
-      received: true, 
+      received: true,
       eventType: event.type,
-      eventId: event.id,
-      message: 'Webhook processed successfully!'
+      processed: true
     });
 
   } catch (error) {
-    console.error('❌ UNEXPECTED ERROR');
+    console.error('=== FATAL ERROR ===');
     console.error('Error type:', error.constructor.name);
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
     
-    res.status(500).json({ 
-      error: 'Webhook processing failed',
-      details: error.message,
-      errorType: error.constructor.name
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
     });
   }
 }
 
+// Critical: Configure Vercel to send raw body for webhook signature verification
 export const config = {
   api: {
     bodyParser: {
