@@ -199,6 +199,7 @@ export default function App() {
         currentUser={currentUser}
         isPremium={isPremium}
         onLogout={handleLogoutClick}
+        stripeCustomerId={appState.stripeCustomerId} // ADD THIS LINE
       />
 
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
