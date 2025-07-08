@@ -8,10 +8,35 @@ const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout }) => 
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleManageBilling = () => {
-    // TODO: Integrate with Stripe Customer Portal
-    console.log('Opening Stripe Customer Portal...');
-    // window.open(stripeCustomerPortalUrl, '_blank');
+  const handleManageBilling = async () => {
+    setIsLoading(true);
+    try {
+      // Get the customer ID from the user's Stripe customer record
+      // You'll need to store this when the user first subscribes
+      const response = await fetch('/api/create-customer-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerId: currentUser.stripeCustomerId, // You'll need to store this
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        // Open Stripe's Customer Portal in a new tab
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error('Failed to create portal session');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      alert('Sorry, there was an error opening the billing portal. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDowngrade = async () => {
@@ -156,13 +181,18 @@ const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout }) => 
             </div>
             
             <div className="subscription-actions">
-              <button className="manage-billing-btn" onClick={handleManageBilling}>
+              <button 
+                className="manage-billing-btn" 
+                onClick={handleManageBilling}
+                disabled={isLoading}
+              >
                 <Settings size={16} />
-                Manage Billing
+                {isLoading ? 'Loading...' : 'Manage Billing'}
               </button>
               <button 
                 className="downgrade-btn" 
                 onClick={() => setShowDowngradeConfirm(true)}
+                disabled={isLoading}
               >
                 Downgrade to Free
               </button>

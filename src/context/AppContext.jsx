@@ -104,18 +104,26 @@ const AppStateProviderComponent = ({ children }) => {
     return { email, password };
   };
 
-  const createUserAfterPayment = async (email, password) => {
+  const createUserAfterPayment = async (email, password, stripeCustomerId) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
-      const dataToSave = { ...appState, isPremium: true };
-      await saveToFirestore(user.uid, dataToSave);
-      
-      console.log('User created and premium status set after payment');
-      return userCredential;
+
+      // Set premium status, store customer ID, and migrate data
+      const migratedData = { 
+        ...appState, 
+        isPremium: true,
+        stripeCustomerId: stripeCustomerId // Store the customer ID
+      };
+      await saveToFirestore(user.uid, migratedData);
+      updateAppState({ 
+        isPremium: true,
+        stripeCustomerId: stripeCustomerId 
+      });
+
+      console.log("User created with customer ID and data migrated successfully");
     } catch (error) {
-      console.error('Error creating user after payment:', error);
+      console.error("Error creating user after payment:", error);
       throw error;
     }
   };

@@ -99,8 +99,8 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
             console.log('Subscription created successfully:', result);
 
             // Step 3: Create Firebase user and update premium status
-            await createUserAfterPayment(userEmail, userPassword);
-            onSuccess();
+await createUserAfterPayment(userEmail, userPassword, customerId);
+onSuccess();
 
         } catch (error) {
             console.error('Error:', error);

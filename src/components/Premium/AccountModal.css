@@ -355,3 +355,14 @@
     flex-direction: column;
   }
 }
+.manage-billing-btn:disabled,
+.downgrade-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.manage-billing-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
