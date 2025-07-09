@@ -87,7 +87,7 @@ const ProfileSection = ({ currentUser, isPremium, onLogoutClick, setIsPremiumMod
 }
 
 export default function App() {
-  const { appState, authLoading, currentUser, logOut, closePremiumModal } = useContext(AppStateContext);
+  const { appState, authLoading, currentUser, logOut, closePremiumModal, refreshSubscriptionData } = useContext(AppStateContext);
   const { darkMode } = useContext(ThemeContext);
   const isPremium = appState.isPremium || currentUser?.isPremium;
   const [activeView, setActiveView] = useState('program');
@@ -194,17 +194,20 @@ export default function App() {
       />
 
       <AccountModal 
-        isOpen={isAccountModalOpen}
-        onClose={closeAccountModal}
-        currentUser={currentUser}
-        isPremium={isPremium}
-        onLogout={handleLogoutClick}
-        stripeCustomerId={appState.stripeCustomerId} // ADD THIS LINE
-      />
+  isOpen={isAccountModalOpen}
+  onClose={closeAccountModal}
+  currentUser={currentUser}
+  isPremium={isPremium}
+  onLogout={handleLogoutClick}
+  stripeCustomerId={appState.stripeCustomerId}
+  subscriptionCancelAtPeriodEnd={appState.subscriptionCancelAtPeriodEnd}
+  subscriptionCurrentPeriodEnd={appState.subscriptionCurrentPeriodEnd}
+  refreshSubscriptionData={refreshSubscriptionData}
+/>
 
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
-      {appState.isExerciseModalOpen && <ExerciseDetailModal exercise={appState.selectedExercise} />}
       {appState.isModalOpen && <ExerciseDetailModal />}
+      {appState.isInfoModalOpen && <InfoModal content={appState.infoModalContent} />}
       <TimerBar />
     </div>
   );

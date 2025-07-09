@@ -138,6 +138,24 @@
 }
 
 /* Subscription Section */
+.subscription-cancellation-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.subscription-cancellation-notice svg {
+  flex-shrink: 0;
+}
+
 .subscription-info {
   display: flex;
   flex-direction: column;
@@ -188,27 +206,15 @@
   transition: all 0.2s ease;
 }
 
-.manage-billing-btn:hover {
+.manage-billing-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.downgrade-btn {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.downgrade-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--text-tertiary);
+.manage-billing-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Logout Button */
@@ -234,112 +240,6 @@
   color: white;
 }
 
-/* Downgrade Confirmation */
-.downgrade-warning {
-  text-align: center;
-  padding: 20px;
-}
-
-.warning-icon {
-  color: #f59e0b;
-  margin-bottom: 16px;
-}
-
-.downgrade-warning h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 16px 0;
-}
-
-.downgrade-warning p {
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-  line-height: 1.6;
-}
-
-.downgrade-loss-list {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0;
-  text-align: left;
-  background: var(--bg-tertiary);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.downgrade-loss-list li {
-  padding: 4px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  position: relative;
-  padding-left: 20px;
-}
-
-.downgrade-loss-list li::before {
-  content: '✗';
-  color: #ef4444;
-  position: absolute;
-  left: 0;
-  font-weight: bold;
-}
-
-.downgrade-note {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  font-style: italic;
-  margin-top: 16px;
-}
-
-.downgrade-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.cancel-btn {
-  flex: 1;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.cancel-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.confirm-downgrade-btn {
-  flex: 1;
-  background: transparent;
-  color: #ef4444;
-  border: 1px solid #ef4444;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.confirm-downgrade-btn:hover:not(:disabled) {
-  background: #ef4444;
-  color: white;
-}
-
-.cancel-btn:disabled,
-.confirm-downgrade-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .user-info-section {
@@ -347,22 +247,14 @@
     text-align: center;
   }
   
-  .subscription-actions {
-    gap: 8px;
+  .subscription-cancellation-notice {
+    flex-direction: column;
+    text-align: center;
   }
   
-  .downgrade-actions {
+  .subscription-detail {
     flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
   }
-}
-.manage-billing-btn:disabled,
-.downgrade-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.manage-billing-btn:disabled:hover {
-  transform: none;
-  box-shadow: none;
 }
