@@ -139,37 +139,80 @@ const AppStateProviderComponent = ({ children }) => {
     }
   };
 
-  const refreshSubscriptionData = async () => {
-    if (!currentUser) return;
+  // In AppContext.jsx, replace the refreshSubscriptionData function with this:
 
-    try {
-      console.log('Refreshing subscription data from Firebase...');
-      const cloudData = await loadFromFirestore(currentUser.uid);
+const refreshSubscriptionData = async () => {
+  if (!currentUser) return;
 
-      if (cloudData) {
-        // Only update subscription-related fields to avoid overwriting local changes
-        setAppState(prev => ({
-          ...prev,
-          isPremium: cloudData.isPremium || false,
-          stripeCustomerId: cloudData.stripeCustomerId || null,
-          subscriptionId: cloudData.subscriptionId || null,
-          subscriptionStatus: cloudData.subscriptionStatus || null,
-          subscriptionPriceId: cloudData.subscriptionPriceId || null,
-          subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd || null,
-          subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd || false,
-          subscriptionEndDate: cloudData.subscriptionEndDate || null,
-        }));
-        console.log('Subscription data refreshed:', {
-          isPremium: cloudData.isPremium,
-          subscriptionStatus: cloudData.subscriptionStatus,
-          subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd,
-          subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd
-        });
+  try {
+    console.log('Refreshing subscription data from Firebase...');
+    const cloudData = await loadFromFirestore(currentUser.uid);
+
+    if (cloudData) {
+      // First, update from Firebase
+      setAppState(prev => ({
+        ...prev,
+        isPremium: cloudData.isPremium || false,
+        stripeCustomerId: cloudData.stripeCustomerId || null,
+        subscriptionId: cloudData.subscriptionId || null,
+        subscriptionStatus: cloudData.subscriptionStatus || null,
+        subscriptionPriceId: cloudData.subscriptionPriceId || null,
+        subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd || null,
+        subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd || false,
+        subscriptionEndDate: cloudData.subscriptionEndDate || null,
+      }));
+
+      // If we have a Stripe customer ID but no subscription details, fetch from Stripe
+      if (cloudData.stripeCustomerId && !cloudData.subscriptionId) {
+        console.log('No subscription ID in Firebase, fetching from Stripe...');
+        
+        try {
+          const response = await fetch('/api/get-subscription-details', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customerId: cloudData.stripeCustomerId
+            })
+          });
+
+          if (response.ok) {
+            const stripeData = await response.json();
+            console.log('Got subscription data from Stripe:', stripeData);
+
+            // Update local state with Stripe data
+            setAppState(prev => ({
+              ...prev,
+              subscriptionId: stripeData.subscriptionId,
+              subscriptionStatus: stripeData.subscriptionStatus,
+              subscriptionPriceId: stripeData.subscriptionPriceId,
+              subscriptionCurrentPeriodEnd: stripeData.subscriptionCurrentPeriodEnd ? new Date(stripeData.subscriptionCurrentPeriodEnd * 1000) : null,
+              subscriptionCancelAtPeriodEnd: stripeData.subscriptionCancelAtPeriodEnd,
+              isPremium: stripeData.isPremium
+            }));
+
+            // Save the subscription data to Firebase for next time
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userDocRef, {
+              subscriptionId: stripeData.subscriptionId,
+              subscriptionStatus: stripeData.subscriptionStatus,
+              subscriptionPriceId: stripeData.subscriptionPriceId,
+              subscriptionCurrentPeriodEnd: stripeData.subscriptionCurrentPeriodEnd ? new Date(stripeData.subscriptionCurrentPeriodEnd * 1000) : null,
+              subscriptionCancelAtPeriodEnd: stripeData.subscriptionCancelAtPeriodEnd,
+              isPremium: stripeData.isPremium
+            });
+            
+            console.log('Saved subscription data to Firebase');
+          }
+        } catch (error) {
+          console.error('Error fetching subscription from Stripe:', error);
+        }
       }
-    } catch (error) {
-      console.error('Error refreshing subscription data:', error);
     }
-  };
+  } catch (error) {
+    console.error('Error refreshing subscription data:', error);
+  }
+};
+          
   
   const logIn = (email, password) => {
     if (appState.totalWorkoutsCompleted > 0 || appState.programs.length > 0) {
