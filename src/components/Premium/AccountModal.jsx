@@ -1,6 +1,6 @@
 // src/components/Premium/AccountModal.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Crown, User, CreditCard, Settings, LogOut, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 
@@ -12,9 +12,17 @@ const AccountModal = ({
   onLogout, 
   stripeCustomerId,
   subscriptionCancelAtPeriodEnd,
-  subscriptionCurrentPeriodEnd 
+  subscriptionCurrentPeriodEnd,
+  refreshSubscriptionData
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+
+  // Refresh subscription data when modal opens
+  useEffect(() => {
+    if (isOpen && refreshSubscriptionData) {
+      refreshSubscriptionData();
+    }
+  }, [isOpen, refreshSubscriptionData]);
 
   const handleManageBilling = async () => {
     console.log('=== DEBUGGING MANAGE BILLING ===');

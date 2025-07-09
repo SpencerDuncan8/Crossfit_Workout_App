@@ -32,7 +32,14 @@ const initialAppState = {
   isInfoModalOpen: false,
   infoModalContent: null,
   isPremium: false,
-  isPremiumModalOpen: false, // NEW: Added premium modal state
+  isPremiumModalOpen: false,
+  stripeCustomerId: null,
+  subscriptionId: null,
+  subscriptionStatus: null,
+  subscriptionPriceId: null,
+  subscriptionCurrentPeriodEnd: null,
+  subscriptionCancelAtPeriodEnd: false,
+  subscriptionEndDate: null,
 };
 
 const saveToFirestore = async (uid, data) => {
@@ -128,6 +135,38 @@ const AppStateProviderComponent = ({ children }) => {
     }
   };
 
+  const refreshSubscriptionData = async () => {
+    if (!currentUser) return;
+
+    try {
+      console.log('Refreshing subscription data from Firebase...');
+      const cloudData = await loadFromFirestore(currentUser.uid);
+
+      if (cloudData) {
+        // Only update subscription-related fields to avoid overwriting local changes
+        setAppState(prev => ({
+          ...prev,
+          isPremium: cloudData.isPremium || false,
+          stripeCustomerId: cloudData.stripeCustomerId || null,
+          subscriptionId: cloudData.subscriptionId || null,
+          subscriptionStatus: cloudData.subscriptionStatus || null,
+          subscriptionPriceId: cloudData.subscriptionPriceId || null,
+          subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd || null,
+          subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd || false,
+          subscriptionEndDate: cloudData.subscriptionEndDate || null,
+        }));
+        console.log('Subscription data refreshed:', {
+          isPremium: cloudData.isPremium,
+          subscriptionStatus: cloudData.subscriptionStatus,
+          subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd,
+          subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing subscription data:', error);
+    }
+  };
+  
   const logIn = (email, password) => {
     if (appState.totalWorkoutsCompleted > 0 || appState.programs.length > 0) {
         const wantsToOverwrite = window.confirm(
@@ -484,6 +523,7 @@ const AppStateProviderComponent = ({ children }) => {
     appState,
     allWorkouts,
     updateAppState,
+    refreshSubscriptionData,
     createProgram,
     copyProgram,
     deleteProgram,
