@@ -57,7 +57,7 @@ export default async function handler(req, res) {
         success: true,
         subscription: {
           id: subscription.id,
-          status: subscription.status
+          status: subscription.status,
           current_period_end: subscription.current_period_end
         }
       });
