@@ -190,18 +190,30 @@ async function handleSubscriptionCreated(subscription) {
     const userDoc = usersSnapshot.docs[0];
     const userId = userDoc.id;
     
+    // Log the subscription object to debug
+    console.log('Full subscription object:', JSON.stringify(subscription, null, 2));
+    
     const updateData = {
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
       isPremium: true, // New subscriptions are always premium
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
+    
+    // Safely access the price ID
+    if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
+      const firstItem = subscription.items.data[0];
+      if (firstItem.price && firstItem.price.id) {
+        updateData.subscriptionPriceId = firstItem.price.id;
+      }
+    }
     
     // Only add current_period_end if it exists and is valid
     if (subscription.current_period_end && !isNaN(subscription.current_period_end)) {
       updateData.subscriptionCurrentPeriodEnd = new Date(subscription.current_period_end * 1000);
     }
+    
+    console.log('Update data being saved:', updateData);
     
     await userDoc.ref.update(updateData);
     

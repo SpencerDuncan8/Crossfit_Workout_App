@@ -90,6 +90,7 @@ export default function App() {
   const { appState, authLoading, currentUser, logOut, closePremiumModal, refreshSubscriptionData } = useContext(AppStateContext);
   const { darkMode } = useContext(ThemeContext);
   const isPremium = appState.isPremium || currentUser?.isPremium;
+
   const [activeView, setActiveView] = useState('program');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { width, height } = useWindowSize();
@@ -192,7 +193,8 @@ export default function App() {
           closePremiumModal();
         }}
       />
-
+      
+      
       <AccountModal 
   isOpen={isAccountModalOpen}
   onClose={closeAccountModal}

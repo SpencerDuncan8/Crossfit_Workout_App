@@ -78,6 +78,7 @@ const AppStateProviderComponent = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
+        console.log('Initial load from Firestore:', cloudData);
         const cloudData = await loadFromFirestore(user.uid);
         if (cloudData) {
           setAppState(prev => ({ ...prev, ...cloudData }));
