@@ -170,59 +170,102 @@ export default async function handler(req, res) {
 // Handler functions for different event types
 async function handleSubscriptionCreated(subscription) {
   console.log('Processing subscription created:', subscription.id);
+  console.log('Customer ID:', subscription.customer);
+  console.log('Metadata:', subscription.metadata);
   
-  const userId = subscription.metadata.userId;
-  if (!userId) {
-    console.error('No userId in subscription metadata');
-    return;
+  // Try to find user by stripeCustomerId since userId might not be available yet
+  try {
+    const usersSnapshot = await db.collection('users')
+      .where('stripeCustomerId', '==', subscription.customer)
+      .limit(1)
+      .get();
+    
+    if (usersSnapshot.empty) {
+      console.log('No user found with stripeCustomerId:', subscription.customer);
+      // User might not be created yet, this is okay
+      // The user creation process will handle setting the subscription data
+      return;
+    }
+    
+    const userDoc = usersSnapshot.docs[0];
+    const userId = userDoc.id;
+    
+    await userDoc.ref.update({
+      subscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      subscriptionPriceId: subscription.items.data[0].price.id,
+      subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    
+    console.log(`Updated user ${userId} with new subscription ${subscription.id}`);
+  } catch (error) {
+    console.error('Error updating user subscription:', error);
   }
-
-  await db.collection('users').doc(userId).update({
-    subscriptionId: subscription.id,
-    subscriptionStatus: subscription.status,
-    subscriptionPriceId: subscription.items.data[0].price.id,
-    subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  
-  console.log(`Updated user ${userId} with new subscription ${subscription.id}`);
 }
 
 async function handleSubscriptionUpdated(subscription) {
   console.log('Processing subscription updated:', subscription.id);
+  console.log('Customer ID:', subscription.customer);
+  console.log('Status:', subscription.status);
   
-  const userId = subscription.metadata.userId;
-  if (!userId) {
-    console.error('No userId in subscription metadata');
-    return;
-  }
+  try {
+    // Find user by stripeCustomerId
+    const usersSnapshot = await db.collection('users')
+      .where('stripeCustomerId', '==', subscription.customer)
+      .limit(1)
+      .get();
+    
+    if (usersSnapshot.empty) {
+      console.log('No user found with stripeCustomerId:', subscription.customer);
+      return;
+    }
+    
+    const userDoc = usersSnapshot.docs[0];
+    const userId = userDoc.id;
 
-  await db.collection('users').doc(userId).update({
-    subscriptionStatus: subscription.status,
-    subscriptionPriceId: subscription.items.data[0].price.id,
-    subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  
-  console.log(`Updated subscription status for user ${userId}`);
+    await userDoc.ref.update({
+      subscriptionStatus: subscription.status,
+      subscriptionPriceId: subscription.items.data[0].price.id,
+      subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    
+    console.log(`Updated subscription status for user ${userId}`);
+  } catch (error) {
+    console.error('Error updating user subscription:', error);
+  }
 }
 
 async function handleSubscriptionDeleted(subscription) {
   console.log('Processing subscription deleted:', subscription.id);
+  console.log('Customer ID:', subscription.customer);
   
-  const userId = subscription.metadata.userId;
-  if (!userId) {
-    console.error('No userId in subscription metadata');
-    return;
-  }
+  try {
+    // Find user by stripeCustomerId
+    const usersSnapshot = await db.collection('users')
+      .where('stripeCustomerId', '==', subscription.customer)
+      .limit(1)
+      .get();
+    
+    if (usersSnapshot.empty) {
+      console.log('No user found with stripeCustomerId:', subscription.customer);
+      return;
+    }
+    
+    const userDoc = usersSnapshot.docs[0];
+    const userId = userDoc.id;
 
-  await db.collection('users').doc(userId).update({
-    subscriptionStatus: 'canceled',
-    subscriptionEndDate: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  
-  console.log(`Canceled subscription for user ${userId}`);
+    await userDoc.ref.update({
+      subscriptionStatus: 'canceled',
+      subscriptionEndDate: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    
+    console.log(`Canceled subscription for user ${userId}`);
+  } catch (error) {
+    console.error('Error updating user subscription:', error);
+  }
 }
 
 async function handleCheckoutCompleted(session) {
