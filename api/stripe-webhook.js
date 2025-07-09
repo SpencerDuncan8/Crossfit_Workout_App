@@ -173,7 +173,10 @@ async function handleSubscriptionCreated(subscription) {
   console.log('Customer ID:', subscription.customer);
   console.log('Metadata:', subscription.metadata);
   
-  // Try to find user by stripeCustomerId since userId might not be available yet
+  // Log the subscription object to debug
+  console.log('Full subscription object:', JSON.stringify(subscription, null, 2));
+  
+  // Try to find user by stripeCustomerId
   try {
     const usersSnapshot = await db.collection('users')
       .where('stripeCustomerId', '==', subscription.customer)
@@ -182,21 +185,24 @@ async function handleSubscriptionCreated(subscription) {
     
     if (usersSnapshot.empty) {
       console.log('No user found with stripeCustomerId:', subscription.customer);
-      // User might not be created yet, this is okay
-      // The user creation process will handle setting the subscription data
+      
+      // If user has email in metadata, we can create a placeholder or wait
+      if (subscription.metadata.userEmail) {
+        console.log('User email found in metadata:', subscription.metadata.userEmail);
+        // Store subscription info temporarily - user creation will happen later
+        // For now, just log and return - the user creation process will handle setting subscription data
+      }
+      
       return;
     }
     
     const userDoc = usersSnapshot.docs[0];
     const userId = userDoc.id;
     
-    // Log the subscription object to debug
-    console.log('Full subscription object:', JSON.stringify(subscription, null, 2));
-    
     const updateData = {
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      isPremium: true, // New subscriptions are always premium
+      isPremium: true,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     

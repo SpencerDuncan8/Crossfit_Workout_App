@@ -112,7 +112,7 @@ const AppStateProviderComponent = ({ children }) => {
     return { email, password };
   };
 
-  const createUserAfterPayment = async (email, password, stripeCustomerId) => {
+  const createUserAfterPayment = async (email, password, stripeCustomerId, subscriptionData) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -121,7 +121,10 @@ const AppStateProviderComponent = ({ children }) => {
       const migratedData = { 
         ...appState, 
         isPremium: true,
-        stripeCustomerId: stripeCustomerId // Store the customer ID
+        stripeCustomerId: stripeCustomerId, subscriptionId: subscriptionData?.id || null,
+          subscriptionStatus: subscriptionData?.status || 'active',
+          subscriptionCurrentPeriodEnd: subscriptionData?.current_period_end ? new Date(subscriptionData.current_period_end * 1000) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          subscriptionCancelAtPeriodEnd: false
       };
       await saveToFirestore(user.uid, migratedData);
       updateAppState({ 

@@ -99,7 +99,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
             console.log('Subscription created successfully:', result);
 
             // Step 3: Create Firebase user and update premium status
-await createUserAfterPayment(userEmail, userPassword, customerId);
+await createUserAfterPayment(userEmail, userPassword, customerId, result.subscription);
 onSuccess();
 
         } catch (error) {
@@ -113,7 +113,7 @@ onSuccess();
     return (
         <div className="stripe-container">
             <form onSubmit={handleSubmit}>
-                {/* CRITICAL: Use the stripe-elements-wrapper class */}
+                {/* CRITICAL: Use the stripe-elements-wrapper cIlass */}
                 <div className="stripe-elements-wrapper">
                     <PaymentElement 
                         options={{
