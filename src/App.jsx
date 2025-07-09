@@ -203,7 +203,7 @@ export default function App() {
       />
 
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
-      {appState.isExerciseModalOpen && <ExerciseDetailModal exercise={appState.selectedExercise} />}
+      {appState.isModalOpen && <ExerciseDetailModal />}
       {appState.isInfoModalOpen && <InfoModal content={appState.infoModalContent} />}
       <TimerBar />
     </div>
