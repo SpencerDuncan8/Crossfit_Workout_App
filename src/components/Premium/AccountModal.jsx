@@ -1,34 +1,18 @@
 // src/components/Premium/AccountModal.jsx
 
-import React, { useState, useEffect } from 'react';
-import { Crown, User, CreditCard, Settings, LogOut, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Crown, User, CreditCard, Settings, LogOut, AlertTriangle, Calendar, CheckCircle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 
-const AccountModal = ({ 
-  isOpen, 
-  onClose, 
-  currentUser, 
-  isPremium, 
-  onLogout, 
-  stripeCustomerId,
-  subscriptionCancelAtPeriodEnd,
-  subscriptionCurrentPeriodEnd,
-  refreshSubscriptionData
-}) => {
+const AccountModal = ({ isOpen, onClose, currentUser, isPremium, onLogout, stripeCustomerId }) => {
+  const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Refresh subscription data when modal opens
-  useEffect(() => {
-    if (isOpen && refreshSubscriptionData) {
-      refreshSubscriptionData();
-    }
-  }, [isOpen, refreshSubscriptionData]);
 
   const handleManageBilling = async () => {
     console.log('=== DEBUGGING MANAGE BILLING ===');
     console.log('currentUser:', currentUser);
     console.log('stripeCustomerId prop:', stripeCustomerId);
-
+    
     setIsLoading(true);
     try {
       // Check if customer ID exists
@@ -37,14 +21,14 @@ const AccountModal = ({
       }
 
       console.log('Making API call to create customer portal');
-
+      
       const response = await fetch('/api/create-customer-portal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customerId: stripeCustomerId,
+          customerId: stripeCustomerId, // Use the prop instead of currentUser.stripeCustomerId
         }),
       });
 
@@ -69,7 +53,7 @@ const AccountModal = ({
 
       const data = await response.json();
       console.log('Response data:', data);
-
+      
       if (data.url) {
         console.log('Opening portal URL:', data.url);
         // Open in same tab instead of new tab for better mobile experience
@@ -82,10 +66,10 @@ const AccountModal = ({
       console.error('=== MANAGE BILLING ERROR ===');
       console.error('Error message:', error.message);
       console.error('Full error:', error);
-
+      
       // Show user-friendly error message
       let userMessage = 'Unable to open billing portal. ';
-
+      
       if (error.message.includes('Customer not found')) {
         userMessage += 'Your subscription may have been cancelled. Please contact support.';
       } else if (error.message.includes('Customer ID')) {
@@ -97,29 +81,71 @@ const AccountModal = ({
       } else {
         userMessage += 'Please try again or contact support if the problem persists.';
       }
-
+      
       alert(userMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Format date for display
-  const formatDate = (dateValue) => {
-    if (!dateValue) return 'N/A';
-
+  const handleDowngrade = async () => {
+    setIsLoading(true);
     try {
-      const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
-      return date.toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric', 
-        year: 'numeric' 
-      });
+      // TODO: Implement downgrade logic
+      console.log('Downgrading user...');
+      setShowDowngradeConfirm(false);
+      // Show success message
     } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'N/A';
+      console.error('Downgrade failed:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (showDowngradeConfirm) {
+    return (
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose}
+        title="Confirm Downgrade"
+      >
+        <div className="account-modal-content">
+          <div className="downgrade-warning">
+            <AlertTriangle size={48} className="warning-icon" />
+            <h3>Are you sure you want to downgrade?</h3>
+            <p>You'll lose access to:</p>
+            <ul className="downgrade-loss-list">
+              <li>Cloud sync across devices</li>
+              <li>Unlimited custom programs</li>
+              <li>Social features & sharing</li>
+              <li>Advanced analytics</li>
+              <li>Priority support</li>
+            </ul>
+            <p className="downgrade-note">
+              Your data will remain safe, but you'll be limited to 3 programs and local storage only.
+            </p>
+          </div>
+          
+          <div className="downgrade-actions">
+            <button 
+              className="cancel-btn" 
+              onClick={() => setShowDowngradeConfirm(false)}
+              disabled={isLoading}
+            >
+              Keep Premium
+            </button>
+            <button 
+              className="confirm-downgrade-btn" 
+              onClick={handleDowngrade}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : 'Confirm Downgrade'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal 
@@ -189,31 +215,20 @@ const AccountModal = ({
               <CreditCard size={20} />
               Subscription
             </h4>
-
-            {/* Show cancellation warning if subscription is set to cancel */}
-            {subscriptionCancelAtPeriodEnd && (
-              <div className="subscription-cancellation-notice">
-                <AlertTriangle size={16} />
-                <span>Your subscription is set to cancel at the end of the billing period</span>
-              </div>
-            )}
-
             <div className="subscription-info">
               <div className="subscription-detail">
                 <span>Plan:</span>
                 <span>Premium ($4.99/month)</span>
               </div>
               <div className="subscription-detail">
-                <span>
-                  {subscriptionCancelAtPeriodEnd ? 'Subscription ends:' : 'Next billing:'}
-                </span>
+                <span>Next billing:</span>
                 <span>
                   <Calendar size={14} />
-                  {formatDate(subscriptionCurrentPeriodEnd)}
+                  {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
                 </span>
               </div>
             </div>
-
+            
             <div className="subscription-actions">
               <button 
                 className="manage-billing-btn" 
@@ -222,6 +237,13 @@ const AccountModal = ({
               >
                 <Settings size={16} />
                 {isLoading ? 'Loading...' : 'Manage Billing'}
+              </button>
+              <button 
+                className="downgrade-btn" 
+                onClick={() => setShowDowngradeConfirm(true)}
+                disabled={isLoading}
+              >
+                Downgrade to Free
               </button>
             </div>
           </div>
