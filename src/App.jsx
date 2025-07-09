@@ -194,13 +194,15 @@ export default function App() {
       />
 
       <AccountModal 
-        isOpen={isAccountModalOpen}
-        onClose={closeAccountModal}
-        currentUser={currentUser}
-        isPremium={isPremium}
-        onLogout={handleLogoutClick}
-        stripeCustomerId={appState.stripeCustomerId} // ADD THIS LINE
-      />
+  isOpen={isAccountModalOpen}
+  onClose={closeAccountModal}
+  currentUser={currentUser}
+  isPremium={isPremium}
+  onLogout={handleLogoutClick}
+  stripeCustomerId={appState.stripeCustomerId}
+  subscriptionCancelAtPeriodEnd={appState.subscriptionCancelAtPeriodEnd}
+  subscriptionCurrentPeriodEnd={appState.subscriptionCurrentPeriodEnd}
+/>
 
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
       {appState.isModalOpen && <ExerciseDetailModal />}
