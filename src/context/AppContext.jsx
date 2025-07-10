@@ -111,47 +111,52 @@ const AppStateProviderComponent = ({ children }) => {
     return { email, password };
   };
 
-  const createUserAfterPayment = async (email, password, stripeCustomerId, subscription) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+  // src/context/AppContext.jsx
 
-      // --- FIX: Define the COMPLETE migratedData object first ---
-      const migratedData = { 
-        ...appState, 
-        isPremium: true,
-        stripeCustomerId: stripeCustomerId,
-        // Add all the new subscription fields here
-        subscriptionId: subscription.id,
-        subscriptionStatus: subscription.status,
-        subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
-        subscriptionCurrentPeriodEnd: subscription.current_period_end 
-          ? new Date(subscription.current_period_end * 1000) 
-          : null,
-        subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
-        subscriptionEndDate: null, // It's a new sub, so no end date
-      };
+const createUserAfterPayment = async (email, password, stripeCustomerId, subscription) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-      // --- FIX: Save the complete object to Firestore ---
-      await saveToFirestore(user.uid, migratedData);
+    // Step 1: Create a single, complete data object with all fields.
+    const migratedData = {
+      ...appState, // Start with existing local data
+      isPremium: true,
+      stripeCustomerId: stripeCustomerId,
 
-      // --- FIX: Update the local state with the same new fields ---
-      updateAppState({
-        isPremium: true,
-        stripeCustomerId: stripeCustomerId,
-        subscriptionId: subscription.id,
-        subscriptionStatus: subscription.status,
-        subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd,
-        subscriptionCancelAtPeriodEnd: migratedData.subscriptionCancelAtPeriodEnd
-      });
+      // --- THIS IS THE CRITICAL PART THAT FIXES YOUR ISSUE ---
+      // Add all the subscription fields directly from the Stripe object.
+      subscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
+      subscriptionCurrentPeriodEnd: subscription.current_period_end
+        ? new Date(subscription.current_period_end * 1000) // Convert Unix timestamp to JS Date
+        : null,
+      subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
+      subscriptionEndDate: null, // Correctly null for a new subscription
+    };
 
-      console.log("User created with subscription data and migrated successfully");
+    // Step 2: Save the complete, correct data to Firestore.
+    await saveToFirestore(user.uid, migratedData);
+    
+    // Step 3: Update the local app state to match, ensuring the UI updates instantly.
+    // We only need to pass the fields that have changed.
+    updateAppState({
+      isPremium: true,
+      stripeCustomerId: stripeCustomerId,
+      subscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd,
+      subscriptionCancelAtPeriodEnd: migratedData.subscriptionCancelAtPeriodEnd
+    });
 
-    } catch (error) {
-      console.error("Error creating user after payment:", error);
-      throw error;
-    }
-  };
+    console.log("User created with full subscription data and migrated successfully.");
+
+  } catch (error) {
+    console.error("Error creating user after payment:", error);
+    throw error;
+  }
+};
 
   const refreshSubscriptionData = async () => {
     if (!currentUser) return;
