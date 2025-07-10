@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { db, auth } from '../firebase/config.js';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -119,6 +119,10 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
     const user = userCredential.user;
 
     // Step 1: Create a single, complete data object with all fields.
+    const periodEndTimestamp = subscription.current_period_end
+      ? Timestamp.fromMillis(subscription.current_period_end * 1000)
+      : null;
+    
     const migratedData = {
       ...appState, // Start with existing local data
       isPremium: true,
@@ -146,7 +150,7 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
       stripeCustomerId: stripeCustomerId,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd,
+      subscriptionCurrentPeriodEnd: periodEndTimestamp ? periodEndTimestamp.toDate() : null, 
       subscriptionCancelAtPeriodEnd: migratedData.subscriptionCancelAtPeriodEnd
     });
 
@@ -167,6 +171,10 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
 
       if (cloudData) {
         // Only update subscription-related fields to avoid overwriting local changes
+        const periodEnd = cloudData.subscriptionCurrentPeriodEnd 
+            ? cloudData.subscriptionCurrentPeriodEnd.toDate() 
+            : null;
+        
         setAppState(prev => ({
           ...prev,
           isPremium: cloudData.isPremium || false,
@@ -174,7 +182,7 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
           subscriptionId: cloudData.subscriptionId || null,
           subscriptionStatus: cloudData.subscriptionStatus || null,
           subscriptionPriceId: cloudData.subscriptionPriceId || null,
-          subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd || null,
+          subscriptionCurrentPeriodEnd: periodEnd,
           subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd || false,
           subscriptionEndDate: cloudData.subscriptionEndDate || null,
         }));
@@ -182,7 +190,7 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
           isPremium: cloudData.isPremium,
           subscriptionStatus: cloudData.subscriptionStatus,
           subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd,
-          subscriptionCurrentPeriodEnd: cloudData.subscriptionCurrentPeriodEnd
+          subscriptionCurrentPeriodEnd: periodEnd
         });
       }
     } catch (error) {
