@@ -133,9 +133,8 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
-      subscriptionCurrentPeriodEnd: subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000) // Convert Unix timestamp to JS Date
-        : null,
+      subscriptionCurrentPeriodEnd: 
+        periodEndTimestamp,
       subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
       subscriptionEndDate: null, // Correctly null for a new subscription
     };
@@ -151,7 +150,7 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionCurrentPeriodEnd: periodEndTimestamp ? periodEndTimestamp.toDate() : null, 
-      subscriptionCancelAtPeriodEnd: migratedData.subscriptionCancelAtPeriodEnd
+      subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end
     });
 
     console.log("User created with full subscription data and migrated successfully.");
