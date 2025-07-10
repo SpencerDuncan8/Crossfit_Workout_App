@@ -43,24 +43,13 @@ export default async function handler(req, res) {
       default_payment_method: paymentMethodId,
       expand: ['latest_invoice.payment_intent'],
       metadata: {
-        userEmail: userEmail, // Store email for reference
+        userEmail: userEmail,
         premiumUser: 'true'
       }
     });
 
     console.log('Subscription created:', subscription.id);
     console.log('Status:', subscription.status);
-
-    // Check if subscription is active
-    if (subscription.status === 'active') {
-      return res.status(200).json({
-        success: true,
-        subscription: {
-          id: subscription.id,
-          status: subscription.status
-        }
-      });
-    }
 
     // If not active, try to pay the invoice
     if (subscription.latest_invoice && subscription.status === 'incomplete') {
@@ -70,34 +59,30 @@ export default async function handler(req, res) {
 
       try {
         await stripe.invoices.pay(invoiceId);
-        
+
+        // FIX: Refetch the subscription to get its final state after payment
+        const updatedSubscription = await stripe.subscriptions.retrieve(subscription.id);
+
         return res.status(200).json({
           success: true,
-          subscription: {
-            id: subscription.id,
-            status: 'active'
-          }
+          subscription: updatedSubscription // FIX: Return the full, updated object
         });
       } catch (payError) {
         console.error('Error paying invoice:', payError);
-        
-        // Cancel the subscription if payment fails
         await stripe.subscriptions.cancel(subscription.id);
-        
         return res.status(400).json({ 
           error: { message: 'Payment failed. Please check your payment method and try again.' }
         });
       }
     }
 
+    // FIX: This now handles the 'active' case and any other successful statuses.
+    // It returns the full subscription object every time.
     return res.status(200).json({
       success: true,
-      subscription: {
-        id: subscription.id,
-        status: subscription.status
-      }
+      subscription: subscription
     });
-    
+
   } catch (error) {
     console.error('Error:', error.message);
     return res.status(500).json({ error: { message: error.message } });

@@ -111,24 +111,42 @@ const AppStateProviderComponent = ({ children }) => {
     return { email, password };
   };
 
-  const createUserAfterPayment = async (email, password, stripeCustomerId) => {
+  const createUserAfterPayment = async (email, password, stripeCustomerId, subscription) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Set premium status, store customer ID, and migrate data
+      // --- FIX: Define the COMPLETE migratedData object first ---
       const migratedData = { 
         ...appState, 
         isPremium: true,
-        stripeCustomerId: stripeCustomerId // Store the customer ID
+        stripeCustomerId: stripeCustomerId,
+        // Add all the new subscription fields here
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
+        subscriptionCurrentPeriodEnd: subscription.current_period_end 
+          ? new Date(subscription.current_period_end * 1000) 
+          : null,
+        subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
+        subscriptionEndDate: null, // It's a new sub, so no end date
       };
+
+      // --- FIX: Save the complete object to Firestore ---
       await saveToFirestore(user.uid, migratedData);
-      updateAppState({ 
+
+      // --- FIX: Update the local state with the same new fields ---
+      updateAppState({
         isPremium: true,
-        stripeCustomerId: stripeCustomerId 
+        stripeCustomerId: stripeCustomerId,
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd,
+        subscriptionCancelAtPeriodEnd: migratedData.subscriptionCancelAtPeriodEnd
       });
 
-      console.log("User created with customer ID and data migrated successfully");
+      console.log("User created with subscription data and migrated successfully");
+
     } catch (error) {
       console.error("Error creating user after payment:", error);
       throw error;
