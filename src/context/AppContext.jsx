@@ -111,45 +111,42 @@ const AppStateProviderComponent = ({ children }) => {
     return { email, password };
   };
 
-  // src/context/AppContext.jsx
-
 const createUserAfterPayment = async (email, password, stripeCustomerId, subscription) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Step 1: Create a single, complete data object with all fields.
-    const periodEndTimestamp = subscription.current_period_end
-      ? Timestamp.fromMillis(subscription.current_period_end * 1000)
-      : null;
-    
+    // Create the complete data object to be saved to Firestore
     const migratedData = {
-      ...appState, // Start with existing local data
+      ...appState,
       isPremium: true,
       stripeCustomerId: stripeCustomerId,
-
-      // --- THIS IS THE CRITICAL PART THAT FIXES YOUR ISSUE ---
-      // Add all the subscription fields directly from the Stripe object.
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
-      subscriptionCurrentPeriodEnd: 
-        periodEndTimestamp,
+      
+      // --- THIS IS THE FINAL FIX ---
+      // We create the Firestore Timestamp object directly here.
+      subscriptionCurrentPeriodEnd: subscription.current_period_end
+        ? Timestamp.fromMillis(subscription.current_period_end * 1000)
+        : null,
+      
       subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
-      subscriptionEndDate: null, // Correctly null for a new subscription
+      subscriptionEndDate: null,
     };
 
-    // Step 2: Save the complete, correct data to Firestore.
+    // Save the fully correct data to Firestore
     await saveToFirestore(user.uid, migratedData);
     
-    // Step 3: Update the local app state to match, ensuring the UI updates instantly.
-    // We only need to pass the fields that have changed.
+    // Update the local state for an instant UI update
     updateAppState({
       isPremium: true,
       stripeCustomerId: stripeCustomerId,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      subscriptionCurrentPeriodEnd: periodEndTimestamp ? periodEndTimestamp.toDate() : null, 
+      subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd 
+        ? migratedData.subscriptionCurrentPeriodEnd.toDate() 
+        : null,
       subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end
     });
 
