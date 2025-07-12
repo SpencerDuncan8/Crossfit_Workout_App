@@ -15,7 +15,7 @@ const AccountModal = ({
   subscriptionCurrentPeriodEnd,
   subscriptionStatus,
   refreshSubscriptionData,
-  setIsReactivationModalOpen // This prop is used to open the new modal
+  setIsReactivationConfirmOpen
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,12 +54,12 @@ const AccountModal = ({
     }
   };
 
-  // This function is for the "Re-subscribe" button for CANCELED users.
   const handleReactivateClick = () => {
-    onClose(); // Close the account modal
-    setIsReactivationModalOpen(true); // Open the dedicated reactivation modal
+    onClose(); // First, close this AccountModal.
+    setIsReactivationConfirmOpen(true); // Then, open the confirmation modal.
   };
 
+  // This helper function remains the same.
   const formatDate = (dateValue) => {
     if (!dateValue) return 'N/A';
     try {
@@ -154,7 +154,7 @@ const AccountModal = ({
                 </button>
               ) : (
                 // If user is NOT premium but has a Stripe ID, they must have canceled.
-                // Show the Re-subscribe button which triggers our new modal flow.
+                // Show the Re-subscribe button.
                 <button className="manage-billing-btn" onClick={handleReactivateClick} disabled={isLoading}>
                   <Crown size={16} />
                   {isLoading ? 'Loading...' : 'Re-subscribe'}

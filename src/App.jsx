@@ -19,7 +19,7 @@ import Auth from './components/Auth/Auth.jsx';
 import LoadingSpinner from './components/Common/LoadingSpinner.jsx';
 import PremiumModal from './components/Premium/PremiumModal.jsx';
 import AccountModal from './components/Premium/AccountModal.jsx';
-import ReactivationModal from './components/Premium/ReactivationModal.jsx';
+import ReactivationConfirmation from './components/Premium/ReactivationConfirmation.jsx';
 
 import './App.css';
 import './components/Dashboard/Dashboard.css';
@@ -98,7 +98,7 @@ export default function App() {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [isReactivationModalOpen, setIsReactivationModalOpen] = useState(false);
+  const [isReactivationConfirmOpen, setIsReactivationConfirmOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -207,13 +207,22 @@ export default function App() {
   subscriptionStatus={appState.subscriptionStatus}
   refreshSubscriptionData={refreshSubscriptionData}
   setIsPremiumModalOpen={setIsPremiumModalOpen}
-  setIsReactivationModalOpen={setIsReactivationModalOpen}
+  setIsReactivationConfirmOpen={setIsReactivationConfirmOpen}
 />
-<ReactivationModal
-        isOpen={isReactivationModalOpen}
-        onClose={() => setIsReactivationModalOpen(false)}
-        userEmail={currentUser?.email}
-      />
+      <Modal
+        isOpen={isReactivationConfirmOpen}
+        onClose={() => setIsReactivationConfirmOpen(false)}
+        title="Confirm Your Subscription"
+      >
+        <ReactivationConfirmation 
+          onConfirm={() => {
+            setIsReactivationConfirmOpen(false);
+      refreshSubscriptionData(); 
+          }}
+          onCancel={() => setIsReactivationConfirmOpen(false)}
+        />
+      </Modal>
+      
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
       {appState.isModalOpen && <ExerciseDetailModal />}
       {appState.isInfoModalOpen && <InfoModal content={appState.infoModalContent} />}
