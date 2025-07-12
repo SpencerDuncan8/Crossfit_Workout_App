@@ -1,4 +1,5 @@
 // /api/stripe-webhook.js
+
 import Stripe from 'stripe';
 import admin from 'firebase-admin';
 
@@ -19,14 +20,14 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// Disable body parsing
+// Disable Vercel's default body parser to access the raw request body
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// Helper to get raw body
+// Helper function to read the raw body from the request
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -35,7 +36,7 @@ async function getRawBody(readable) {
   return Buffer.concat(chunks);
 }
 
-// Helper to find user in Firestore
+// Helper to find the user document in Firestore using their Stripe Customer ID
 const findUserInFirestore = async (customerId) => {
     if (!customerId) return null;
     const query = db.collection('users').where('stripeCustomerId', '==', customerId).limit(1);
@@ -75,10 +76,11 @@ export default async function handler(req, res) {
       case 'customer.subscription.updated': {
         const userDoc = await findUserInFirestore(customerId);
         if (userDoc) {
-          // --- THE FIX IS HERE ---
-          // Always use admin.firestore.Timestamp.fromMillis for dates on the server.
-          const periodEndTimestamp = typeof subscription.current_period_end === 'number'
-            ? admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000)
+          // Get the period end date from the correct location
+          const periodEndSeconds = subscription.items.data[0]?.current_period_end;
+          
+          const periodEndTimestamp = typeof periodEndSeconds === 'number'
+            ? admin.firestore.Timestamp.fromMillis(periodEndSeconds * 1000)
             : null;
 
           const updateData = {
