@@ -1,7 +1,7 @@
 // src/components/Premium/AccountModal.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Crown, User, CreditCard, Settings, LogOut, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Crown, User, CreditCard, Settings, LogOut, Calendar, AlertTriangle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 
 const AccountModal = ({ 
@@ -13,6 +13,7 @@ const AccountModal = ({
   stripeCustomerId,
   subscriptionCancelAtPeriodEnd,
   subscriptionCurrentPeriodEnd,
+  subscriptionStatus, // You need to make sure this is passed from AppContext
   refreshSubscriptionData
 }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,18 +26,11 @@ const AccountModal = ({
   }, [isOpen, refreshSubscriptionData]);
 
   const handleManageBilling = async () => {
-    console.log('=== DEBUGGING MANAGE BILLING ===');
-    console.log('currentUser:', currentUser);
-    console.log('stripeCustomerId prop:', stripeCustomerId);
-
     setIsLoading(true);
     try {
-      // Check if customer ID exists
       if (!stripeCustomerId) {
-        throw new Error('No Stripe Customer ID found. Please contact support or re-subscribe.');
+        throw new Error('No Stripe Customer ID found. Please contact support.');
       }
-
-      console.log('Making API call to create customer portal');
 
       const response = await fetch('/api/create-customer-portal', {
         method: 'POST',
@@ -48,57 +42,22 @@ const AccountModal = ({
         }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response OK:', response.ok);
-
       if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorData.details || errorMessage;
-        } catch (parseError) {
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || errorMessage;
-          } catch (textError) {
-            console.error('Could not parse error response:', textError);
-          }
-        }
-        throw new Error(`API Error: ${errorMessage}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create customer portal session.');
       }
 
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.url) {
-        console.log('Opening portal URL:', data.url);
-        // Open in same tab instead of new tab for better mobile experience
         window.location.href = data.url;
       } else {
         throw new Error('No portal URL returned from Stripe');
       }
 
     } catch (error) {
-      console.error('=== MANAGE BILLING ERROR ===');
-      console.error('Error message:', error.message);
-      console.error('Full error:', error);
-
-      // Show user-friendly error message
-      let userMessage = 'Unable to open billing portal. ';
-
-      if (error.message.includes('Customer not found')) {
-        userMessage += 'Your subscription may have been cancelled. Please contact support.';
-      } else if (error.message.includes('Customer ID')) {
-        userMessage += 'Account not properly linked to billing. Please contact support.';
-      } else if (error.message.includes('HTTP 404')) {
-        userMessage += 'Billing service temporarily unavailable. Please try again later.';
-      } else if (error.message.includes('HTTP 500')) {
-        userMessage += 'Server error. Please try again in a few moments.';
-      } else {
-        userMessage += 'Please try again or contact support if the problem persists.';
-      }
-
-      alert(userMessage);
+      console.error('Manage Billing Error:', error);
+      alert(`Unable to open billing portal. ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -107,9 +66,8 @@ const AccountModal = ({
   // Format date for display
   const formatDate = (dateValue) => {
     if (!dateValue) return 'N/A';
-
     try {
-      const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+      const date = dateValue.toDate ? dateValue.toDate() : new Date(dateValue);
       return date.toLocaleDateString('en-US', { 
         month: 'long', 
         day: 'numeric', 
@@ -134,7 +92,7 @@ const AccountModal = ({
       }
     >
       <div className="account-modal-content">
-        {/* User Info Section */}
+        {/* User Info Section (remains the same) */}
         <div className="account-section user-info-section">
           <div className="user-avatar">
             <User size={32} />
@@ -154,47 +112,28 @@ const AccountModal = ({
           </div>
         </div>
 
-        {/* Premium Features Section */}
-        {isPremium && (
-          <div className="account-section premium-features-section">
-            <h4>
-              <CheckCircle size={20} />
-              Active Premium Features
-            </h4>
-            <div className="active-features">
-              <div className="feature-item">
-                <span>☁️ Cloud Sync</span>
-                <span className="feature-status active">Active</span>
-              </div>
-              <div className="feature-item">
-                <span>⚡ Unlimited Programs</span>
-                <span className="feature-status active">Active</span>
-              </div>
-              <div className="feature-item">
-                <span>👥 Social Features</span>
-                <span className="feature-status coming-soon">Coming Soon</span>
-              </div>
-              <div className="feature-item">
-                <span>📊 Advanced Analytics</span>
-                <span className="feature-status coming-soon">Coming Soon</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Subscription Management */}
-        {isPremium && (
+        {/* --- UPDATED LOGIC: Subscription Management Section --- */}
+        {/* This section now shows for active premium users OR users who previously had a subscription */}
+        {(isPremium || (subscriptionStatus === 'canceled' && stripeCustomerId)) && (
           <div className="account-section subscription-section">
             <h4>
               <CreditCard size={20} />
               Subscription
             </h4>
 
-            {/* Show cancellation warning if subscription is set to cancel */}
-            {subscriptionCancelAtPeriodEnd && (
+            {/* If the subscription is active but set to cancel */}
+            {isPremium && subscriptionCancelAtPeriodEnd && (
               <div className="subscription-cancellation-notice">
                 <AlertTriangle size={16} />
-                <span>Your subscription is set to cancel at the end of the billing period</span>
+                <span>Your premium access will end on {formatDate(subscriptionCurrentPeriodEnd)}.</span>
+              </div>
+            )}
+
+            {/* If the subscription has already been canceled and expired */}
+            {!isPremium && subscriptionStatus === 'canceled' && (
+              <div className="subscription-cancellation-notice">
+                <AlertTriangle size={16} />
+                <span>Your premium subscription has ended. Reactivate to regain access to all features.</span>
               </div>
             )}
 
@@ -203,31 +142,39 @@ const AccountModal = ({
                 <span>Plan:</span>
                 <span>Premium ($4.99/month)</span>
               </div>
-              <div className="subscription-detail">
-                <span>
-                  {subscriptionCancelAtPeriodEnd ? 'Subscription ends:' : 'Next billing:'}
-                </span>
-                <span>
-                  <Calendar size={14} />
-                  {formatDate(subscriptionCurrentPeriodEnd)}
-                </span>
-              </div>
+
+              {/* Show 'Next billing' or 'Ends on' date only if the user is currently premium */}
+              {isPremium && subscriptionCurrentPeriodEnd && (
+                <div className="subscription-detail">
+                  <span>
+                    {subscriptionCancelAtPeriodEnd ? 'Premium access ends:' : 'Next billing:'}
+                  </span>
+                  <span>
+                    <Calendar size={14} />
+                    {formatDate(subscriptionCurrentPeriodEnd)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="subscription-actions">
+              {/* The button text and action now depend on the user's status */}
               <button 
                 className="manage-billing-btn" 
                 onClick={handleManageBilling}
                 disabled={isLoading}
               >
                 <Settings size={16} />
-                {isLoading ? 'Loading...' : 'Manage Billing'}
+                {isLoading 
+                  ? 'Loading...' 
+                  : (isPremium ? 'Manage Billing' : 'Reactivate Subscription')
+                }
               </button>
             </div>
           </div>
         )}
 
-        {/* Account Actions */}
+        {/* Account Actions Section (remains the same) */}
         <div className="account-section actions-section">
           <button className="logout-btn" onClick={onLogout}>
             <LogOut size={16} />

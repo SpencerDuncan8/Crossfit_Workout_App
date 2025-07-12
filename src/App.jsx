@@ -202,6 +202,7 @@ export default function App() {
   stripeCustomerId={appState.stripeCustomerId}
   subscriptionCancelAtPeriodEnd={appState.subscriptionCancelAtPeriodEnd}
   subscriptionCurrentPeriodEnd={appState.subscriptionCurrentPeriodEnd}
+  subscriptionStatus={appState.subscriptionStatus}
   refreshSubscriptionData={refreshSubscriptionData}
 />
 
