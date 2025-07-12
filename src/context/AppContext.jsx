@@ -113,49 +113,30 @@ const AppStateProviderComponent = ({ children }) => {
 
 const createUserAfterPayment = async (email, password, stripeCustomerId, subscription) => {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    // Step 1: Create the user in Firebase Authentication. This is still required.
+    await createUserWithEmailAndPassword(auth, email, password);
 
-    // Create the complete data object to be saved to Firestore
-    const migratedData = {
-      ...appState,
-      isPremium: true,
-      stripeCustomerId: stripeCustomerId,
-      email: email,
-      subscriptionId: subscription.id,
-      subscriptionStatus: subscription.status,
-      subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
-      
-      // --- THIS IS THE FINAL FIX ---
-      // We create the Firestore Timestamp object directly here.
-      subscriptionCurrentPeriodEnd: subscription.current_period_end
-        ? Timestamp.fromMillis(subscription.current_period_end * 1000)
-        : null,
-      
-      subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
-      subscriptionEndDate: null,
-    };
+    // The server (`/api/complete-subscription`) has already created the initial Firestore document.
+    // All we need to do now is update our local React state to match.
 
-    // Save the fully correct data to Firestore
-    await saveToFirestore(user.uid, migratedData);
-    
-    // Update the local state for an instant UI update
+    // Step 2: Update the local app state for an instant UI update.
     updateAppState({
       isPremium: true,
       stripeCustomerId: stripeCustomerId,
       email: email,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd 
-        ? migratedData.subscriptionCurrentPeriodEnd.toDate() 
-        : null,
-      subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end
+      subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
+      // We don't need to save the rest of the migratedData here,
+      // because the user is new and their local data is already in `appState`.
+      // The next `saveToFirestore` call will sync everything.
     });
 
-    console.log("User created with full subscription data and migrated successfully.");
+    console.log("Firebase Auth user created. Server handled Firestore document.");
 
   } catch (error) {
-    console.error("Error creating user after payment:", error);
+    console.error("Error creating Firebase Auth user:", error);
     throw error;
   }
 };
