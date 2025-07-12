@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
+import { auth } from '../../firebase/config.js'; // <-- FIX: Import auth object
+import { createUserWithEmailAndPassword } from 'firebase/auth'; // <-- FIX: Import auth function
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import LoadingSpinner from '../Common/LoadingSpinner';
@@ -13,7 +15,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
     const stripe = useStripe();
     const elements = useElements();
-    const { createUserAfterPayment } = useContext(AppStateContext);
+    const { updateAppState } = useContext(AppStateContext); // <-- FIX: Get updateAppState from context
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -25,36 +27,58 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
         setErrorMessage('');
 
         try {
-            // Step 1: Confirm SetupIntent
+            // Step 1: Create the user in Firebase Authentication right here.
+            const userCredential = await createUserWithEmailAndPassword(auth, userEmail, userPassword);
+            const user = userCredential.user;
+
+            if (!user || !user.uid) {
+                throw new Error("Failed to create user account. Please try again.");
+            }
+
+            // Step 2: Confirm the payment method.
             const { error, setupIntent } = await stripe.confirmSetup({
                 elements,
                 confirmParams: { return_url: window.location.href },
                 redirect: 'if_required'
             });
 
-            if (error) throw new Error(error.message);
+            if (error) {
+                // Ideally, you would delete the Firebase user here if payment fails.
+                throw new Error(`Payment failed: ${error.message}`);
+            }
 
-            // Step 2: Create Subscription
+            // Step 3: Call the server API with the new user's UID.
             const response = await fetch('/api/complete-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
                     customerId: customerId,
-                    paymentMethodId: setupIntent.payment_method,
-                    userEmail: userEmail,
+                    paymentMethodId: setupIntent.payment_method
                 })
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error?.message || 'Failed to create subscription');
+            if (!response.ok) {
+                throw new Error(result.error?.message || 'Failed to finalize subscription on server.');
+            }
 
-            // --- THIS IS YOUR CORRECT CHANGE ---
-            // Step 3: Create user with full subscription data
-            await createUserAfterPayment(userEmail, userPassword, customerId, result.subscription);
+            // Step 4: Update the local React state directly.
+            updateAppState({
+                isPremium: true,
+                stripeCustomerId: customerId,
+                email: user.email,
+                subscriptionId: result.subscription.id,
+                subscriptionStatus: result.subscription.status,
+                subscriptionCurrentPeriodEnd: new Date(result.subscription.current_period_end * 1000),
+                subscriptionCancelAtPeriodEnd: result.subscription.cancel_at_period_end,
+            });
+            
             onSuccess();
 
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error during signup process:', error);
             setErrorMessage(error.message || 'An error occurred. Please try again.');
         } finally {
             setIsProcessing(false);
@@ -88,7 +112,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
 };
 
 // This is the main exported component. It fetches data and handles loading/error states.
-const PaymentFormWrapper = ({ onSuccess, userEmail, userPassword }) => {
+const PaymentForm = ({ onSuccess, userEmail, userPassword }) => {
     const [clientSecret, setClientSecret] = useState(null);
     const [customerId, setCustomerId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -172,5 +196,4 @@ const PaymentFormWrapper = ({ onSuccess, userEmail, userPassword }) => {
     );
 };
 
-// EXPORT THE WRAPPER COMPONENT AS THE DEFAULT
-export default PaymentFormWrapper;
+export default PaymentForm;

@@ -111,36 +111,6 @@ const AppStateProviderComponent = ({ children }) => {
     return { email, password };
   };
 
-const createUserAfterPayment = async (email, password, stripeCustomerId, subscription) => {
-  try {
-    // Step 1: Create the user in Firebase Authentication. This is still required.
-    await createUserWithEmailAndPassword(auth, email, password);
-
-    // The server (`/api/complete-subscription`) has already created the initial Firestore document.
-    // All we need to do now is update our local React state to match.
-
-    // Step 2: Update the local app state for an instant UI update.
-    updateAppState({
-      isPremium: true,
-      stripeCustomerId: stripeCustomerId,
-      email: email,
-      subscriptionId: subscription.id,
-      subscriptionStatus: subscription.status,
-      subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
-      // We don't need to save the rest of the migratedData here,
-      // because the user is new and their local data is already in `appState`.
-      // The next `saveToFirestore` call will sync everything.
-    });
-
-    console.log("Firebase Auth user created. Server handled Firestore document.");
-
-  } catch (error) {
-    console.error("Error creating Firebase Auth user:", error);
-    throw error;
-  }
-};
-
   const refreshSubscriptionData = async () => {
     if (!currentUser) return;
 
@@ -527,7 +497,6 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
     currentUser,
     authLoading,
     signUp,
-    createUserAfterPayment,
     logIn,
     logOut,
     appState,
