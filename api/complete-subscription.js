@@ -22,34 +22,38 @@ export default async function handler(req, res) {
   }
 
   try {
-    // --- THE FINAL FIX: Receive UID from the client ---
     const { uid, email, customerId, paymentMethodId } = req.body;
 
     if (!uid || !email || !customerId || !paymentMethodId) {
       return res.status(400).json({ error: { message: 'Missing required parameters.' } });
     }
 
-    // Create the Stripe subscription
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [{ price: process.env.STRIPE_PRICE_ID }],
       default_payment_method: paymentMethodId,
-      metadata: { uid: uid } // Store uid in metadata for reference
+      metadata: { uid: uid }
     });
 
-    // --- THE FINAL FIX: Create Firestore doc with the provided UID ---
-    // No more searching needed. We know exactly which document to create.
     const userDocRef = db.collection('users').doc(uid);
+
+    // --- THE FINAL FIX IS HERE ---
+    // Add a check to ensure `current_period_end` is a valid number before converting.
+    const periodEndTimestamp = 
+      typeof subscription.current_period_end === 'number'
+        ? admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000)
+        : null;
+
     await userDocRef.set({
         email: email,
         stripeCustomerId: customerId,
         subscriptionId: subscription.id,
         subscriptionStatus: subscription.status,
         subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
-        subscriptionCurrentPeriodEnd: admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000),
+        subscriptionCurrentPeriodEnd: periodEndTimestamp, // Use the validated timestamp or null
         subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
         isPremium: true,
-    }, { merge: true }); // Use merge: true to avoid overwriting any pre-existing local data
+    }, { merge: true });
 
     console.log(`Firestore document created/updated for user ${uid}`);
 
