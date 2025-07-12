@@ -19,7 +19,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// Disable Vercel's default body parser
+// Disable Vercel's default body parser to access the raw request body
 export const config = {
   api: {
     bodyParser: false,
@@ -81,6 +81,7 @@ export default async function handler(req, res) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const periodEndSeconds = subscription.items.data[0]?.current_period_end;
+        
         const periodEndTimestamp = typeof periodEndSeconds === 'number'
           ? admin.firestore.Timestamp.fromMillis(periodEndSeconds * 1000)
           : null;
@@ -90,6 +91,7 @@ export default async function handler(req, res) {
           subscriptionStatus: subscription.status,
           subscriptionPriceId: subscription.items.data[0]?.price?.id,
           subscriptionCurrentPeriodEnd: periodEndTimestamp,
+          // THIS IS THE CORRECTED LINE: It now correctly syncs the cancellation status
           subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
           isPremium: subscription.status === 'active' || subscription.status === 'trialing',
         };
@@ -104,6 +106,8 @@ export default async function handler(req, res) {
             subscriptionStatus: 'canceled',
             isPremium: false,
             subscriptionEndDate: admin.firestore.FieldValue.serverTimestamp(),
+            // Ensure this is reset when the subscription is fully deleted
+            subscriptionCancelAtPeriodEnd: false, 
         };
 
         console.log(`Attempting to cancel subscription for user ${userId} with data:`, JSON.stringify(updateData));

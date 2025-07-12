@@ -204,6 +204,7 @@ export default function App() {
   subscriptionCurrentPeriodEnd={appState.subscriptionCurrentPeriodEnd}
   subscriptionStatus={appState.subscriptionStatus}
   refreshSubscriptionData={refreshSubscriptionData}
+  setIsPremiumModalOpen={setIsPremiumModalOpen}
 />
 
       {appState.isWorkoutEditorOpen && <WorkoutEditor />}
