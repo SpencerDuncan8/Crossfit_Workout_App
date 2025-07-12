@@ -1,7 +1,7 @@
 // src/components/Premium/AccountModal.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Crown, User, CreditCard, Settings, LogOut, Calendar, AlertTriangle } from 'lucide-react';
+import { Crown, User, CreditCard, Settings, LogOut, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 
 const AccountModal = ({ 
@@ -15,7 +15,7 @@ const AccountModal = ({
   subscriptionCurrentPeriodEnd,
   subscriptionStatus,
   refreshSubscriptionData,
-  setIsPremiumModalOpen // <-- NEW PROP
+  setIsPremiumModalOpen
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,13 +54,11 @@ const AccountModal = ({
   };
 
   const handleReactivateClick = () => {
-    // If the subscription is pending cancellation, the user can resume it in the portal.
     if (subscriptionCancelAtPeriodEnd) {
       handleManageBilling();
     } else {
-      // If the subscription is fully canceled, they need to sign up again.
-      onClose(); // Close the account modal
-      setIsPremiumModalOpen(true); // Open the premium upsell modal
+      onClose();
+      setIsPremiumModalOpen(true);
     }
   };
 
@@ -99,6 +97,35 @@ const AccountModal = ({
             </div>
           </div>
         </div>
+
+        {/* --- THIS IS THE SECTION THAT WAS MISSING --- */}
+        {/* It shows the user's currently active premium features. */}
+        {isPremium && (
+          <div className="account-section premium-features-section">
+            <h4>
+              <CheckCircle size={20} />
+              Active Premium Features
+            </h4>
+            <div className="active-features">
+              <div className="feature-item">
+                <span>☁️ Cloud Sync</span>
+                <span className="feature-status active">Active</span>
+              </div>
+              <div className="feature-item">
+                <span>⚡ Unlimited Programs</span>
+                <span className="feature-status active">Active</span>
+              </div>
+              <div className="feature-item">
+                <span>👥 Social Features</span>
+                <span className="feature-status coming-soon">Coming Soon</span>
+              </div>
+              <div className="feature-item">
+                <span>📊 Advanced Analytics</span>
+                <span className="feature-status coming-soon">Coming Soon</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* This section now shows for active OR previously subscribed users */}
         {stripeCustomerId && (
