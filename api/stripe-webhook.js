@@ -1,5 +1,4 @@
 // /api/stripe-webhook.js
-
 import Stripe from 'stripe';
 import admin from 'firebase-admin';
 
@@ -20,7 +19,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// Disable Vercel's default body parser to access the raw request body
+// Disable Vercel's default body parser
 export const config = {
   api: {
     bodyParser: false,
@@ -70,42 +69,46 @@ export default async function handler(req, res) {
   try {
     const subscription = event.data.object;
     const customerId = subscription.customer;
+    const userDoc = await findUserInFirestore(customerId);
+
+    if (!userDoc) {
+        return res.status(200).json({ received: true, message: `User not found for customer ${customerId}, but webhook acknowledged.` });
+    }
+
+    const userId = userDoc.id;
 
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        const userDoc = await findUserInFirestore(customerId);
-        if (userDoc) {
-          // Get the period end date from the correct location
-          const periodEndSeconds = subscription.items.data[0]?.current_period_end;
-          
-          const periodEndTimestamp = typeof periodEndSeconds === 'number'
-            ? admin.firestore.Timestamp.fromMillis(periodEndSeconds * 1000)
-            : null;
+        const periodEndSeconds = subscription.items.data[0]?.current_period_end;
+        const periodEndTimestamp = typeof periodEndSeconds === 'number'
+          ? admin.firestore.Timestamp.fromMillis(periodEndSeconds * 1000)
+          : null;
 
-          const updateData = {
-            subscriptionId: subscription.id,
-            subscriptionStatus: subscription.status,
-            subscriptionPriceId: subscription.items.data[0]?.price?.id,
-            subscriptionCurrentPeriodEnd: periodEndTimestamp,
-            subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
-            isPremium: subscription.status === 'active' || subscription.status === 'trialing',
-          };
-          await userDoc.ref.update(updateData);
-          console.log(`Updated user ${userDoc.id} for subscription event: ${event.type}`);
-        }
+        const updateData = {
+          subscriptionId: subscription.id,
+          subscriptionStatus: subscription.status,
+          subscriptionPriceId: subscription.items.data[0]?.price?.id,
+          subscriptionCurrentPeriodEnd: periodEndTimestamp,
+          subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
+          isPremium: subscription.status === 'active' || subscription.status === 'trialing',
+        };
+        
+        console.log(`Attempting to update user ${userId} with data:`, JSON.stringify(updateData));
+        await userDoc.ref.update(updateData);
+        console.log(`Successfully processed [${event.type}] for user ${userId}`);
         break;
       }
       case 'customer.subscription.deleted': {
-        const userDoc = await findUserInFirestore(customerId);
-        if (userDoc) {
-          await userDoc.ref.update({
+        const updateData = {
             subscriptionStatus: 'canceled',
             isPremium: false,
             subscriptionEndDate: admin.firestore.FieldValue.serverTimestamp(),
-          });
-          console.log(`Canceled subscription for user ${userDoc.id}`);
-        }
+        };
+
+        console.log(`Attempting to cancel subscription for user ${userId} with data:`, JSON.stringify(updateData));
+        await userDoc.ref.update(updateData);
+        console.log(`Successfully processed [customer.subscription.deleted] for user ${userId}. Premium access revoked.`);
         break;
       }
       default:
@@ -113,7 +116,7 @@ export default async function handler(req, res) {
     }
     res.status(200).json({ received: true });
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    res.status(500).json({ error: 'Internal server error while processing webhook.' });
+    console.error(`Error processing webhook for event ${event.type}:`, error);
+    res.status(500).json({ error: `Internal server error while processing webhook: ${error.message}` });
   }
 }
