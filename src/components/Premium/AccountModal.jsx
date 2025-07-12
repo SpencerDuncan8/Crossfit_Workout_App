@@ -15,7 +15,7 @@ const AccountModal = ({
   subscriptionCurrentPeriodEnd,
   subscriptionStatus,
   refreshSubscriptionData,
-  setIsPremiumModalOpen
+  setIsReactivationModalOpen // This prop is used to open the new modal
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,6 +25,7 @@ const AccountModal = ({
     }
   }, [isOpen, refreshSubscriptionData]);
 
+  // This function sends the user to the Stripe portal to manage an ACTIVE subscription.
   const handleManageBilling = async () => {
     setIsLoading(true);
     try {
@@ -53,13 +54,10 @@ const AccountModal = ({
     }
   };
 
+  // This function is for the "Re-subscribe" button for CANCELED users.
   const handleReactivateClick = () => {
-    if (subscriptionCancelAtPeriodEnd) {
-      handleManageBilling();
-    } else {
-      onClose();
-      setIsPremiumModalOpen(true);
-    }
+    onClose(); // Close the account modal
+    setIsReactivationModalOpen(true); // Open the dedicated reactivation modal
   };
 
   const formatDate = (dateValue) => {
@@ -84,6 +82,7 @@ const AccountModal = ({
       </div>
     }>
       <div className="account-modal-content">
+        {/* User Info Section */}
         <div className="account-section user-info-section">
           <div className="user-avatar"><User size={32} /></div>
           <div className="user-details">
@@ -98,8 +97,7 @@ const AccountModal = ({
           </div>
         </div>
 
-        {/* --- THIS IS THE SECTION THAT WAS MISSING --- */}
-        {/* It shows the user's currently active premium features. */}
+        {/* Active Premium Features List (for active subscribers) */}
         {isPremium && (
           <div className="account-section premium-features-section">
             <h4>
@@ -107,27 +105,15 @@ const AccountModal = ({
               Active Premium Features
             </h4>
             <div className="active-features">
-              <div className="feature-item">
-                <span>☁️ Cloud Sync</span>
-                <span className="feature-status active">Active</span>
-              </div>
-              <div className="feature-item">
-                <span>⚡ Unlimited Programs</span>
-                <span className="feature-status active">Active</span>
-              </div>
-              <div className="feature-item">
-                <span>👥 Social Features</span>
-                <span className="feature-status coming-soon">Coming Soon</span>
-              </div>
-              <div className="feature-item">
-                <span>📊 Advanced Analytics</span>
-                <span className="feature-status coming-soon">Coming Soon</span>
-              </div>
+              <div className="feature-item"><span>☁️ Cloud Sync</span><span className="feature-status active">Active</span></div>
+              <div className="feature-item"><span>⚡ Unlimited Programs</span><span className="feature-status active">Active</span></div>
+              <div className="feature-item"><span>👥 Social Features</span><span className="feature-status coming-soon">Coming Soon</span></div>
+              <div className="feature-item"><span>📊 Advanced Analytics</span><span className="feature-status coming-soon">Coming Soon</span></div>
             </div>
           </div>
         )}
 
-        {/* This section now shows for active OR previously subscribed users */}
+        {/* Subscription Management Section */}
         {stripeCustomerId && (
           <div className="account-section subscription-section">
             <h4><CreditCard size={20} />Subscription</h4>
@@ -142,7 +128,7 @@ const AccountModal = ({
             {!isPremium && subscriptionStatus === 'canceled' && (
               <div className="subscription-cancellation-notice">
                 <AlertTriangle size={16} />
-                <span>Your premium subscription has ended. Reactivate to regain access to all features.</span>
+                <span>Your premium subscription has ended.</span>
               </div>
             )}
 
@@ -161,20 +147,24 @@ const AccountModal = ({
 
             <div className="subscription-actions">
               {isPremium ? (
+                // If user is premium, they can manage billing (which includes resuming a pending cancellation).
                 <button className="manage-billing-btn" onClick={handleManageBilling} disabled={isLoading}>
                   <Settings size={16} />
                   {isLoading ? 'Loading...' : 'Manage Billing'}
                 </button>
               ) : (
+                // If user is NOT premium but has a Stripe ID, they must have canceled.
+                // Show the Re-subscribe button which triggers our new modal flow.
                 <button className="manage-billing-btn" onClick={handleReactivateClick} disabled={isLoading}>
                   <Crown size={16} />
-                  {isLoading ? 'Loading...' : 'Reactivate Subscription'}
+                  {isLoading ? 'Loading...' : 'Re-subscribe'}
                 </button>
               )}
             </div>
           </div>
         )}
 
+        {/* Logout Section */}
         <div className="account-section actions-section">
           <button className="logout-btn" onClick={onLogout}><LogOut size={16} />Sign Out</button>
         </div>
