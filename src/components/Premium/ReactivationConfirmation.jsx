@@ -51,7 +51,7 @@ const ReactivationConfirmation = ({ onConfirm, onCancel }) => {
         // --- THIS IS THE NEW LOGIC ---
         // Check for our specific error code from the API.
         if (result.error?.code === 'NO_PAYMENT_METHOD') {
-          setError("We couldn't find a payment method on file. Please add one in the customer portal to re-subscribe.");
+          setError("We couldn't find a default payment method on file. Please add one in the customer portal to re-subscribe. Click the (•••) next to your card and select 'Make default'.");
           setShowPortalButton(true); // Show the "Go to Portal" button
         } else {
           throw new Error(result.error?.message || 'An unknown error occurred.');
