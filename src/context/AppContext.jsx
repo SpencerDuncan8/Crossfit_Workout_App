@@ -121,6 +121,7 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
       ...appState,
       isPremium: true,
       stripeCustomerId: stripeCustomerId,
+      email: email,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
@@ -142,6 +143,7 @@ const createUserAfterPayment = async (email, password, stripeCustomerId, subscri
     updateAppState({
       isPremium: true,
       stripeCustomerId: stripeCustomerId,
+      email: email,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionCurrentPeriodEnd: migratedData.subscriptionCurrentPeriodEnd 
