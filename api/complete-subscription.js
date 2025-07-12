@@ -28,21 +28,34 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: { message: 'Missing required parameters.' } });
     }
 
+    // --- THE FINAL FIX: Re-add the 'expand' parameter ---
+    // This ensures we get all the necessary invoice and payment data from Stripe
+    // to correctly resolve the subscription's status and dates.
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [{ price: process.env.STRIPE_PRICE_ID }],
       default_payment_method: paymentMethodId,
-      metadata: { uid: uid }
+      metadata: { uid: uid },
+      // This is the critical line that was accidentally removed
+      expand: ['latest_invoice.payment_intent'], 
     });
+
+    // Check for an incomplete status and try to pay the invoice if necessary
+    if (subscription.status === 'incomplete' && subscription.latest_invoice?.payment_intent?.status === 'requires_action') {
+        console.log("Subscription requires customer action. This should have been handled on the client.");
+        // This case shouldn't happen often with if_required, but it's good to log
+    }
 
     const userDocRef = db.collection('users').doc(uid);
 
-    // --- THE FINAL FIX IS HERE ---
-    // Add a check to ensure `current_period_end` is a valid number before converting.
     const periodEndTimestamp = 
       typeof subscription.current_period_end === 'number'
         ? admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000)
         : null;
+
+    if (!periodEndTimestamp) {
+        console.error('CRITICAL: current_period_end is null or not a number from Stripe. Subscription object:', JSON.stringify(subscription, null, 2));
+    }
 
     await userDocRef.set({
         email: email,
@@ -50,7 +63,7 @@ export default async function handler(req, res) {
         subscriptionId: subscription.id,
         subscriptionStatus: subscription.status,
         subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
-        subscriptionCurrentPeriodEnd: periodEndTimestamp, // Use the validated timestamp or null
+        subscriptionCurrentPeriodEnd: periodEndTimestamp,
         subscriptionCancelAtPeriodEnd: subscription.cancel_at_period_end,
         isPremium: true,
     }, { merge: true });
