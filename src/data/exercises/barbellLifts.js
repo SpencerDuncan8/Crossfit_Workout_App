@@ -1,7 +1,7 @@
 export const barbellLifts = [
   {
     id: "squat",
-    name: "Barbell Back Squat",
+    name: "Barbell Back Squats",
     category: "Lower Body",
     primaryMuscles: ["Quads", "Glutes", "Hamstrings", "Core"],
     equipment: ["Barbell", "Rack"],
@@ -14,7 +14,7 @@ export const barbellLifts = [
     ],
     execution: [
       "Take a deep breath and brace your core.",
-      "Initiate the movement by sending your hips back and down, as if sitting in a chair.",
+      "Squat down sending your hips back and down, as if sitting in a chair.",
       "Keep your chest up and back straight.",
       "Descend until your hip crease is below the top of your knee (below parallel).",
       "Drive through your mid-foot to stand up, exhaling on the way up."

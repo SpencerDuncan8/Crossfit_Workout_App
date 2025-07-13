@@ -62,18 +62,18 @@ export function searchExercises(searchTerm) {
     // 2. Create a comprehensive set of "tokens" (words) from the exercise's data.
     //    Using a Set is efficient as it avoids duplicate words.
     const exerciseWords = new Set();
-    
+
     // Add words from the exercise name. We also remove punctuation to improve matching.
     // e.g., "(1RM)" becomes "1rm"
     exercise.name.toLowerCase().split(' ').forEach(word => {
         exerciseWords.add(word.replace(/[^a-z0-9]/g, ''))
     });
-    
+
     // Add words from the category.
     exercise.category.toLowerCase().split(' ').forEach(word => {
         exerciseWords.add(word.replace(/[^a-z0-9]/g, ''))
     });
-    
+
     // Add words from all primary muscles.
     exercise.primaryMuscles.forEach(muscleGroup => {
       muscleGroup.toLowerCase().split(' ').forEach(word => {
