@@ -495,51 +495,45 @@ const copyCustomWorkout = (programId, workoutId) => {
     });
   };
 
-  const autoScheduleProgram = (workouts, daysPerWeek = 3) => {
-    const workoutsToSchedule = workouts.slice();
-    const currentSchedule = { ...appState.workoutSchedule };
-    let currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    
-    const findNextAvailableDate = (startDate) => {
-      let date = new Date(startDate);
-      for (let i = 0; i < 365; i++) {
-        const dateString = date.toISOString().split('T')[0];
-        const daySchedule = currentSchedule[dateString] || [];
-        
-        if (daysPerWeek < 7) {
-          const dayOfWeek = date.getDay();
-          const shouldSkip = (daysPerWeek === 3 && [0, 2, 4, 6].includes(dayOfWeek)) || 
-                           (daysPerWeek === 4 && [0, 3, 6].includes(dayOfWeek)) || 
-                           (daysPerWeek === 5 && [0, 6].includes(dayOfWeek)) || 
-                           (daysPerWeek === 6 && dayOfWeek === 0);
-          if (shouldSkip || daySchedule.length >= (daysPerWeek >= 5 ? 2 : 1)) {
-            date.setDate(date.getDate() + 1);
-            continue;
-          }
-        }
-        return date;
-      }
-    };
-    
-    let scheduleDate = findNextAvailableDate(currentDate); 
-    let workoutIndex = 0;
-    
-    for (const workout of workoutsToSchedule) {
+  // Replace the old function with this new version
+
+const autoScheduleProgram = (workouts, selectedDays) => {
+  if (!selectedDays || selectedDays.length === 0) {
+    console.error("Auto-scheduling failed: No days were selected.");
+    return; // Exit if no days are provided
+  }
+
+  const workoutsToSchedule = workouts.slice();
+  const currentSchedule = { ...appState.workoutSchedule };
+  let scheduleDate = new Date(); // Start searching from today
+  scheduleDate.setHours(0, 0, 0, 0);
+
+  // Loop through each workout that needs to be scheduled
+  for (const workout of workoutsToSchedule) {
+    // For each workout, find the next valid day to place it
+    while (true) {
+      const dayOfWeek = scheduleDate.getDay(); // 0 for Sun, 1 for Mon, etc.
       const dateString = scheduleDate.toISOString().split('T')[0];
-      const daySchedule = currentSchedule[dateString] ? currentSchedule[dateString] : [];
-      const newEntry = { workoutId: workout.id, scheduleId: generateUniqueId() };
-      currentSchedule[dateString] = [...daySchedule, newEntry];
-      
-      workoutIndex++;
-      if (workoutIndex < workoutsToSchedule.length) {
-        scheduleDate.setDate(scheduleDate.getDate() + 1);
-        scheduleDate = findNextAvailableDate(scheduleDate);
+      const dayIsOccupied = currentSchedule[dateString] && currentSchedule[dateString].length > 0;
+
+      // A day is valid if it's one of the user's selected days AND isn't already occupied.
+      if (selectedDays.includes(dayOfWeek) && !dayIsOccupied) {
+        // We found a valid slot!
+        const newEntry = { workoutId: workout.id, scheduleId: generateUniqueId() };
+        currentSchedule[dateString] = [newEntry]; // Schedule the workout
+        break; // Exit the while loop to move to the next workout
       }
+
+      // If the current day wasn't valid, move to the next day and check again.
+      scheduleDate.setDate(scheduleDate.getDate() + 1);
     }
     
-    updateAppState({ workoutSchedule: currentSchedule });
-  };
+    // After scheduling a workout, always advance one day to avoid scheduling two workouts on the same day.
+    scheduleDate.setDate(scheduleDate.getDate() + 1);
+  }
+
+  updateAppState({ workoutSchedule: currentSchedule });
+};
 
   const contextValue = {
     currentUser,

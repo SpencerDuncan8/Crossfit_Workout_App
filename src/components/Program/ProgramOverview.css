@@ -598,3 +598,36 @@
 .modal-actions .action-btn.danger-btn:hover {
   background-color: #dc2626;
 }
+/* --- Add to end of file --- */
+
+.day-selector-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.day-selector-btn {
+  flex-grow: 1;
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-tertiary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-selector-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.day-selector-btn.active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}

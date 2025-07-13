@@ -6,6 +6,7 @@ import { programTemplates } from '../../data/programTemplates.js';
 import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy, Check } from 'lucide-react'; 
 import CompactWorkoutPreview from './CompactWorkoutPreview.jsx';
 import Modal from '../Common/Modal.jsx';
+import ScheduleProgramModal from './ScheduleProgramModal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
@@ -78,9 +79,9 @@ const ProgramOverview = ({ setActiveView }) => {
     setScheduleConfirm(template); 
   };
 
-  const handleConfirmSchedule = () => {
+  const handleConfirmSchedule = (days) => { // 'days' is the array from the modal
     if (scheduleConfirm) {
-      autoScheduleProgram(scheduleConfirm.workouts, scheduleConfirm.daysPerWeek);
+      autoScheduleProgram(scheduleConfirm.workouts, days); // Pass the days array
       setShowSuccessModal(true);
       setScheduleConfirm(null);
     }
@@ -273,19 +274,12 @@ const ProgramOverview = ({ setActiveView }) => {
         </form>
       </Modal>
 
-      <Modal isOpen={!!scheduleConfirm} onClose={() => setScheduleConfirm(null)} title="Schedule Program">
-        <div className="modal-form-container">
-          <p className="modal-confirm-text">
-            "{scheduleConfirm?.name}" is in My Programs.
-            <br/><br/>
-            Would you like to automatically schedule it on your calendar now?
-          </p>
-          <div className="modal-actions">
-            <button type="button" className="action-btn" onClick={() => setScheduleConfirm(null)}>Cancel</button>
-            <button type="button" className="action-btn schedule-btn" onClick={handleConfirmSchedule}>OK</button>
-          </div>
-        </div>
-      </Modal>
+      <ScheduleProgramModal
+        isOpen={!!scheduleConfirm}
+        onClose={() => setScheduleConfirm(null)}
+        onConfirm={handleConfirmSchedule}
+        programToSchedule={scheduleConfirm}
+      />
 
       <Modal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} title="Success">
         <div className="modal-form-container">
