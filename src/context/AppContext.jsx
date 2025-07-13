@@ -292,52 +292,51 @@ const AppStateProviderComponent = ({ children }) => {
 
 const copyCustomWorkout = (programId, workoutId) => {
     setAppState(prev => {
-        const programs = JSON.parse(JSON.stringify(prev.programs)); // Deep copy to avoid mutation issues
-        const programIndex = programs.findIndex(p => p.id === programId);
+        const programs = structuredClone(prev.programs); 
         
-        if (programIndex === -1) {
+        const program = programs.find(p => p.id === programId);
+        if (!program) {
             console.error("Program not found for copying workout.");
-            return prev; // Return original state if program not found
+            return prev;
         }
 
-        const workoutToCopy = programs[programIndex].workouts.find(w => w.id === workoutId);
-        if (!workoutToCopy) {
-            console.error("Workout not found for copying.");
-            return prev; // Return original state if workout not found
-        }
+      const workoutToCopy = program.workouts.find(w => w.id === workoutId);
+      if (!workoutToCopy) {
+          console.error("Workout not found for copying.");
+          return prev;
+      }
 
-        // Create a deep copy of the workout and give it a new identity
-        const newWorkout = JSON.parse(JSON.stringify(workoutToCopy));
-        newWorkout.id = generateUniqueId();
-        newWorkout.name = `${workoutToCopy.name} (Copy)`;
+          const newWorkout = structuredClone(workoutToCopy);
+          newWorkout.id = generateUniqueId();
+          newWorkout.name = `${workoutToCopy.name} (Copy)`;
 
-        // IMPORTANT: Regenerate IDs for all nested blocks, exercises, and sets
-        newWorkout.blocks.forEach(block => {
-            block.id = generateUniqueId();
-            if (block.exercises) {
-                block.exercises.forEach(exercise => {
-                    exercise.id = generateUniqueId();
-                    if (exercise.sets) {
+          newWorkout.blocks.forEach(block => {
+              block.id = generateUniqueId();
+                  if (block.exercises && Array.isArray(block.exercises)) {
+                    block.exercises.forEach(exercise => {
+                          exercise.instanceId = generateUniqueId(); 
+
+                          if (exercise.sets && Array.isArray(exercise.sets)) {
                         exercise.sets.forEach(set => {
                             set.id = generateUniqueId();
                         });
                     }
                 });
             }
-            if (block.minutes) {
+            if (block.minutes && Array.isArray(block.minutes)) {
                 block.minutes.forEach(minute => {
                     minute.id = generateUniqueId();
-                });
-            }
-        });
+              });
+          }
+      });
 
         // Insert the new workout right after the original one
-        const originalWorkoutIndex = programs[programIndex].workouts.findIndex(w => w.id === workoutId);
-        programs[programIndex].workouts.splice(originalWorkoutIndex + 1, 0, newWorkout);
+  const originalWorkoutIndex = program.workouts.findIndex(w => w.id === workoutId);
+          program.workouts.splice(originalWorkoutIndex + 1, 0, newWorkout);
 
-        return { ...prev, programs };
-    });
-};
+          return { ...prev, programs };
+      });
+  };
 
   // FIXED: Correct parameter order (programId first, workoutId second)
   const openWorkoutEditor = (programId, workoutId = null) => {
@@ -354,8 +353,8 @@ const copyCustomWorkout = (programId, workoutId) => {
     });
   };
 
-  const openExerciseModal = (exerciseName) => {
-    const exerciseData = getExerciseByName(exerciseName);
+  const openExerciseModal = (exerciseId) => {
+    const exerciseData = getExerciseByName(exerciseId);
     if (exerciseData) {
       updateAppState({ isModalOpen: true, modalContent: exerciseData });
     }
@@ -382,8 +381,8 @@ const copyCustomWorkout = (programId, workoutId) => {
     updateAppState({ photos: updated });
   };
 
-  const hasExerciseDetails = (exerciseName) => {
-    return !!getExerciseByName(exerciseName);
+  const hasExerciseDetails = (exerciseId) => {
+    return !!getExerciseByName(exerciseId);
   };
 
   const getPreviousExercisePerformance = (exerciseName, date) => {

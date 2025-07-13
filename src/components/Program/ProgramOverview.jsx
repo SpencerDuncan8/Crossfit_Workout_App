@@ -9,8 +9,21 @@ import Modal from '../Common/Modal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  const { appState, currentUser, deleteCustomWorkout, 
-openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
+  // --- THIS IS THE FIRST CHANGE: ADD `copyCustomWorkout` HERE ---
+  const { 
+    appState, 
+    currentUser, 
+    deleteCustomWorkout, 
+    openWorkoutEditor,      
+    copyCustomWorkout, // This function was missing from the destructuring
+    selectWorkoutToSchedule, 
+    createProgram, 
+    copyProgram, 
+    deleteProgram, 
+    updateProgram, 
+    loadProgramTemplate, 
+    autoScheduleProgram 
+  } = useContext(AppStateContext);
 
   const [viewingProgramId, setViewingProgramId] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
@@ -36,11 +49,10 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
     e.preventDefault();
     if (newProgramName.trim()) {
         const newProgramId = createProgram(newProgramName.trim());
-        if (newProgramId) { // NEW: Only set viewing if program was actually created
+        if (newProgramId) { 
             setViewingProgramId(newProgramId);
             setIsCreateModalOpen(false);
         } else {
-            // NEW: Program creation was blocked due to limit, modal handled by createProgram
             setIsCreateModalOpen(false);
         }
     }
@@ -77,15 +89,13 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
   const handleConfirmDelete = () => {
     if (programToDelete) {
       deleteProgram(programToDelete.id);
-      setViewingProgramId(null); // Go back to the main list
+      setViewingProgramId(null);
       setProgramToDelete(null);
     }
   };
 
   const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
-
-  // NEW: Premium status check and program count
   const isPremium = appState.isPremium || currentUser?.isPremium;
   const programCount = userPrograms.length;
   const maxPrograms = 3;
@@ -143,13 +153,16 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
                 {!viewingProgram.isTemplate && (
                   <>
                     <button 
-                    className="action-btn edit-btn" onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
+                      className="action-btn edit-btn" 
+                      onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
                       <Edit size={18} /> Edit
                     </button>
-<button 
-  className="action-btn copy-btn" onClick={() => copyCustomWorkout(viewingProgram.id, workout.id)}>
-              <Copy size={18} /> Copy
-            </button>
+                    {/* --- THE FIX IS HERE: The onClick now correctly calls the function from context --- */}
+                    <button 
+                      className="action-btn copy-btn" 
+                      onClick={() => copyCustomWorkout(viewingProgram.id, workout.id)}>
+                      <Copy size={18} /> Copy
+                    </button>
                     <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(workout.id, viewingProgram.id)}>
                       <Trash2 size={18} />
                     </button>
@@ -178,11 +191,8 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1>My Programs</h1>
-            {/* NEW: Show program count for free users only */}
             {!isPremium && (
-              <p>
-                Select a program to view its workouts. ({programCount}/{maxPrograms} programs)
-              </p>
+              <p>Select a program to view its workouts. ({programCount}/{maxPrograms} programs)</p>
             )}
             {isPremium && (
               <p>Select a program to view its workouts.</p>
@@ -222,10 +232,7 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
                       <h3 className="program-card-title">{template.name}</h3>
                       <p className="program-card-description">{template.description}</p>
                       <div className="template-actions">
-                          <button 
-                              className="action-btn load-btn"
-                              onClick={() => handleLoadAndSchedule(template)}
-                          >
+                          <button className="action-btn load-btn" onClick={() => handleLoadAndSchedule(template)}>
                               Load & Schedule
                           </button>
                           <button 
@@ -266,11 +273,7 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
         </form>
       </Modal>
 
-      <Modal 
-        isOpen={!!scheduleConfirm} 
-        onClose={() => setScheduleConfirm(null)} 
-        title="Schedule Program"
-      >
+      <Modal isOpen={!!scheduleConfirm} onClose={() => setScheduleConfirm(null)} title="Schedule Program">
         <div className="modal-form-container">
           <p className="modal-confirm-text">
             "{scheduleConfirm?.name}" is in My Programs.
@@ -284,11 +287,7 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={showSuccessModal} 
-        onClose={() => setShowSuccessModal(false)} 
-        title="Success"
-      >
+      <Modal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} title="Success">
         <div className="modal-form-container">
           <p className="modal-confirm-text">
             Your program has been scheduled!
@@ -296,23 +295,14 @@ openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgra
             Check the Calendar tab to see your plan.
           </p>
           <div className="modal-actions" style={{ justifyContent: 'center' }}>
-            <button 
-              type="button" 
-              className="action-btn schedule-btn" 
-              onClick={() => setShowSuccessModal(false)} 
-              style={{ flexGrow: 0, padding: '10px 40px' }}
-            >
+            <button type="button" className="action-btn schedule-btn" onClick={() => setShowSuccessModal(false)} style={{ flexGrow: 0, padding: '10px 40px' }}>
               OK
             </button>
           </div>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={!!programToDelete}
-        onClose={() => setProgramToDelete(null)}
-        title="Delete Program"
-      >
+      <Modal isOpen={!!programToDelete} onClose={() => setProgramToDelete(null)} title="Delete Program">
         <div className="modal-form-container">
           <p className="modal-confirm-text">
             Are you sure you want to delete the "<strong>{programToDelete?.name}</strong>" program? This will permanently remove all of its workouts and cannot be undone.

@@ -84,9 +84,9 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
   };
 
   const handleExerciseClick = () => { 
-    if (hasExerciseDetails(id)) { 
-      openExerciseModal(id); 
-    } 
+  if (exercise.id && hasExerciseDetails(exercise.id)) { 
+        openExerciseModal(exercise.id); 
+      } 
   };
   
   // --- START OF FIX ---
