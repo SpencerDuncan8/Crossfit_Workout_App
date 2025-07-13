@@ -215,7 +215,7 @@ const WorkoutView = ({ setActiveView }) => {
     }
 
     completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats);
-    setActiveView('calendar');
+    setActiveView('dashboard');
   };
 
   const scheduledDates = getScheduledDates();

@@ -190,3 +190,39 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
 }
+/* ADD THIS TO THE END of src/components/Calendar/Calendar.css */
+
+.program-select-item {
+  width: 100%;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.program-select-item:hover {
+  border-color: #FF6B35;
+  color: #FF6B35;
+}
+
+.program-select-item span {
+  flex-grow: 1;
+}
+
+.program-select-item svg {
+  color: var(--text-tertiary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.program-select-item:hover svg {
+  color: #FF6B35;
+  transform: translateX(4px);
+}

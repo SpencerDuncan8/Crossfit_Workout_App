@@ -88,15 +88,20 @@ const WorkoutDetailView = ({ workout, completedData }) => {
               <h5 className="detail-block-title">{block.type.replace('Conditioning: ', '')}</h5>
               
               <ul className="detail-exercise-list">
+                {/* --- START OF THE FIX --- */}
+                {block.type === 'Conditioning: Intervals' && (
+                  <li>
+                    <strong>{block.rounds} Rounds:</strong> {block.work}s ON / {block.rest}s OFF
+                  </li>
+                )}
+                {/* --- END OF THE FIX --- */}
+                
                 {block.type === 'Conditioning: EMOM' ? (
                   block.minutes.map((min, i) => <li key={i}><strong>Min {i + 1}:</strong> {min.task}</li>)
                 ) : 
                 (
                   (block.exercises || []).map((ex, i) => {
-                    // --- START OF FIX ---
-                    // Updated the tracked block types to include Bodyweight
                     const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
-                    // --- END OF FIX ---
 
                     if (completedData?.detailedProgress && trackedBlockTypes.includes(block.type)) {
                       const exerciseId = `${block.id}-${ex.id}`;
@@ -126,8 +131,6 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                             </li>
                           );
                         }
-                        // --- START OF FIX ---
-                        // Added case to handle Bodyweight display, similar to Accessory/Carry.
                         case 'Accessory / Carry':
                         case 'Bodyweight': {
                           const completedSets = progress.sets?.filter(s => s.completed);
@@ -139,7 +142,6 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                             </li>
                           );
                         }
-                        // --- END OF FIX ---
                         default:
                           return null;
                       }
