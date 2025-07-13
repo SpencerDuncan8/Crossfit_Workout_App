@@ -290,6 +290,55 @@ const AppStateProviderComponent = ({ children }) => {
     }));
   };
 
+const copyCustomWorkout = (programId, workoutId) => {
+    setAppState(prev => {
+        const programs = JSON.parse(JSON.stringify(prev.programs)); // Deep copy to avoid mutation issues
+        const programIndex = programs.findIndex(p => p.id === programId);
+        
+        if (programIndex === -1) {
+            console.error("Program not found for copying workout.");
+            return prev; // Return original state if program not found
+        }
+
+        const workoutToCopy = programs[programIndex].workouts.find(w => w.id === workoutId);
+        if (!workoutToCopy) {
+            console.error("Workout not found for copying.");
+            return prev; // Return original state if workout not found
+        }
+
+        // Create a deep copy of the workout and give it a new identity
+        const newWorkout = JSON.parse(JSON.stringify(workoutToCopy));
+        newWorkout.id = generateUniqueId();
+        newWorkout.name = `${workoutToCopy.name} (Copy)`;
+
+        // IMPORTANT: Regenerate IDs for all nested blocks, exercises, and sets
+        newWorkout.blocks.forEach(block => {
+            block.id = generateUniqueId();
+            if (block.exercises) {
+                block.exercises.forEach(exercise => {
+                    exercise.id = generateUniqueId();
+                    if (exercise.sets) {
+                        exercise.sets.forEach(set => {
+                            set.id = generateUniqueId();
+                        });
+                    }
+                });
+            }
+            if (block.minutes) {
+                block.minutes.forEach(minute => {
+                    minute.id = generateUniqueId();
+                });
+            }
+        });
+
+        // Insert the new workout right after the original one
+        const originalWorkoutIndex = programs[programIndex].workouts.findIndex(w => w.id === workoutId);
+        programs[programIndex].workouts.splice(originalWorkoutIndex + 1, 0, newWorkout);
+
+        return { ...prev, programs };
+    });
+};
+
   // FIXED: Correct parameter order (programId first, workoutId second)
   const openWorkoutEditor = (programId, workoutId = null) => {
     updateAppState({ 
@@ -509,6 +558,7 @@ const AppStateProviderComponent = ({ children }) => {
     updateProgram,
     saveCustomWorkout,
     deleteCustomWorkout,
+    copyCustomWorkout,
     openWorkoutEditor,
     loadProgramTemplate,
     closeWorkoutEditor,

@@ -9,7 +9,8 @@ import Modal from '../Common/Modal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  const { appState, currentUser, deleteCustomWorkout, openWorkoutEditor, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
+  const { appState, currentUser, deleteCustomWorkout, 
+openWorkoutEditor,      copyCustomWorkout, selectWorkoutToSchedule, createProgram, copyProgram, deleteProgram, updateProgram, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
 
   const [viewingProgramId, setViewingProgramId] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
@@ -141,9 +142,14 @@ const ProgramOverview = ({ setActiveView }) => {
                 </button>
                 {!viewingProgram.isTemplate && (
                   <>
-                    <button className="action-btn edit-btn" onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
+                    <button 
+                    className="action-btn edit-btn" onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
                       <Edit size={18} /> Edit
                     </button>
+<button 
+  className="action-btn copy-btn" onClick={() => copyCustomWorkout(viewingProgram.id, workout.id)}>
+              <Copy size={18} /> Copy
+            </button>
                     <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(workout.id, viewingProgram.id)}>
                       <Trash2 size={18} />
                     </button>
