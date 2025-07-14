@@ -617,5 +617,32 @@ export const lowerBodyExercises = [
     commonMistakes: ["Not getting low enough.", "Letting knees go past toes.", "Placing hands on thighs for support."],
     modifications: { easier: "Don't squat as low.", harder: "Hold a weight on your lap or perform a single-leg wall sit." },
     breathingPattern: "Breathe steadily and consistently"
+  },
+  {
+    id: "bodyweight-walking-lunge",
+    name: "Walking Lunge",
+    category: "Lower Body",
+    primaryMuscles: ["Quads", "Glutes", "Balance"],
+    equipment: ["None"],
+    setup: [
+      "Stand with feet hip-width apart, core engaged.",
+      "Keep your chest up and shoulders back."
+    ],
+    execution: [
+      "Take a controlled step forward with one leg.",
+      "Lower your hips until both knees are bent at approximately a 90-degree angle.",
+      "Push off the back foot and bring it forward to meet the front foot, then step forward with the other leg.",
+      "Continue alternating legs as you walk forward."
+    ],
+    commonMistakes: [
+      "Front knee tracking past the toes.",
+      "Leaning the torso too far forward.",
+      "Losing balance or wobbling."
+    ],
+    modifications: {
+      easier: "Perform stationary lunges (alternating in place).",
+      harder: "Hold dumbbells or a weight plate."
+    },
+    breathingPattern: "Inhale as you lunge down, exhale as you step up and forward."
   }
 ];

@@ -244,4 +244,31 @@ export const fullBodyExercises = [
     },
     breathingPattern: "Breathe continuously throughout"
   },
+  {
+    id: "rope-climb",
+    name: "Rope Climb",
+    category: "Full Body",
+    primaryMuscles: ["Grip", "Biceps", "Lats", "Core"],
+    equipment: ["Climbing Rope"],
+    setup: [
+      "Stand at the base of the rope.",
+      "Jump up to grip the rope as high as possible with both hands."
+    ],
+    execution: [
+      "Use a leg wrap (J-Hook or S-Wrap) to secure your feet on the rope.",
+      "Stand up using your legs, then reach your hands higher.",
+      "Repeat this 'stand and reach' motion to ascend.",
+      "Descend hand-over-hand, controlling your speed. Do not slide down."
+    ],
+    commonMistakes: [
+      "Trying to pull up only with arms.",
+      "Losing the foot lock.",
+      "Sliding down, causing rope burn."
+    ],
+    modifications: {
+      easier: "Practice leg wraps from the ground or perform rope pulls from a seated position.",
+      harder: "Perform legless rope climbs."
+    },
+    breathingPattern: "Exhale on each upward pull/stand."
+  },
 ];

@@ -10,7 +10,7 @@ import Modal from '../Common/Modal.jsx';
 import './TemplateLibrary.css'; 
 
 const filterCategories = {
-  type: ['Structured Program', 'Benchmarks', 'Hero WODs', 'Challenges'],
+  type: ['Structured Program', 'WODs', 'Challenges'],
   level: ['Beginner', 'Intermediate', 'Advanced'],
   goal: ['General Fitness', 'Get Strong', 'Build Muscle', 'Lose Weight'],
   equipment: ['Bodyweight', 'Dumbbells', 'Kettlebells', 'Full Gym'],

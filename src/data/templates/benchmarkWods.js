@@ -440,7 +440,7 @@ export const benchmarkWodsTemplate = {
   description: 'Test your fitness against these classic "Girl" benchmark workouts. Log your time or score to track your progress over time.',
   isTemplate: true,
   meta: {
-    type: 'Benchmarks',
+    type: 'WODs',
     level: 'Intermediate',
     goal: 'General Fitness',
     equipment: 'Full Gym'

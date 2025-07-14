@@ -700,5 +700,31 @@ export const upperBodyExercises = [
       harder: "Increase the duration of the negative (e.g., 5-10 seconds)."
     },
     breathingPattern: "Hold breath or breathe shallowly during descent, exhale at the bottom."
-  }
+  },
+   {
+    id: "muscle-up",
+    name: "Muscle-up",
+    category: "Upper Body",
+    primaryMuscles: ["Lats", "Biceps", "Chest", "Triceps", "Shoulders"],
+    equipment: ["Gymnastic Rings", "Pullup Bar"],
+    setup: [
+      "Grip gymnastic rings or a pull-up bar with a false grip (wrists over the top).",
+      "Start from a full hang."
+    ],
+    execution: [
+      "Initiate a powerful kip or pull, bringing your chest towards the rings/bar.",
+      "At the peak of the pull, aggressively transition your shoulders and head forward and over the top.",
+      "Finish by pressing out from the bottom of a dip to a locked-out support position."
+    ],
+    commonMistakes: [
+      "Pulling too early or too late in the kip.",
+      "Not being aggressive enough in the transition.",
+      "Getting stuck in the transition ('chicken winging')."
+    ],
+    modifications: {
+      easier: "Perform jumping muscle-ups, banded muscle-ups, or break down into strict pull-ups and dips.",
+      harder: "Perform strict (no kip) muscle-ups."
+    },
+    breathingPattern: "Explosive exhale during the pull and transition."
+   }
 ];

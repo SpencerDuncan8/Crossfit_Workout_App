@@ -418,10 +418,8 @@ const copyCustomWorkout = (programId, workoutId) => {
   };
 
   const resetAllData = () => {
-    if (window.confirm("Are you sure you want to reset all data? This action cannot be undone.")) {
       clearLocalState();
       setAppState(initialAppState);
-    }
   };
   
   const scheduleWorkoutForDate = (date, workoutId) => {

@@ -354,5 +354,34 @@ export const barbellLifts = [
       harder: "Perform a Split Jerk, which requires more technique but allows for heavier weight."
     },
     breathingPattern: "Inhale on the dip, exhale on the drive and jerk."
+  },
+  {
+    id: "squat-clean",
+    name: "Squat Clean",
+    category: "Full Body",
+    primaryMuscles: ["Quads", "Glutes", "Hamstrings", "Back", "Shoulders"],
+    equipment: ["Barbell"],
+    setup: [
+      "Stand with feet hip-width apart, barbell on the floor over the mid-foot.",
+      "Grip the bar with a hook grip, slightly wider than your shoulders.",
+      "Back flat, chest up, shoulders over the bar."
+    ],
+    execution: [
+      "Drive through the legs to lift the bar from the floor.",
+      "Explosively extend your hips, shrug your shoulders, and pull your body under the bar.",
+      "Receive the bar in a full front squat position with elbows high.",
+      "Drive up from the squat to a standing position to complete the lift."
+    ],
+    commonMistakes: [
+      "Pulling early with the arms.",
+      "The bar swinging out away from the body.",
+      "Receiving the bar in a power position instead of a full squat.",
+      "Elbows dropping in the bottom of the squat."
+    ],
+    modifications: {
+      easier: "Perform a Power Clean or use a lighter weight.",
+      harder: "Increase weight or perform touch-and-go reps."
+    },
+    breathingPattern: "Inhale before the pull, exhale as you stand."
   }
 ];
