@@ -95,25 +95,6 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
             </div>
           )}
           
-          {block.type === 'Cardio' && (
-             <>
-                {block.exercises?.map((exercise, index) => (
-                    <div key={index} className="exercise-card-simple">
-                        <h4>{exercise.name || 'Cardio'}</h4>
-                        <div className="exercise-details">
-                            <span>{exercise.duration} MINS</span>
-                        </div>
-                    </div>
-                ))}
-                <button 
-                    className="start-wod-button warmup-button" 
-                    onClick={() => startTimer({ type: 'stopwatch' })}
-                >
-                    <Play size={20} /> Start Timer
-                </button>
-             </>
-          )}
-          
           {(isStrength || isBodyweight || isAccessory) && (
             <>
               {block.exercises?.map((exercise) => {
@@ -143,7 +124,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
             </>
           )}
           
-          {!isStrength && !isBodyweight && !isConditioning && !isAccessory && block.type !== 'Cardio' && block.exercises?.map((exercise, index) => (
+          {!isStrength && !isBodyweight && !isConditioning && !isAccessory && block.exercises?.map((exercise, index) => (
              <ExerciseCard
                 key={exercise.id || index}
                 exercise={exercise}
@@ -168,6 +149,15 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
               >
                 <Play size={20} />
                 Start Cool-down Timer
+              </button>
+          )}
+
+          {block.type === 'Cardio' && (
+             <button 
+                className="start-wod-button warmup-button" 
+                onClick={() => startTimer({ type: 'stopwatch' })}
+              >
+                <Play size={20} /> Start Timer
               </button>
           )}
         </div>

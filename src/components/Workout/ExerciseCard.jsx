@@ -89,8 +89,6 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
       } 
   };
   
-  // --- START OF FIX ---
-  // The Bodyweight card now displays a list of trackable sets.
   if (blockType === 'Bodyweight') {
     return (
       <div className="exercise-card-bw">
@@ -119,7 +117,6 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
       </div>
     );
   }
-  // --- END OF FIX ---
   
   if (blockType === 'Accessory / Carry') {
     return (
@@ -212,7 +209,7 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
       <h4>{name}</h4>
       <div className="exercise-details">
         {exercise.reps && <span>{exercise.reps} REPS</span>}
-        {exercise.duration && <span>{exercise.duration}</span>}
+        {exercise.duration && <span>{exercise.duration} {blockType === 'Cardio' ? 'min' : ''}</span>}
       </div>
     </div> 
   );
