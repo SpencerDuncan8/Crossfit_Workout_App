@@ -251,5 +251,34 @@ export const coreAndCardioExercises = [
     commonMistakes: ["Not reaching full squat depth.", "Tossing the pillow with only your arms."],
     modifications: { easier: "Squat to a box or just perform thrusters without the toss.", harder: "Use a heavier object (if safe) or aim for a higher target." },
     breathingPattern: "Inhale down, exhale on the toss"
-  }
+  },
+    {
+    id: "running",
+    name: "Run",
+    category: "Cardio",
+    primaryMuscles: ["Cardiovascular System", "Legs"],
+    equipment: ["None"],
+    setup: [
+      "Ensure you have a safe route or a treadmill.",
+      "Wear appropriate running shoes.",
+      "Maintain an upright posture with a slight forward lean."
+    ],
+    execution: [
+      "Maintain a consistent pace.",
+      "Keep your arms bent at approximately 90 degrees, swinging from the shoulder.",
+      "Land on your mid-foot, under your center of gravity.",
+      "Breathe deeply and rhythmically."
+    ],
+    commonMistakes: [
+      "Heel striking too heavily.",
+      "Overstriding (landing with foot far in front of body).",
+      "Slouching or poor posture.",
+      "Holding tension in the upper body."
+    ],
+    modifications: {
+      easier: "Jog, use a treadmill, or substitute with biking or rowing.",
+      harder: "Increase pace, run on varied terrain, or add a weighted vest."
+    },
+    breathingPattern: "Inhale through the nose and mouth, exhale through the mouth."
+    }
 ];

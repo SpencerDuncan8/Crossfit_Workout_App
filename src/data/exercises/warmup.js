@@ -152,5 +152,56 @@ export const warmupExercises = [
     commonMistakes: ["Arching the lower back.", "Moving too fast.", "Holding your breath."],
     modifications: { easier: "Lower only an arm or only a leg at a time.", harder: "Hold a light weight in your hands." },
     breathingPattern: "Exhale on extension, inhale on return"
+  },
+    {
+    id: "dead-hang",
+    name: "Dead Hang",
+    category: "Warm-up",
+    primaryMuscles: ["Grip", "Lats", "Shoulders"],
+    equipment: ["Pullup Bar"],
+    setup: [
+      "Grip a pull-up bar with an overhand grip, hands shoulder-width apart."
+    ],
+    execution: [
+      "Hang from the bar with your arms fully extended.",
+      "Relax your body but keep your shoulders engaged (don't let them shrug up to your ears).",
+      "Hold for the prescribed amount of time to build grip strength and decompress the spine."
+    ],
+    commonMistakes: [
+      "Holding breath.",
+      "Allowing shoulders to become completely passive and shrugged."
+    ],
+    modifications: {
+      easier: "Support some of your weight with your feet on a box or the floor.",
+      harder: "Perform single-arm hangs or add weight."
+    },
+    breathingPattern: "Breathe deeply and steadily throughout the hold."
+  },
+  {
+    id: "scapular-pulls",
+    name: "Scapular Pulls",
+    category: "Warm-up",
+    primaryMuscles: ["Lats", "Upper Back"],
+    equipment: ["Pullup Bar"],
+    setup: [
+      "Start in a dead hang position from a pull-up bar.",
+      "Arms should be straight, body relaxed."
+    ],
+    execution: [
+      "Without bending your elbows, pull your shoulder blades down and back.",
+      "This will cause your body to lift slightly.",
+      "Focus on the feeling of initiating a pull-up with just your back muscles.",
+      "Hold for a second at the top, then return to a passive hang with control."
+    ],
+    commonMistakes: [
+      "Bending the arms.",
+      "Using momentum to swing.",
+      "Not achieving a full range of motion in the shoulder blades."
+    ],
+    modifications: {
+      easier: "Use a resistance band to assist.",
+      harder: "Add a pause at the top of the contraction."
+    },
+    breathingPattern: "Exhale as you pull the scapula down, inhale on return."
   }
 ];

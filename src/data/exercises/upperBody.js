@@ -588,5 +588,117 @@ export const upperBodyExercises = [
     commonMistakes: ["Arching the back.", "Bending the elbows.", "Looking at the floor instead of between the hands."],
     modifications: { easier: "Perform a 'wall walk' by walking feet up the wall into an inverted position.", harder: "Move hands further from the wall or practice free-standing." },
     breathingPattern: "Breathe steadily and consistently"
+  },
+    {
+    id: "handstand-push-ups",
+    name: "Handstand Push-up (HSPU)",
+    category: "Upper Body",
+    primaryMuscles: ["Shoulders", "Triceps", "Traps"],
+    equipment: ["Wall"],
+    setup: [
+      "Place your hands on the floor about 6-12 inches away from a wall, slightly wider than shoulder-width.",
+      "Kick up into a handstand with your heels resting against the wall for balance.",
+      "Keep your body in a straight line and engage your core."
+    ],
+    execution: [
+      "Lower your body by bending your elbows, keeping them tucked in (not flared out).",
+      "Descend until the top of your head lightly touches the floor or a mat.",
+      "Press explosively back up to the starting handstand position with locked-out arms."
+    ],
+    commonMistakes: [
+      "Flaring elbows out to the sides.",
+      "Arching the back excessively.",
+      "Not achieving a full range of motion (head to floor).",
+      "Losing core tension at the bottom."
+    ],
+    modifications: {
+      easier: "Perform Pike Push-ups with feet on the floor or a box. You can also reduce the range of motion by stacking mats.",
+      harder: "Perform strict (no kipping), deficit (hands on plates), or free-standing HSPU."
+    },
+    breathingPattern: "Inhale on the descent, exhale on the press."
+    },
+    {
+    id: "ring-dips",
+    name: "Ring Dips",
+    category: "Upper Body",
+    primaryMuscles: ["Triceps", "Chest", "Shoulders"],
+    equipment: ["Gymnastic Rings"],
+    setup: [
+      "Set gymnastic rings to a height where you can support yourself with arms locked out and feet off the ground.",
+      "Jump or press up to a support position with arms fully extended and shoulders stable.",
+      "Keep your core tight and your body in a hollow position."
+    ],
+    execution: [
+      "Lower your body by bending your elbows, keeping them tucked close to your body.",
+      "Descend until your shoulders are below your elbows.",
+      "Press back up to the starting support position, fully locking out your arms.",
+      "Focus on keeping the rings stable and close to your body throughout the movement."
+    ],
+    commonMistakes: [
+      "Not achieving full depth (shoulder below elbow).",
+      "Letting the rings swing out to the sides.",
+      "Flaring the elbows.",
+      "Not locking out at the top."
+    ],
+    modifications: {
+      easier: "Use a resistance band for assistance, keep your feet on the floor, or perform stationary dips on parallel bars.",
+      harder: "Add a pause at the bottom, perform weighted ring dips, or turn the rings out at the top of the support position."
+    },
+    breathingPattern: "Inhale on the descent, exhale on the press."
+    },
+    {
+    id: "banded-pull-ups",
+    name: "Banded Pull-ups",
+    category: "Upper Body",
+    primaryMuscles: ["Lats", "Biceps", "Back"],
+    equipment: ["Pullup Bar", "Resistance Band"],
+    setup: [
+      "Loop a heavy resistance band over a pull-up bar.",
+      "Place one knee or foot into the bottom loop of the band.",
+      "Grip the bar with hands slightly wider than shoulder-width and hang with arms fully extended."
+    ],
+    execution: [
+      "Initiate the pull by engaging your lats and pulling your shoulder blades down.",
+      "Pull your body up until your chin clears the bar.",
+      "The band will provide assistance, especially at the bottom of the movement.",
+      "Lower yourself with control back to the starting position."
+    ],
+    commonMistakes: [
+      "Using a band that is too light or too heavy.",
+      "Not controlling the eccentric (lowering) phase.",
+      "Relying solely on the band's momentum."
+    ],
+    modifications: {
+      easier: "Use a thicker band for more assistance.",
+      harder: "Use a thinner band for less assistance."
+    },
+    breathingPattern: "Exhale on the pull, inhale on the descent."
+  },
+  {
+    id: "eccentric-negative-pullups",
+    name: "Eccentric Negative Pull-ups",
+    category: "Upper Body",
+    primaryMuscles: ["Lats", "Biceps", "Grip"],
+    equipment: ["Pullup Bar", "Box"],
+    setup: [
+      "Place a box or bench under the pull-up bar that allows you to start with your chin over the bar.",
+      "Grip the bar and jump up so your chin is over the bar."
+    ],
+    execution: [
+      "Hold the top position for a second, engaging all your back and arm muscles.",
+      "As slowly and with as much control as possible, lower your body down.",
+      "Aim for a 3-5 second descent.",
+      "Once at the bottom with arms fully extended, use the box to get back to the top position and repeat."
+    ],
+    commonMistakes: [
+      "Dropping down too quickly.",
+      "Not controlling the entire range of motion.",
+      "Failing to engage back muscles, letting shoulders shrug."
+    ],
+    modifications: {
+      easier: "Use a resistance band to assist with the negative.",
+      harder: "Increase the duration of the negative (e.g., 5-10 seconds)."
+    },
+    breathingPattern: "Hold breath or breathe shallowly during descent, exhale at the bottom."
   }
 ];

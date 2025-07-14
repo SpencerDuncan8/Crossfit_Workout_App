@@ -3,11 +3,17 @@
 import { bodyweightBlastTemplate } from './templates/bodyweightBlastTemplate.js';
 import { kettlebellKrusherTemplate } from './templates/kettlebellKrusherTemplate.js';
 import { strengthFocusTemplate } from './templates/strengthFocusTemplate.js';
-import { dumbbellDominationTemplate } from './templates/dumbbellDominationTemplate.js'; // <-- ADD THIS LINE
+import { dumbbellDominationTemplate } from './templates/dumbbellDominationTemplate.js';
+import { benchmarkWodsTemplate } from './templates/benchmarkWods.js';
+import { heroWodsTemplate } from './templates/heroWods.js';
+import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js'; // <-- ADD THIS IMPORT
 
 export const programTemplates = [
   bodyweightBlastTemplate,
   kettlebellKrusherTemplate,
   strengthFocusTemplate,
-  dumbbellDominationTemplate, // <-- AND ADD THIS LINE
+  dumbbellDominationTemplate,
+  benchmarkWodsTemplate,
+  heroWodsTemplate,
+  pullupChallengeTemplate, // <-- ADD THE NEW TEMPLATE TO THE ARRAY
 ];

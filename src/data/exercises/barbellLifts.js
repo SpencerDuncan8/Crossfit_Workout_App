@@ -203,5 +203,156 @@ export const barbellLifts = [
       harder: "Move your back knee closer to the wall and try to bring your torso fully upright."
     },
     breathingPattern: "Breathe deeply and slowly, trying to relax into the stretch."
+  },
+    {
+    id: "thrusters",
+    name: "Barbell Thruster",
+    category: "Full Body",
+    primaryMuscles: ["Quads", "Glutes", "Shoulders", "Core"],
+    equipment: ["Barbell"],
+    setup: [
+      "Take the barbell from a rack into a front rack position, resting on your shoulders with elbows high.",
+      "Stand with feet shoulder-width apart, toes slightly out.",
+      "Keep your core braced and your torso upright."
+    ],
+    execution: [
+      "Descend into a full front squat, keeping your chest up and elbows high.",
+      "As you reach the bottom, explosively drive up through your heels.",
+      "Use the momentum from the squat to press the barbell directly overhead to full lockout.",
+      "Lower the bar with control back to the front rack position to begin the next rep."
+    ],
+    commonMistakes: [
+      "Not hitting full squat depth.",
+      "Pausing at the top of the squat before pressing.",
+      "Pressing the bar forward instead of straight up.",
+      "Letting elbows drop during the squat."
+    ],
+    modifications: {
+      easier: "Use lighter weight, dumbbells, or perform a separate front squat and push press.",
+      harder: "Increase the weight or perform for high-volume, unbroken sets."
+    },
+    breathingPattern: "Inhale on the descent, explosive exhale during the press."
+},
+    {
+    id: "barbell-clean-and-jerk",
+    name: "Barbell Clean and Jerk",
+    category: "Full Body",
+    primaryMuscles: ["Full Body", "Quads", "Glutes", "Shoulders"],
+    equipment: ["Barbell"],
+    setup: [
+      "Stand with feet hip-width apart, barbell on the floor over the mid-foot.",
+      "Grip the bar with a hook grip, slightly wider than your shoulders.",
+      "Back flat, chest up, shoulders over the bar."
+    ],
+    execution: [
+      "1. (Clean): Drive through the legs to lift the bar from the floor.",
+      "2. Explosively extend your hips, shrug your shoulders, and pull your body under the bar.",
+      "3. Receive the bar in a front squat position with elbows high.",
+      "4. Stand up fully to complete the clean.",
+      "5. (Jerk): Dip straight down by bending your knees.",
+      "6. Drive explosively up, pressing the bar overhead while splitting or dropping your feet.",
+      "7. Bring your feet back together to complete the lift with the bar locked out overhead."
+    ],
+    commonMistakes: [
+      "Pulling early with the arms.",
+      "Bar drifting away from the body.",
+      "Poor receiving position in the squat.",
+      "Pressing the bar out instead of dropping under it for the jerk."
+    ],
+    modifications: {
+      easier: "Perform a Power Clean and a Push Press. Use a lighter weight.",
+      harder: "Increase weight or perform touch-and-go reps."
+    },
+    breathingPattern: "Inhale before clean, exhale on stand. Inhale before jerk, exhale on lockout."
+  },
+  {
+    id: "barbell-snatch",
+    name: "Barbell Snatch",
+    category: "Full Body",
+    primaryMuscles: ["Full Body", "Hamstrings", "Glutes", "Shoulders"],
+    equipment: ["Barbell"],
+    setup: [
+      "Stand with feet hip-width apart, barbell on the floor over the mid-foot.",
+      "Take a wide grip on the bar (a 'snatch grip').",
+      "Back flat, chest up, hips low, shoulders over the bar."
+    ],
+    execution: [
+      "1. Explosively extend your hips and knees while keeping the bar close to your body.",
+      "2. As the bar passes your hips, extend fully and shrug powerfully.",
+      "3. Pull your body under the bar, receiving it in a full overhead squat position.",
+      "4. The bar should travel in a smooth, continuous motion from the floor to overhead.",
+      "5. Stand up from the squat to complete the lift."
+    ],
+    commonMistakes: [
+      "Bar looping out in front of the body.",
+      "Incomplete hip extension.",
+      "Pressing the bar out at the top instead of punching under.",
+      "Unstable overhead squat position."
+    ],
+    modifications: {
+      easier: "Perform a Power Snatch (receiving in a partial squat) or Hang Snatch (starting from above the knee).",
+      harder: "Increase weight or perform snatch complexes."
+    },
+    breathingPattern: "Inhale before pull, explosive exhale as you extend and receive."
+  },
+    {
+    id: "barbell-hang-power-clean",
+    name: "Barbell Hang Power Clean",
+    category: "Full Body",
+    primaryMuscles: ["Hamstrings", "Glutes", "Traps", "Shoulders"],
+    equipment: ["Barbell"],
+    setup: [
+      "Start standing with the barbell held at the 'hang' position (typically mid-thigh).",
+      "Feet are hip-width apart, back is straight, chest is up.",
+      "Shoulders should be slightly in front of the bar."
+    ],
+    execution: [
+      "Initiate by pushing your hips back slightly, then drive them forward explosively.",
+      "Shrug your shoulders and pull the bar upward, keeping it close to your body.",
+      "As the bar reaches chest height, quickly drop under it, rotating your elbows around.",
+      "Receive the bar in a partial squat (power position) on your front shoulders.",
+      "Stand up to complete the movement."
+    ],
+    commonMistakes: [
+      "Pulling with the arms too early.",
+      "The bar swinging away from the body.",
+      "Not being fast with the elbows to get into the rack position.",
+      "Catching the bar too low (a full squat clean)."
+    ],
+    modifications: {
+      easier: "Use a lighter weight, or practice with dumbbells. Focus on the 'high pull' portion.",
+      harder: "Increase the weight or perform reps for time."
+    },
+    breathingPattern: "Inhale at the hang, explosive exhale as you drive and pull."
+  },
+  {
+    id: "barbell-push-jerk",
+    name: "Barbell Push Jerk",
+    category: "Upper Body",
+    primaryMuscles: ["Shoulders", "Triceps", "Quads"],
+    equipment: ["Barbell"],
+    setup: [
+      "Start with the barbell in the front rack position, resting on your shoulders.",
+      "Grip should be slightly wider than your shoulders, with elbows high.",
+      "Feet are hip-width apart, core is braced."
+    ],
+    execution: [
+      "1. (Dip): Dip straight down by bending your knees about 4-6 inches.",
+      "2. (Drive): Explosively drive up with your legs, creating upward momentum on the bar.",
+      "3. (Jerk): As the bar leaves your shoulders, quickly drop *under* the bar by bending your knees again.",
+      "4. Catch the bar with locked-out arms in a stable partial squat.",
+      "5. Stand up to complete the lift with the bar overhead."
+    ],
+    commonMistakes: [
+      "Pressing the bar with the arms instead of driving with the legs.",
+      "Dipping forward instead of straight down.",
+      "Not dropping under the bar to receive it.",
+      "Unstable overhead position."
+    ],
+    modifications: {
+      easier: "Perform a Push Press (no second dip). Use lighter weight.",
+      harder: "Perform a Split Jerk, which requires more technique but allows for heavier weight."
+    },
+    breathingPattern: "Inhale on the dip, exhale on the drive and jerk."
   }
 ];

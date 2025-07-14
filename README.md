@@ -31,7 +31,7 @@ The project is being developed in distinct phases to ensure a high-quality, user
 
 *   **Phase 4: Template Library & Community Features** - **In Progress**
     *   ✅ **Complete:** Built a filterable **Template Library** to allow users to easily find programs by skill level, goal, and equipment.
-    *   **Planned:** Add new program types including **Benchmarks (The Girls)**, **Hero WODs**, and skill-based **Challenges**.
+    *   ✅ **Complete:** Added new program types including **Benchmarks (The Girls)**, **Hero WODs**, and skill-based **Challenges**.
     *   **Planned:** Ability for premium users to share their custom programs with the community.
     *   **Planned:** Leaderboards for benchmark workouts.
 
@@ -65,6 +65,7 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 ## 🚀 Features
 
 ### 1. Program Management & Template Library
+- **Intelligent Program Design:** Templates are designed with specific goals and durations in mind (e.g., 4-week strength cycles, 30-day skill challenges), ensuring users can find a program that's effective and fits their schedule.
 - **Filterable Template Library:** Discover the perfect program by filtering a rich library of templates. Filter by:
     - **Program Type:** Structured Programs, Benchmarks, Hero WODs, and Challenges.
     - **Skill Level:** Beginner, Intermediate, Advanced.
