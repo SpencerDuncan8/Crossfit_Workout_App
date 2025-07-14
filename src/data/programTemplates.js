@@ -6,7 +6,8 @@ import { strengthFocusTemplate } from './templates/strengthFocusTemplate.js';
 import { dumbbellDominationTemplate } from './templates/dumbbellDominationTemplate.js';
 import { benchmarkWodsTemplate } from './templates/benchmarkWods.js';
 import { heroWodsTemplate } from './templates/heroWods.js';
-import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js'; // <-- ADD THIS IMPORT
+import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js'; 
+import { couchTo5kTemplate } from './templates/couchTo5kTemplate.js'
 
 export const programTemplates = [
   bodyweightBlastTemplate,
@@ -15,5 +16,6 @@ export const programTemplates = [
   dumbbellDominationTemplate,
   benchmarkWodsTemplate,
   heroWodsTemplate,
-  pullupChallengeTemplate, // <-- ADD THE NEW TEMPLATE TO THE ARRAY
+  pullupChallengeTemplate, 
+  couchTo5kTemplate,
 ];
