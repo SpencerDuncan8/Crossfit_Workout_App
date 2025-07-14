@@ -46,6 +46,12 @@ export const strengthFocusTemplate = {
   description: 'A 4-week, 3-day/week barbell program based on an A/B split. The goal is to add weight to the bar over time on the main compound lifts.',
   isTemplate: true,
   daysPerWeek: 3,
+  meta: {
+    type: 'Structured Program',
+    level: 'Beginner',
+    goal: 'Get Strong',
+    equipment: 'Full Gym'
+  },
   workouts: [
     // Week 1: A, B, A
     { id: generateUniqueId(), name: 'W1D1', blocks: JSON.parse(JSON.stringify(strengthWorkoutA.blocks)) },

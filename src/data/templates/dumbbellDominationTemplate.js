@@ -383,6 +383,12 @@ export const dumbbellDominationTemplate = {
   name: '30-Day Dumbbell Domination',
   description: 'A 30-day functional fitness program designed to build strength and conditioning using only dumbbells. Perfect for all levels.',
   daysPerWeek: 5,
+  meta: {
+    type: 'Structured Program',
+    level: 'Intermediate',
+    goal: 'General Fitness',
+    equipment: 'Dumbbells'
+  },
   workouts: [
     ...coreWorkouts,
     // Week 5 is a repeat of Week 1

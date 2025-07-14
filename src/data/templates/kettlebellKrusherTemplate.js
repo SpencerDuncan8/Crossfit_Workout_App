@@ -74,6 +74,12 @@ export const kettlebellKrusherTemplate = {
   description: 'A 3-week, 3-day/week program using one or two kettlebells. Build power, stability, and raw strength with these classic full-body workouts.',
   isTemplate: true,
   daysPerWeek: 3,
+  meta: {
+    type: 'Structured Program',
+    level: 'Intermediate',
+    goal: 'Get Strong',
+    equipment: 'Kettlebells'
+  },
   workouts: [
       // Week 1
       { id: generateUniqueId(), name: 'W1D1: Squat & Press', blocks: JSON.parse(JSON.stringify(kettlebellWorkoutA.blocks)) },

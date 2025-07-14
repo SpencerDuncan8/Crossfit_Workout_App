@@ -1,0 +1,156 @@
+/* src/components/Program/TemplateLibrary.css */
+
+.library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-open-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.filter-count-badge {
+  background-color: #3b82f6;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.active-filters-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* This container now lives inside the modal */
+.template-filters {
+  display: flex;
+  flex-direction: column; 
+  gap: 24px; 
+}
+
+.filter-group {
+  /* No special styles needed */
+}
+
+.filter-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.filter-btn.active {
+  color: #fff;
+  background-color: var(--tag-color);
+  border-color: var(--tag-color);
+  box-shadow: 0 4px 10px 0px var(--tag-bg-color);
+}
+
+.clear-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background-color: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.no-templates-found {
+  grid-column: 1 / -1; 
+  text-align: center;
+  padding: 48px 24px;
+  background-color: var(--bg-secondary);
+  border: 2px dashed var(--bg-tertiary);
+  border-radius: 16px;
+  color: var(--text-tertiary);
+}
+
+.no-templates-found h4 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.template-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; 
+  margin-top: 16px;
+  margin-bottom: 24px; 
+}
+
+.meta-tag {
+  color: var(--tag-color);
+  background-color: var(--tag-bg-color);
+  border: 1px solid var(--tag-color);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+}

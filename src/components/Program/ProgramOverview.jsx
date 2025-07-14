@@ -1,29 +1,26 @@
+
 // src/components/Program/ProgramOverview.jsx
 
 import React, { useState, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { programTemplates } from '../../data/programTemplates.js';
-import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy, Check } from 'lucide-react'; 
+import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy } from 'lucide-react';
 import CompactWorkoutPreview from './CompactWorkoutPreview.jsx';
 import Modal from '../Common/Modal.jsx';
-import ScheduleProgramModal from './ScheduleProgramModal.jsx';
+import TemplateLibrary from './TemplateLibrary.jsx'; // <-- IMPORT THE NEW COMPONENT
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
-  // --- THIS IS THE FIRST CHANGE: ADD `copyCustomWorkout` HERE ---
   const { 
     appState, 
     currentUser, 
+    openPremiumModal,
     deleteCustomWorkout, 
     openWorkoutEditor,      
-    copyCustomWorkout, // This function was missing from the destructuring
+    copyCustomWorkout,
     selectWorkoutToSchedule, 
-    createProgram, 
-    copyProgram, 
+    createProgram,
     deleteProgram, 
-    updateProgram, 
-    loadProgramTemplate, 
-    autoScheduleProgram 
+    updateProgram,
   } = useContext(AppStateContext);
 
   const [viewingProgramId, setViewingProgramId] = useState(null);
@@ -32,8 +29,6 @@ const ProgramOverview = ({ setActiveView }) => {
   const [editingProgramDescription, setEditingProgramDescription] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newProgramName, setNewProgramName] = useState('My New Program');
-  const [scheduleConfirm, setScheduleConfirm] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [programToDelete, setProgramToDelete] = useState(null);
 
   const handleScheduleWorkout = (workoutId) => {
@@ -42,6 +37,12 @@ const ProgramOverview = ({ setActiveView }) => {
   };
 
   const handleCreateProgram = () => {
+    // --- THIS IS THE NEW LOGIC ---
+    if (!isPremium && programCount >= maxPrograms) {
+      openPremiumModal(); // Use the existing function from context
+      return;
+    }
+    // --- END OF NEW LOGIC ---
     setNewProgramName('My New Program');
     setIsCreateModalOpen(true);
   };
@@ -69,22 +70,6 @@ const ProgramOverview = ({ setActiveView }) => {
     e.preventDefault();
     updateProgram(editingProgramId, { name: editingProgramName, description: editingProgramDescription });
     setEditingProgramId(null);
-  };
-
-  const handleLoadAndSchedule = (template) => {
-    const isAlreadyLoaded = appState.programs.some(p => p.id === template.id);
-    if (!isAlreadyLoaded) {
-      loadProgramTemplate(template);
-    }
-    setScheduleConfirm(template); 
-  };
-
-  const handleConfirmSchedule = (days) => { // 'days' is the array from the modal
-    if (scheduleConfirm) {
-      autoScheduleProgram(scheduleConfirm.workouts, days); // Pass the days array
-      setShowSuccessModal(true);
-      setScheduleConfirm(null);
-    }
   };
 
   const handleConfirmDelete = () => {
@@ -158,7 +143,6 @@ const ProgramOverview = ({ setActiveView }) => {
                       onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
                       <Edit size={18} /> Edit
                     </button>
-                    {/* --- THE FIX IS HERE: The onClick now correctly calls the function from context --- */}
                     <button 
                       className="action-btn copy-btn" 
                       onClick={() => copyCustomWorkout(viewingProgram.id, workout.id)}>
@@ -221,33 +205,9 @@ const ProgramOverview = ({ setActiveView }) => {
           </div>
         )}
 
-        <div className="page-header" style={{marginTop: '24px'}}>
-          <h2>Template Programs</h2>
-          <p>Load a pre-built program to get started or for new ideas.</p>
-        </div>
-        <div className="programs-list">
-          {programTemplates.map(template => {
-              const isLoaded = appState.programs.some(p => p.id === template.id);
-              return (
-                <div key={template.id} className="program-card template">
-                      <h3 className="program-card-title">{template.name}</h3>
-                      <p className="program-card-description">{template.description}</p>
-                      <div className="template-actions">
-                          <button className="action-btn load-btn" onClick={() => handleLoadAndSchedule(template)}>
-                              Load & Schedule
-                          </button>
-                          <button 
-                              className={`action-btn copy-btn ${isLoaded ? 'disabled' : ''}`}
-                              onClick={() => !isLoaded && loadProgramTemplate(template)}
-                              disabled={isLoaded}
-                          >
-                              {isLoaded ? <><Check size={16}/> Added</> : 'Add to Library'}
-                          </button>
-                      </div>
-                </div>
-              )
-          })}
-        </div>
+        {/* --- THIS IS THE KEY CHANGE. THE OLD LOGIC IS GONE. --- */}
+        <TemplateLibrary />
+        
       </div>
     );
   }
@@ -272,28 +232,6 @@ const ProgramOverview = ({ setActiveView }) => {
             <button type="submit" className="action-btn schedule-btn">Create Program</button>
           </div>
         </form>
-      </Modal>
-
-      <ScheduleProgramModal
-        isOpen={!!scheduleConfirm}
-        onClose={() => setScheduleConfirm(null)}
-        onConfirm={handleConfirmSchedule}
-        programToSchedule={scheduleConfirm}
-      />
-
-      <Modal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} title="Success">
-        <div className="modal-form-container">
-          <p className="modal-confirm-text">
-            Your program has been scheduled!
-            <br/>
-            Check the Calendar tab to see your plan.
-          </p>
-          <div className="modal-actions" style={{ justifyContent: 'center' }}>
-            <button type="button" className="action-btn schedule-btn" onClick={() => setShowSuccessModal(false)} style={{ flexGrow: 0, padding: '10px 40px' }}>
-              OK
-            </button>
-          </div>
-        </div>
       </Modal>
 
       <Modal isOpen={!!programToDelete} onClose={() => setProgramToDelete(null)} title="Delete Program">

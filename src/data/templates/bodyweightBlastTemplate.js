@@ -8,6 +8,12 @@ export const bodyweightBlastTemplate = {
   description: 'A 4-week, 5-day-a-week program using only your bodyweight. Perfect for building foundational strength and endurance anywhere, anytime.',
   isTemplate: true,
   daysPerWeek: 5,
+    meta: {
+    type: 'Structured Program',
+    level: 'Beginner',
+    goal: 'General Fitness',
+    equipment: 'Bodyweight'
+  },
   workouts: [
     // --- WEEK 1 ---
     { // Day 1

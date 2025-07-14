@@ -1,10 +1,10 @@
 # BlockFit: Workout Tracker & Builder
 
-A premium web application to guide your fitness journey. Get started immediately with professionally designed programs or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
+A premium web application to guide your fitness journey. Get started immediately with professionally designed programs from the Template Library or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
 
-## 🎯 Current Status: Stripe Integration Complete ✅
+## 🎯 Current Status: Complete Freemium Model & Template Library ✅
 
-The application now features a complete freemium model with secure payment processing. Users can experience the full app locally before upgrading to premium for cloud synchronization.
+The application now features a complete freemium model with secure payment processing and a powerful, filterable Template Library. Users can experience the full app locally before upgrading to premium for cloud synchronization.
 
 -   **Goal:** Provide a full-featured experience without requiring immediate sign-up, while enabling powerful cross-device synchronization for paid subscribers.
 -   **Method:** The free tier saves all user data in **`localStorage`** for single-device use. Premium users get **Firebase Authentication** + **Cloud Firestore** sync across all devices.
@@ -15,21 +15,23 @@ The application now features a complete freemium model with secure payment proce
 The project is being developed in distinct phases to ensure a high-quality, user-centric product.
 
 *   **Phase 1: Core Engine & Local Storage** - ✅ **Complete**
-    *   **Complete:** A full-featured, program-based architecture.
-    *   **Complete:** A powerful workout editor and interactive workout experience.
-    *   **Complete:** Calendar and progress tracking features.
-    *   **Complete:** Initial user testing with a local-storage-based version.
+    *   A full-featured, program-based architecture.
+    *   A powerful workout editor and interactive workout experience.
+    *   Calendar and progress tracking features.
+    *   Initial user testing with a local-storage-based version.
 
 *   **Phase 2: User Authentication & Cloud Sync** - ✅ **Complete**
-    *   **Complete:** Implemented user accounts using **Firebase Authentication**.
-    *   **Complete:** Implemented a one-time data migration for premium users, moving their data from `localStorage` to **Cloud Firestore** to enable cross-device data synchronization.
+    *   Implemented user accounts using **Firebase Authentication**.
+    *   Implemented a one-time data migration for premium users, moving their data from `localStorage` to **Cloud Firestore** to enable cross-device data synchronization.
 
 *   **Phase 3: Premium Tier & Monetization** - ✅ **Complete**
-    *   **Complete:** Integrated **Stripe** for secure payment processing.
-    *   **Complete:** Launched "Premium" subscription tier ($4.99/month) that unlocks cloud sync.
-    *   **Complete:** Secure payment flow - users only get access after successful payment.
+    *   Integrated **Stripe** for secure payment processing.
+    *   Launched "Premium" subscription tier ($4.99/month) that unlocks cloud sync.
+    *   Secure payment flow - users only get access after successful payment.
 
-*   **Phase 4: Social & Community Features** - **Next Up**
+*   **Phase 4: Template Library & Community Features** - **In Progress**
+    *   ✅ **Complete:** Built a filterable **Template Library** to allow users to easily find programs by skill level, goal, and equipment.
+    *   **Planned:** Add new program types including **Benchmarks (The Girls)**, **Hero WODs**, and skill-based **Challenges**.
     *   **Planned:** Ability for premium users to share their custom programs with the community.
     *   **Planned:** Leaderboards for benchmark workouts.
 
@@ -40,7 +42,7 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 *   **Free Tier:**
     *   Full access to the workout editor, calendar, and all tracking features.
     *   Limited to 3 custom programs.
-    *   Access to a small selection of template programs.
+    *   Access to the full Template Library, but can only add programs if under the 3-program limit.
     *   **All data is stored locally in the browser's `localStorage`**.
     *   No account required - immediate access to core functionality.
 
@@ -49,7 +51,7 @@ The application follows a **Freemium** model with a secure payment gateway to pr
     *   **Cloud Data Sync:** All local data is automatically migrated to the cloud upon signup.
     *   **Cross-Device Access:** Access your programs, logs, and progress from any device.
     *   **Unlimited Custom Programs:** Create and save as many workout programs as you want.
-    *   **Full Template Library:** Unlock the complete library of professionally designed program templates.
+    *   **Full Template Library Access:** Load and schedule any template without program-count restrictions.
     *   **Future Social Features:** Early access to community features as they are released.
 
 ## 🔒 Payment Security
@@ -62,9 +64,13 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 
 ## 🚀 Features
 
-### 1. Comprehensive Program Management
-- **Template Library:** Browse pre-built programs like "Bodyweight Blast". Load them into your library or create an editable copy.
-- **Load & Auto-Schedule:** A "quick start" option instantly adds a template to your library and intelligently schedules its workouts onto your calendar.
+### 1. Program Management & Template Library
+- **Filterable Template Library:** Discover the perfect program by filtering a rich library of templates. Filter by:
+    - **Program Type:** Structured Programs, Benchmarks, Hero WODs, and Challenges.
+    - **Skill Level:** Beginner, Intermediate, Advanced.
+    - **Primary Goal:** Get Strong, Build Muscle, Lose Weight, General Fitness.
+    - **Equipment:** Bodyweight, Dumbbells, Kettlebells, Full Gym.
+- **Load & Auto-Schedule:** A "quick start" option instantly adds a template to your library and intelligently schedules its workouts onto your calendar based on your selected training days.
 - **Create From Scratch:** Build your own custom programs from the ground up. *(Free tier limited to 3 programs)*.
 - **Full Customization:** For any program you own, easily rename the program, create new workouts, edit existing ones, or delete workouts.
 
@@ -133,9 +139,10 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 
 ### For Users
 1. Visit the app and start using it immediately (no signup required)
-2. Create programs, plan workouts, and track your progress locally
-3. When ready for cross-device sync, upgrade to Premium
-4. Your local data automatically transfers to the cloud
+2. Browse the **Template Library** to find a program that fits your goals and equipment.
+3. Load a program, plan workouts, and track your progress locally.
+4. When ready for cross-device sync and unlimited programs, upgrade to Premium.
+5. Your local data automatically transfers to the cloud.
 
 ### For Developers
 1. Clone the repository
