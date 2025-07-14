@@ -7,7 +7,8 @@ import { coreAndCardioExercises } from './coreAndCardio.js';
 import { warmupExercises } from './warmup.js';
 import { stretches } from './stretches.js';
 import { kettlebellExercises } from './kettlebellExercises.js';
-import { barbellLifts } from './barbellLifts.js'; // Import the new barbell lifts
+import { barbellLifts } from './barbellLifts.js';
+import { newCrossfitExercises } from './newCrossfitExercises.js';
 
 // Combine all exercise arrays into one master array.
 const allExercises = [
@@ -18,7 +19,8 @@ const allExercises = [
   ...warmupExercises,
   ...stretches,
   ...kettlebellExercises,
-  ...barbellLifts, // Add the new barbell lifts to the master list
+  ...barbellLifts, 
+  ...newCrossfitExercises,
 ];
 
 // To ensure all exercises have a unique ID, we can do a quick check here.
