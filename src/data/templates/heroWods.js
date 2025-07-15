@@ -74,7 +74,7 @@ const bull = {
       type: 'Conditioning: RFT',
       rounds: 2,
       exercises: [
-        { id: 'running', name: '200 meter Run', reps: '1' },
+        { id: 'double-unders', name: '200 Double Unders', reps: '1' },
         { id: 'overhead-squat', name: 'Overhead Squats (135/95 lbs)', reps: '50' },
         { id: 'pullups', name: 'Pull-ups', reps: '50' },
         { id: 'running', name: '1 Mile Run', reps: '1' },

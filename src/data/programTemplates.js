@@ -13,6 +13,7 @@ import { dumbbellDominationTemplate } from './templates/dumbbellDominationTempla
 import { benchmarkWodsTemplate } from './templates/benchmarkWods.js';
 import { heroWodsTemplate } from './templates/heroWods.js';
 import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js';
+import { couchTo5kTemplate } from './templates/couchTo5kTemplate.js';
 
 export const programTemplates = [
   // Bodyweight Programs
@@ -32,4 +33,5 @@ export const programTemplates = [
   benchmarkWodsTemplate,
   heroWodsTemplate,
   pullupChallengeTemplate,
+  couchTo5kTemplate,
 ];
