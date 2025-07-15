@@ -1,10 +1,12 @@
-// src/data/templates/bodyweightBlastTemplate.js
+// src/data/templates/bodyweightBlastBeginnerTemplate.js
 
 import { generateUniqueId } from '../../utils/idUtils.js';
 
-export const bodyweightBlastTemplate = {
-  id: 'template_bodyweight_blast',
-  name: 'Bodyweight Blast',
+// THIS IS THE LINE TO CHANGE
+export const bodyweightBlastBeginnerTemplate = {
+  id: 'template_bodyweight_blast_beginner',
+  name: 'Bodyweight Blast (Beginner)',
+  // ... rest of the file content remains the same
   description: 'A 4-week, 5-day-a-week program using only your bodyweight. Perfect for building foundational strength and endurance anywhere, anytime.',
   isTemplate: true,
   daysPerWeek: 5,
@@ -15,8 +17,9 @@ export const bodyweightBlastTemplate = {
     equipment: 'Bodyweight'
   },
   workouts: [
-    // --- WEEK 1 ---
-    { // Day 1
+    // ... all the workout data is unchanged
+    // Day 1
+    { 
       id: generateUniqueId(),
       name: 'W1D1: Foundation Builder',
       blocks: [
@@ -373,7 +376,7 @@ export const bodyweightBlastTemplate = {
           { id: generateUniqueId(), type: 'Conditioning: Chipper',
               exercises: [
                   {id: 'burpees', name: 'Burpees', reps: '50'},
-                  {id: 'bodyweight-lunge', name: 'Walking Lunges', reps: '40'},
+                  {id: 'bodyweight-walking-lunge', name: 'Walking Lunges', reps: '40'},
                   {id: 'push-ups', name: 'Push-ups', reps: '30'},
                   {id: 'tuck-jumps', name: 'Tuck Jumps', reps: '20'},
                   {id: 'handstand-hold', name: 'Handstand Hold (against wall)', reps: '60s'},

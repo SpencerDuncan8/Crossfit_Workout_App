@@ -1,21 +1,35 @@
 // src/data/programTemplates.js
 
-import { bodyweightBlastTemplate } from './templates/bodyweightBlastTemplate.js';
+import { bodyweightBlastBeginnerTemplate } from './templates/bodyweightBlastBeginnerTemplate.js';
+import { bodyweightBlastIntermediateTemplate } from './templates/bodyweightBlastIntermediateTemplate.js';
+import { bodyweightBlastAdvancedTemplate } from './templates/bodyweightBlastAdvancedTemplate.js';
+import { bodyweightBurnerBeginnerTemplate } from './templates/bodyweightBurnerBeginnerTemplate.js';
+import { bodyweightBurnerIntermediateTemplate } from './templates/bodyweightBurnerIntermediateTemplate.js';
+import { bodyweightBurnerAdvancedTemplate } from './templates/bodyweightBurnerAdvancedTemplate.js'; 
+import { bodyweightBuilderBeginnerTemplate } from './templates/bodyweightBuilderBeginnerTemplate.js';
 import { kettlebellKrusherTemplate } from './templates/kettlebellKrusherTemplate.js';
 import { strengthFocusTemplate } from './templates/strengthFocusTemplate.js';
 import { dumbbellDominationTemplate } from './templates/dumbbellDominationTemplate.js';
 import { benchmarkWodsTemplate } from './templates/benchmarkWods.js';
 import { heroWodsTemplate } from './templates/heroWods.js';
-import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js'; 
-import { couchTo5kTemplate } from './templates/couchTo5kTemplate.js'
+import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js';
 
 export const programTemplates = [
-  bodyweightBlastTemplate,
+  // Bodyweight Programs
+  bodyweightBlastBeginnerTemplate,
+  bodyweightBlastIntermediateTemplate,
+  bodyweightBlastAdvancedTemplate,
+  bodyweightBurnerBeginnerTemplate,
+  bodyweightBurnerIntermediateTemplate,
+  bodyweightBurnerAdvancedTemplate,
+  bodyweightBuilderBeginnerTemplate,
+  // Equipment-Based Programs
   kettlebellKrusherTemplate,
   strengthFocusTemplate,
   dumbbellDominationTemplate,
+  
+  // Specialty Programs & WODs
   benchmarkWodsTemplate,
   heroWodsTemplate,
-  pullupChallengeTemplate, 
-  couchTo5kTemplate,
+  pullupChallengeTemplate,
 ];
