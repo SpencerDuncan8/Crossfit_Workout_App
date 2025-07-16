@@ -7,6 +7,8 @@ import { bodyweightBurnerBeginnerTemplate } from './templates/bodyweightBurnerBe
 import { bodyweightBurnerIntermediateTemplate } from './templates/bodyweightBurnerIntermediateTemplate.js';
 import { bodyweightBurnerAdvancedTemplate } from './templates/bodyweightBurnerAdvancedTemplate.js'; 
 import { bodyweightBuilderBeginnerTemplate } from './templates/bodyweightBuilderBeginnerTemplate.js';
+import { bodyweightBuilderIntermediateTemplate } from './templates/bodyweightBuilderIntermediateTemplate.js';
+import { bodyweightBuilderAdvancedTemplate } from './templates/bodyweightBuilderAdvancedTemplate.js';
 import { kettlebellKrusherTemplate } from './templates/kettlebellKrusherTemplate.js';
 import { strengthFocusTemplate } from './templates/strengthFocusTemplate.js';
 import { dumbbellDominationTemplate } from './templates/dumbbellDominationTemplate.js';
@@ -24,6 +26,8 @@ export const programTemplates = [
   bodyweightBurnerIntermediateTemplate,
   bodyweightBurnerAdvancedTemplate,
   bodyweightBuilderBeginnerTemplate,
+bodyweightBuilderIntermediateTemplate,
+  bodyweightBuilderAdvancedTemplate,
   // Equipment-Based Programs
   kettlebellKrusherTemplate,
   strengthFocusTemplate,

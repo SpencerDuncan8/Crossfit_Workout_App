@@ -74,6 +74,10 @@ export const bodyweightBlastBeginnerTemplate = {
           id: generateUniqueId(), type: 'Conditioning: Tabata',
           exercises: [ { id: 'mountain-climbers', name: 'Mountain Climbers' } ]
         },
+          { 
+          id: generateUniqueId(), type: 'Conditioning: Tabata',
+          exercises: [ { id: 'jumping-jack', name: 'Jumping Jacks' } ]
+        },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'childs-pose', name: 'Childs Pose (60s)' } ] }
       ]
     },
