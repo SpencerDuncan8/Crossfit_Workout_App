@@ -2,6 +2,34 @@
 
 export const newBodyweightExercises = [
   {
+    id: "bodyweight-calf-raises",
+    name: "Bodyweight Calf Raises",
+    category: "Lower Body",
+    primaryMuscles: ["Calves"],
+    equipment: ["None"],
+    setup: [
+      "Stand with the balls of your feet on the edge of a step or curb.",
+      "Hold onto a wall or railing for balance if needed.",
+      "Allow your heels to hang off the edge."
+    ],
+    execution: [
+      "Lower your heels as far as you can to feel a stretch in your calves.",
+      "Press through the balls of your feet to raise your heels as high as possible.",
+      "Squeeze your calves at the top of the movement.",
+      "Lower back down with control."
+    ],
+    commonMistakes: [
+      "Bouncing at the bottom.",
+      "Not using a full range of motion.",
+      "Bending the knees."
+    ],
+    modifications: {
+      easier: "Perform on flat ground.",
+      harder: "Perform one leg at a time or add a pause at the top."
+    },
+    breathingPattern: "Exhale up, inhale down"
+  },
+  {
     id: "pike-push-ups",
     name: "Pike Push-ups",
     category: "Upper Body",

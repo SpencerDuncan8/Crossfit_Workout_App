@@ -110,7 +110,7 @@ export const bodyweightBlastBeginnerTemplate = {
           exercises: [
             { id: 'air-squats', name: 'Squats', reps: '100' },
             { id: 'bodyweight-lunge', name: 'Walking Lunges', reps: '80' },
-            { id: 'dumbbell-calf-raises', name: 'Calf Raises', reps: '60' },
+            { id: 'bodyweight-calf-raises', name: 'Calf Raises', reps: '60' },
             { id: 'jumping-jack', name: 'Jumping Jacks', reps: '40' },
             { id: 'burpees', name: 'Burpees', reps: '20' },
           ]
