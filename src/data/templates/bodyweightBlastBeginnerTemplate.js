@@ -140,17 +140,17 @@ export const bodyweightBlastBeginnerTemplate = {
             ],
             note: 'After completing the AMRAP, rest 2 minutes before starting the EMOM.'
           },
-          // Block 3: EMOM
-          {
-            id: generateUniqueId(), type: 'Conditioning: EMOM',
-            minutes: [
-              { id: generateUniqueId(), task: '15 Air Squats' },
-              { id: generateUniqueId(), task: '12 Push-ups (on knees if needed)' },
-              { id: generateUniqueId(), task: '15 Sit-ups' },
-              { id: generateUniqueId(), task: '45s Plank' },
-              { id: generateUniqueId(), task: '60s Jumping Jacks' },
-            ]
-          },
+                    // Block 3: EMOM
+                    {
+                      id: generateUniqueId(), type: 'Conditioning: EMOM',
+                      minutes: [
+                        { id: 'air-squats', task: '15 Air Squats' },
+                        { id: 'push-ups', task: '12 Push-ups (on knees if needed)' },
+                        { id: 'sit-ups', task: '15 Sit-ups' },
+                        { id: 'plank', task: '45s Plank' },
+                        { id: 'jumping-jacks', task: '60s Jumping Jacks' },
+                      ]
+                    },
           // Block 4: Cool-down
           {
             id: generateUniqueId(), type: 'Cool-down',
@@ -219,7 +219,7 @@ export const bodyweightBlastBeginnerTemplate = {
           exercises: [
             { id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)' },
             { id: 'cobra-stretch', name: 'Cobra Stretch (60s)' },
-            { id: 'seated-forward-fold', name: 'Seated Hamstring Stretch (60s)' }
+            { id: 'hamstring-stretch', name: 'Hamstring Stretch (30s each)' }
           ]
         }
       ]
