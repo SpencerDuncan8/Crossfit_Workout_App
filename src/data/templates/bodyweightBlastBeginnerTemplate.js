@@ -118,22 +118,50 @@ export const bodyweightBlastBeginnerTemplate = {
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'pigeon-pose', name: 'Pigeon Pose (60s each)' } ] }
       ]
     },
-    { // Day 5
-      id: generateUniqueId(),
-      name: 'W1D5: Full Body Finisher',
-      blocks: [
-        {
-          id: generateUniqueId(), type: 'Conditioning: EMOM',
-          minutes: [
-            { id: 'air-squats', task: '15 Air Squats' },
-            { id: 'push-ups', task: '12 Push-ups' },
-            { id: 'sit-up', task: '15 Sit-ups' },
-            { id: 'plank', task: '45s Plank' },
-            { id: 'jumping-jack', task: '60s Jumping Jacks' },
-          ]
-        }
-      ]
-    },
+      { // Day 5
+        id: generateUniqueId(),
+        name: 'W1D5: Full Body Finisher',
+        blocks: [
+          // Block 1: Warm-up
+          { 
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              { id: 'jumping-jack', name: 'Jumping Jacks (60s)' },
+              { id: 'cat-cow-stretch', name: 'Cat-Cow Stretch (10 reps)' },
+              { id: 'air-squats', name: 'Air Squats (15 reps)' },
+            ],
+          },
+          // Block 2: AMRAP
+          {
+            id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 10,
+            exercises: [
+              { id: 'burpees', name: 'Burpees (or Step-Back Burpees)', reps: '5' },
+              { id: 'bodyweight-lunge', name: 'Alternating Lunges', reps: '10' },
+            ],
+            note: 'After completing the AMRAP, rest 2 minutes before starting the EMOM.'
+          },
+          // Block 3: EMOM
+          {
+            id: generateUniqueId(), type: 'Conditioning: EMOM',
+            minutes: [
+              { id: generateUniqueId(), task: '15 Air Squats' },
+              { id: generateUniqueId(), task: '12 Push-ups (on knees if needed)' },
+              { id: generateUniqueId(), task: '15 Sit-ups' },
+              { id: generateUniqueId(), task: '45s Plank' },
+              { id: generateUniqueId(), task: '60s Jumping Jacks' },
+            ]
+          },
+          // Block 4: Cool-down
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [ 
+              { id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (30s)' },
+              { id: 'quad-stretch', name: 'Quad Stretch (30s each leg)' },
+              { id: 'childs-pose', name: "Child's Pose (60s)" },
+            ]
+          }
+        ]
+      },
     // --- WEEK 2 ---
     { // Day 6
       id: generateUniqueId(),
@@ -162,17 +190,38 @@ export const bodyweightBlastBeginnerTemplate = {
           { id: generateUniqueId(), type: 'Cardio', exercises: [ { id: 'jump-rope', name: 'Jog in Place or Jump Rope', duration: 10 } ] }
       ]
     },
-    { // Day 7
+        { // Day 7
       id: generateUniqueId(),
       name: 'W2D2: AMRAP Madness',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 20,
-              exercises: [
-                  { id: 'hand-release-push-ups', name: 'Hand-Release Push-ups', reps: '8' },
-                  { id: 'air-squats', name: 'Air Squats', reps: '16' },
-                  { id: 'v-up', name: 'V-Ups', reps: '8' },
-              ]
-          }
+        // --- WARM-UP ---
+        {
+          id: generateUniqueId(), type: 'Warm-up',
+          exercises: [
+            { id: 'jumping-jack', name: 'Jumping Jacks (60s)' },
+            { id: 'leg-swings', name: 'Leg Swings (30s each leg, forward & side)' },
+            { id: 'inchworms', name: 'Inchworms (8 reps)' },
+            { id: 'air-squats', name: 'Air Squats (15 reps)' }
+          ]
+        },
+        // --- MAIN WORKOUT ---
+        { 
+          id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 20,
+          exercises: [
+            { id: 'hand-release-push-ups', name: 'Hand-Release Push-ups', reps: '8' },
+            { id: 'air-squats', name: 'Air Squats', reps: '16' },
+            { id: 'v-up', name: 'V-Ups', reps: '8' },
+          ]
+        },
+        // --- COOL-DOWN ---
+        {
+          id: generateUniqueId(), type: 'Cool-down',
+          exercises: [
+            { id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)' },
+            { id: 'cobra-stretch', name: 'Cobra Stretch (60s)' },
+            { id: 'seated-forward-fold', name: 'Seated Hamstring Stretch (60s)' }
+          ]
+        }
       ]
     },
     { // Day 8
@@ -193,42 +242,89 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W2D4: For Time Ladder',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 1,
-              exercises: [
-                  { id: 'burpees', name: 'Burpees', reps: '10' }, { id: 'air-squats', name: 'Squats', reps: '10' },
-                  { id: 'burpees', name: 'Burpees', reps: '9' }, { id: 'air-squats', name: 'Squats', reps: '9' },
-                  { id: 'burpees', name: 'Burpees', reps: '8' }, { id: 'air-squats', name: 'Squats', reps: '8' },
-                  { id: 'burpees', name: 'Burpees', reps: '7' }, { id: 'air-squats', name: 'Squats', reps: '7' },
-                  { id: 'burpees', name: 'Burpees', reps: '6' }, { id: 'air-squats', name: 'Squats', reps: '6' },
-                  { id: 'burpees', name: 'Burpees', reps: '5' }, { id: 'air-squats', name: 'Squats', reps: '5' },
-                  { id: 'burpees', name: 'Burpees', reps: '4' }, { id: 'air-squats', name: 'Squats', reps: '4' },
-                  { id: 'burpees', name: 'Burpees', reps: '3' }, { id: 'air-squats', name: 'Squats', reps: '3' },
-                  { id: 'burpees', name: 'Burpees', reps: '2' }, { id: 'air-squats', name: 'Squats', reps: '2' },
-                  { id: 'burpees', name: 'Burpees', reps: '1' }, { id: 'air-squats', name: 'Squats', reps: '1' },
-              ]
-          }
+        // --- WARM-UP ---
+        {
+          id: generateUniqueId(), type: 'Warm-up',
+          exercises: [
+            { id: 'high-knees', name: 'High Knees (60s)' },
+            { id: 'air-squats', name: 'Air Squats (20 reps)' },
+            { id: 'walkouts', name: 'Walkouts (10 reps, no push-up)' },
+            { id: 'burpees', name: 'Step-Back Burpees (5 reps)' }
+          ]
+        },
+        // --- MAIN WORKOUT ---
+        { 
+          id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 1,
+          exercises: [
+            { id: 'burpees', name: 'Burpees', reps: '10' }, { id: 'air-squats', name: 'Squats', reps: '10' },
+            { id: 'burpees', name: 'Burpees', reps: '9' }, { id: 'air-squats', name: 'Squats', reps: '9' },
+            { id: 'burpees', name: 'Burpees', reps: '8' }, { id: 'air-squats', name: 'Squats', reps: '8' },
+            { id: 'burpees', name: 'Burpees', reps: '7' }, { id: 'air-squats', name: 'Squats', reps: '7' },
+            { id: 'burpees', name: 'Burpees', reps: '6' }, { id: 'air-squats', name: 'Squats', reps: '6' },
+            { id: 'burpees', name: 'Burpees', reps: '5' }, { id: 'air-squats', name: 'Squats', reps: '5' },
+            { id: 'burpees', name: 'Burpees', reps: '4' }, { id: 'air-squats', name: 'Squats', reps: '4' },
+            { id: 'burpees', name: 'Burpees', reps: '3' }, { id: 'air-squats', name: 'Squats', reps: '3' },
+            { id: 'burpees', name: 'Burpees', reps: '2' }, { id: 'air-squats', name: 'Squats', reps: '2' },
+            { id: 'burpees', name: 'Burpees', reps: '1' }, { id: 'air-squats', name: 'Squats', reps: '1' },
+          ],
+          note: 'This is a descending ladder. Complete all reps for time.'
+        },
+        // --- COOL-DOWN ---
+        {
+          id: generateUniqueId(), type: 'Cool-down',
+          exercises: [
+            { id: 'quad-stretch', name: 'Quad Stretch (45s each side)' },
+            { id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (45s)' },
+            { id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)' }
+          ]
+        }
       ]
     },
     { // Day 10
       id: generateUniqueId(),
       name: 'W2D5: EMOM Endurance',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: EMOM',
-              minutes: [
-                  { id: 'push-ups', task: 'Minute 1: 15 Push-ups' },
-                  { id: 'bodyweight-lunge', task: 'Minute 2: 20 Lunges' },
-                  { id: 'sit-up', task: 'Minute 3: 25 Sit-ups' },
-                  { id: 'rest', task: 'Minute 4: Rest' },
-                  { id: 'push-ups', task: 'Minute 5: 15 Push-ups' },
-                  { id: 'bodyweight-lunge', task: 'Minute 6: 20 Lunges' },
-                  { id: 'sit-up', task: 'Minute 7: 25 Sit-ups' },
-                  { id: 'rest', task: 'Minute 8: Rest' },
-                  { id: 'push-ups', task: 'Minute 9: 15 Push-ups' },
-                  { id: 'bodyweight-lunge', task: 'Minute 10: 20 Lunges' },
-                  { id: 'sit-up', task: 'Minute 11: 25 Sit-ups' },
-                  { id: 'rest', task: 'Minute 12: Rest' },
-              ]
-          }
+        // --- WARM-UP ---
+        {
+          id: generateUniqueId(), type: 'Warm-up',
+          exercises: [
+            { id: 'jumping-jack', name: 'Jumping Jacks (60s)' },
+            { id: 'arm-circles', name: 'Arm Circles (15 each way)' },
+            { id: 'leg-swings', name: 'Leg Swings (30s each leg)' },
+            { id: null, name: 'Then, 2 rounds of:'},
+            { id: 'push-ups', name: '5 Incline or Knee Push-ups' },
+            { id: 'bodyweight-lunge', name: '10 Alternating Lunges (5 each side)' },
+            { id: 'sit-up', name: '10 Sit-ups' }
+          ]
+        },
+        // --- MAIN WORKOUT ---
+        {
+          id: generateUniqueId(), type: 'Conditioning: EMOM',
+          minutes: [
+            { id: generateUniqueId(), task: 'Minute 1: 15 Push-ups' },
+            { id: generateUniqueId(), task: 'Minute 2: 20 Lunges' },
+            { id: generateUniqueId(), task: 'Minute 3: 25 Sit-ups' },
+            { id: generateUniqueId(), task: 'Minute 4: Rest' },
+            { id: generateUniqueId(), task: 'Minute 5: 15 Push-ups' },
+            { id: generateUniqueId(), task: 'Minute 6: 20 Lunges' },
+            { id: generateUniqueId(), task: 'Minute 7: 25 Sit-ups' },
+            { id: generateUniqueId(), task: 'Minute 8: Rest' },
+            { id: generateUniqueId(), task: 'Minute 9: 15 Push-ups' },
+            { id: generateUniqueId(), task: 'Minute 10: 20 Lunges' },
+            { id: generateUniqueId(), task: 'Minute 11: 25 Sit-ups' },
+            { id: generateUniqueId(), task: 'Minute 12: Rest' },
+          ],
+          note: 'Perform the prescribed exercise at the top of each minute for 12 minutes total (3 rounds of the circuit).'
+        },
+        // --- COOL-DOWN ---
+        {
+          id: generateUniqueId(), type: 'Cool-down',
+          exercises: [
+            { id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (45s)' },
+            { id: 'quad-stretch', name: 'Quad Stretch (45s each side)' },
+            { id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)' }
+          ]
+        }
       ]
     },
     // --- WEEK 3 ---
@@ -236,35 +332,82 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W3D1: Power & Plyo',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: 'pogo-hops', name: 'Pogo Hops (60s)'}, {id: 'air-squats', name: 'Bodyweight Squats (20 reps)'}]},
-          { id: generateUniqueId(), type: 'Bodyweight',
-              exercises: [
-                  { id: 'jump-squats', name: 'Jumping Squats', sets: [
-                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
-                  ]},
-                  { id: 'plyometric-push-ups', name: 'Plyo Push-ups', sets: [
-                      {id: generateUniqueId(), value: '10', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '10', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '10', trackingType: 'reps'},
-                  ]},
-              ]
+          { 
+            id: generateUniqueId(), type: 'Warm-up', 
+            exercises: [
+              {id: 'pogo-hops', name: 'Pogo Hops (60s)'}, 
+              {id: 'air-squats', name: 'Bodyweight Squats (20 reps)'}
+            ]
           },
-          { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 12,
-              exercises: [{id: 'jumping-lunges', name: 'Jumping Lunges', reps: '10'}, {id: 'box-jumps', name: 'Burpee Box Jumps (use stair)', reps: '5'}]}
+          { 
+            id: generateUniqueId(), type: 'Bodyweight',
+            exercises: [
+              { 
+                id: 'jump-squats', name: 'Jumping Squats', 
+                sets: [
+                  {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                ]
+              },
+              { 
+                id: 'plyometric-push-ups', name: 'Plyo Push-ups', 
+                sets: [
+                  {id: generateUniqueId(), value: '10', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '10', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '10', trackingType: 'reps'},
+                ]
+              },
+            ]
+          },
+          { 
+            id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 12,
+            exercises: [
+              {id: 'jumping-lunges', name: 'Jumping Lunges', reps: '10'}, 
+              {id: 'box-jumps', name: 'Burpee Box Jumps (use stair)', reps: '5'}
+            ]
+          },
+          // --- NEW COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'quad-stretch', name: 'Quad Stretch (60s each side)'},
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'},
+              {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'},
+            ]
+          }
       ]
     },
     { // Day 12
       id: generateUniqueId(),
       name: 'W3D2: The Grinder',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 3,
-              exercises: [
-                  {id: 'high-knees', name: 'Run 400m (or 2 min high knees)', reps: '1'},
-                  {id: 'air-squats', name: 'Air Squats', reps: '50'}
-              ]
+          // --- NEW WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'butt-kicks', name: 'Butt Kicks (60s)'},
+              {id: 'leg-swings', name: 'Leg Swings (30s each way, each leg)'},
+              {id: 'air-squats', name: 'Air Squats (25 reps)'},
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 3,
+            exercises: [
+              {id: 'high-knees', name: 'Run 400m (or 2 min high knees)', reps: '1'},
+              {id: 'air-squats', name: 'Air Squats', reps: '50'}
+            ]
+          },
+          // --- NEW COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'quad-stretch', name: 'Quad Stretch (60s each side)'},
+              {id: 'hamstring-stretch', name: 'Seated Hamstring Stretch (60s)'},
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'}
+            ]
           }
       ]
     },
@@ -272,23 +415,50 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W3D3: Core Crusher',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [{id: 'bird-dog', name: 'Bird-dog (10 each side)'}, {id: 'dead-bug', name: 'Dead-bug (10 each side)'}]},
-          { id: generateUniqueId(), type: 'Bodyweight',
-              exercises: [
-                  {id: 'sit-up', name: 'Sit-ups', sets: [
-                      {id: generateUniqueId(), value: '30', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '30', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '30', trackingType: 'reps'},
-                  ]},
-                  {id: 'plank', name: 'Side Plank (L)', sets: [
-                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
-                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
-                  ]},
-                  {id: 'plank', name: 'Side Plank (R)', sets: [
-                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
-                      {id: generateUniqueId(), value: '45', trackingType: 'duration'},
-                  ]},
-              ]
+          // --- WARM-UP ---
+          { 
+            id: generateUniqueId(), type: 'Warm-up', 
+            exercises: [
+              {id: 'cat-cow-stretch', name: 'Cat-Cow Stretch (10 reps)'},
+              {id: 'bird-dog', name: 'Bird-dog (10 each side)'}, 
+              {id: 'dead-bug', name: 'Dead-bug (10 each side)'}
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Bodyweight',
+            exercises: [
+              {
+                id: 'sit-up', name: 'Sit-ups', 
+                sets: [
+                  {id: generateUniqueId(), value: '30', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '30', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '30', trackingType: 'reps'},
+                ]
+              },
+              {
+                id: 'plank', name: 'Side Plank (L)', 
+                sets: [
+                  {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                  {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                ]
+              },
+              {
+                id: 'plank', name: 'Side Plank (R)', 
+                sets: [
+                  {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                  {id: generateUniqueId(), value: '45', trackingType: 'duration'},
+                ]
+              },
+            ]
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'cobra-stretch', name: 'Cobra Stretch (60s)'},
+              {id: 'childs-pose', name: "Child's Pose (90s)"}
+            ]
           }
       ]
     },
@@ -296,15 +466,35 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W3D4: Death By Burpee',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: EMOM',
-              minutes: [
-                  {id: 'burpees', task: 'Min 1: 1 Burpee'}, {id: 'burpees', task: 'Min 2: 2 Burpees'},
-                  {id: 'burpees', task: 'Min 3: 3 Burpees'}, {id: 'burpees', task: 'Min 4: 4 Burpees'},
-                  {id: 'burpees', task: 'Min 5: 5 Burpees'}, {id: 'burpees', task: 'Min 6: 6 Burpees'},
-                  {id: 'burpees', task: 'Min 7: 7 Burpees'}, {id: 'burpees', task: 'Min 8: 8 Burpees'},
-                  {id: 'burpees', task: 'Min 9: 9 Burpees'}, {id: 'burpees', task: 'Min 10: 10 Burpees'},
-                  {id: 'burpees', task: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute.'},
-              ]
+          // --- WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'jumping-jack', name: 'Jumping Jacks (60s)'},
+              {id: 'air-squats', name: 'Air Squats (15 reps)'},
+              {id: 'inchworms', name: 'Inchworms (10 reps)'},
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: EMOM',
+            minutes: [
+              {id: generateUniqueId(), task: 'Min 1: 1 Burpee'}, {id: generateUniqueId(), task: 'Min 2: 2 Burpees'},
+              {id: generateUniqueId(), task: 'Min 3: 3 Burpees'}, {id: generateUniqueId(), task: 'Min 4: 4 Burpees'},
+              {id: generateUniqueId(), task: 'Min 5: 5 Burpees'}, {id: generateUniqueId(), task: 'Min 6: 6 Burpees'},
+              {id: generateUniqueId(), task: 'Min 7: 7 Burpees'}, {id: generateUniqueId(), task: 'Min 8: 8 Burpees'},
+              {id: generateUniqueId(), task: 'Min 9: 9 Burpees'}, {id: generateUniqueId(), task: 'Min 10: 10 Burpees'},
+            ],
+            note: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute.'
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'quad-stretch', name: 'Quad Stretch (45s each side)'},
+              {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'},
+              {id: 'childs-pose', name: "Child's Pose (60s)"}
+            ]
           }
       ]
     },
@@ -312,15 +502,37 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W3D5: Full Body Chipper',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: Chipper',
-              exercises: [
-                  {id: 'push-ups', name: 'Push-ups', reps: '50'},
-                  {id: 'sit-up', name: 'Sit-ups', reps: '50'},
-                  {id: 'air-squats', name: 'Squats', reps: '50'},
-                  {id: 'jump-rope', name: 'Double Unders (or 100 single jumps)', reps: '50'},
-                  {id: 'bodyweight-lunge', name: 'Lunges', reps: '50'},
-                  {id: 'burpees', name: 'Burpees', reps: '50'},
-              ]
+          // --- WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'jumping-jack', name: 'Jumping Jacks (60s)'},
+              {id: 'arm-circles', name: 'Arm Circles (30s each way)'},
+              {id: 'leg-swings', name: 'Leg Swings (30s each leg)'},
+              {id: 'air-squats', name: 'Air Squats (10 reps)'},
+              {id: 'push-ups', name: 'Push-ups on Knees (5 reps)'},
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: Chipper',
+            exercises: [
+              {id: 'push-ups', name: 'Push-ups', reps: '50'},
+              {id: 'sit-up', name: 'Sit-ups', reps: '50'},
+              {id: 'air-squats', name: 'Squats', reps: '50'},
+              {id: 'jump-rope', name: 'Jumping Jacks', reps: '100'},
+              {id: 'bodyweight-lunge', name: 'Lunges', reps: '50'},
+              {id: 'burpees', name: 'Burpees', reps: '50'},
+            ]
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'},
+              {id: 'cobra-stretch', name: 'Cobra Stretch (60s)'},
+              {id: 'tricep-stretch', name: 'Tricep Stretch (45s each side)'}
+            ]
           }
       ]
     },
@@ -329,13 +541,33 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W4D1: Benchmark "Cindy"',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'push-ups', name: '3 Rounds: 5 Pushups, 10 Squats, 15 Situps'} ]},
-          { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 20,
-              exercises: [
-                  {id: 'pullups', name: 'Pull-ups (or Bodyweight Rows)', reps: '5'},
-                  {id: 'push-ups', name: 'Push-ups', reps: '10'},
-                  {id: 'air-squats', name: 'Squats', reps: '15'},
-              ]
+          // --- WARM-UP ---
+          { 
+            id: generateUniqueId(), type: 'Warm-up', 
+            exercises: [ 
+              { id: null, name: '3 Rounds of:'},
+              { id: 'inverted-rows', name: '3 Inverted Rows (or Scapular Pulls)'},
+              { id: 'push-ups', name: '5 Push-ups'}, 
+              { id: 'air-squats', name: '10 Air Squats'} 
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 20,
+            exercises: [
+              {id: 'pullups', name: 'Pull-ups (or Bodyweight Rows)', reps: '5'},
+              {id: 'push-ups', name: 'Push-ups', reps: '10'},
+              {id: 'air-squats', name: 'Squats', reps: '15'},
+            ]
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'lat-stretch', name: 'Lat Stretch (60s each side)'},
+              {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'},
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'}
+            ]
           }
       ]
     },
@@ -343,33 +575,80 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W4D2: Leg Inferno',
       blocks: [
-          { id: generateUniqueId(), type: 'Bodyweight',
-              exercises: [
-                  {id: 'pistol-squats-box', name: 'Pistol Squats (to a box, alternating)', sets: [
-                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '8', trackingType: 'reps'},
-                  ]},
-                  {id: 'glute-bridges', name: 'Glute Bridges', sets: [
-                      {id: generateUniqueId(), value: '25', trackingType: 'reps'},
-                      {id: generateUniqueId(), value: '25', trackingType: 'reps'},
-                  ]}
-              ]
+          // --- WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'air-squats', name: 'Air Squats (20 reps)'},
+              {id: 'leg-swings', name: 'Leg Swings (30s each leg)'},
+              {id: 'glute-bridges', name: 'Glute Bridges (15 reps)'}
+            ]
           },
-          { id: generateUniqueId(), type: 'Cardio', exercises: [ {id: 'wall-sit', name: 'Wall Sit', duration: '5'} ] }
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Bodyweight',
+            exercises: [
+              {
+                id: 'pistol-squats-box', name: 'Pistol Squats (to a box, alternating)', 
+                sets: [
+                  {id: generateUniqueId(), value: '8', trackingType: 'reps'}, {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '8', trackingType: 'reps'}, {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '8', trackingType: 'reps'},
+                ]
+              },
+              {
+                id: 'glute-bridges', name: 'Glute Bridges', 
+                sets: [
+                  {id: generateUniqueId(), value: '25', trackingType: 'reps'},
+                  {id: generateUniqueId(), value: '25', trackingType: 'reps'},
+                ]
+              }
+            ]
+          },
+          { 
+            id: generateUniqueId(), type: 'Cardio', 
+            exercises: [ {id: 'wall-sit', name: 'Wall Sit', duration: '5'} ],
+            note: 'Partition the 5 minutes as needed (e.g., 5 sets of 1 minute).'
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'quad-stretch', name: 'Quad Stretch (60s each side)'},
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'}
+            ]
+          }
       ]
     },
     { // Day 18
       id: generateUniqueId(),
       name: 'W4D3: Interval Hell',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 40, rest: 20, rounds: 5,
-              exercises: [{id: 'high-knees', name: 'Run/Sprint in place'}]
+          // --- WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'jumping-jack', name: 'Jumping Jacks (60s)'},
+              {id: 'high-knees', name: 'High Knees (60s)'},
+              {id: 'butt-kicks', name: 'Butt Kicks (60s)'}
+            ]
           },
-          { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 30, rest: 15, rounds: 5,
-              exercises: [{id: 'jumping-jack', name: 'Jumping Jacks'}]
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: Intervals', work: 40, rest: 20, rounds: 5,
+            exercises: [{id: 'high-knees', name: 'Run/Sprint in place'}]
+          },
+          { 
+            id: generateUniqueId(), type: 'Conditioning: Intervals', work: 30, rest: 15, rounds: 5,
+            exercises: [{id: 'jumping-jack', name: 'Jumping Jacks'}]
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'hamstring-stretch', name: 'Seated Hamstring Stretch (60s)'},
+              {id: 'quad-stretch', name: 'Quad Stretch (60s each side)'}
+            ]
           }
       ]
     },
@@ -377,14 +656,34 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W4D4: The Final Chipper',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: Chipper',
-              exercises: [
-                  {id: 'burpees', name: 'Burpees', reps: '50'},
-                  {id: 'bodyweight-walking-lunge', name: 'Walking Lunges', reps: '40'},
-                  {id: 'push-ups', name: 'Push-ups', reps: '30'},
-                  {id: 'tuck-jumps', name: 'Tuck Jumps', reps: '20'},
-                  {id: 'handstand-hold', name: 'Handstand Hold (against wall)', reps: '60s'},
-              ]
+          // --- WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'inchworms', name: 'Inchworms (10 reps)'},
+              {id: 'shoulder-taps', name: 'Shoulder Taps (20 reps)'},
+              {id: 'air-squats', name: 'Air Squats (20 reps)'}
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: Chipper',
+            exercises: [
+              {id: 'burpees', name: 'Burpees', reps: '50'},
+              {id: 'bodyweight-walking-lunge', name: 'Walking Lunges', reps: '40'},
+              {id: 'push-ups', name: 'Push-ups', reps: '30'},
+              {id: 'tuck-jumps', name: 'Tuck Jumps', reps: '20'},
+              {id: 'handstand-hold', name: 'Handstand Hold (against wall)', reps: '60s'},
+            ]
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'childs-pose', name: "Child's Pose (60s)"},
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'},
+              {id: 'cross-body-shoulder-stretch', name: 'Cross-Body Shoulder Stretch (45s each side)'}
+            ]
           }
       ]
     },
@@ -392,21 +691,42 @@ export const bodyweightBlastBeginnerTemplate = {
       id: generateUniqueId(),
       name: 'W4D5: "Filthy Fifty" Prep',
       blocks: [
-          { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 1,
-              exercises: [
-                  {id: 'box-jumps', name: 'Box Jumps (on stair/curb)', reps: '25'},
-                  {id: 'jumping-jack', name: 'Jumping Jacks', reps: '25'},
-                  {id: 'simulated-kettlebell-swing', name: 'Kettlebell Swings (use backpack/heavy object)', reps: '25'},
-                  {id: 'bodyweight-lunge', name: 'Walking Lunges', reps: '25'},
-                  {id: 'knees-to-elbows', name: 'Knees to Elbows', reps: '25'},
-                  {id: 'dumbbell-push-press', name: 'Push Press (use backpack)', reps: '25'},
-                  {id: 'back-extensions-supermans', name: 'Back Extensions (supermans)', reps: '25'},
-                  {id: 'simulated-wall-ball', name: 'Wall Ball Shots (squat and toss pillow)', reps: '25'},
-                  {id: 'burpees', name: 'Burpees', reps: '25'},
-                  {id: 'jump-rope', name: 'Double Unders (or 50 singles)', reps: '25'},
-              ]
+          // --- WARM-UP ---
+          {
+            id: generateUniqueId(), type: 'Warm-up',
+            exercises: [
+              {id: 'jumping-jack', name: 'Jumping Jacks (90s)'},
+              {id: 'torso-twists', name: 'Torso Twists (60s)'},
+              {id: 'leg-swings', name: 'Leg Swings (30s each leg)'}
+            ]
+          },
+          // --- MAIN WORKOUT ---
+          { 
+            id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 1,
+            exercises: [
+              {id: 'box-jumps', name: 'Box Jumps (on stair/curb)', reps: '25'},
+              {id: 'jumping-jack', name: 'Jumping Jacks', reps: '25'},
+              {id: 'simulated-kettlebell-swing', name: 'Kettlebell Swings (use backpack/heavy object)', reps: '25'},
+              {id: 'bodyweight-walking-lunge', name: 'Walking Lunges', reps: '25'},
+              {id: 'knees-to-elbows', name: 'Knees to Elbows', reps: '25'},
+              {id: 'push-ups', name: 'Push-ups', reps: '25'},
+              {id: 'back-extensions-supermans', name: 'Back Extensions (supermans)', reps: '25'},
+              {id: 'air-squats', name: 'Air Squats', reps: '25'},
+              {id: 'burpees', name: 'Burpees', reps: '25'},
+              {id: 'jump-rope', name: 'Jumping Jacks', reps: '50'},
+            ]
+          },
+          // --- COOL-DOWN ---
+          {
+            id: generateUniqueId(), type: 'Cool-down',
+            exercises: [
+              {id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)'},
+              {id: 'quad-stretch', name: 'Quad Stretch (60s each side)'},
+              {id: 'cobra-stretch', name: 'Cobra Stretch (60s)'},
+              {id: 'childs-pose', name: "Child's Pose (60s)"}
+            ]
           }
       ]
     },
-  ]
+      ]
 };
