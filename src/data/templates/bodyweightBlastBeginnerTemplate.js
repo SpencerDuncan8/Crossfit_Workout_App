@@ -248,7 +248,7 @@ export const bodyweightBlastBeginnerTemplate = {
           exercises: [
             { id: 'high-knees', name: 'High Knees (60s)' },
             { id: 'air-squats', name: 'Air Squats (20 reps)' },
-            { id: 'walkouts', name: 'Walkouts (10 reps, no push-up)' },
+            { id: 'inchworms', name: 'Inchworms (8 reps)' },
             { id: 'burpees', name: 'Step-Back Burpees (5 reps)' }
           ]
         },
@@ -291,7 +291,6 @@ export const bodyweightBlastBeginnerTemplate = {
             { id: 'jumping-jack', name: 'Jumping Jacks (60s)' },
             { id: 'arm-circles', name: 'Arm Circles (15 each way)' },
             { id: 'leg-swings', name: 'Leg Swings (30s each leg)' },
-            { id: null, name: 'Then, 2 rounds of:'},
             { id: 'push-ups', name: '5 Incline or Knee Push-ups' },
             { id: 'bodyweight-lunge', name: '10 Alternating Lunges (5 each side)' },
             { id: 'sit-up', name: '10 Sit-ups' }
@@ -545,7 +544,6 @@ export const bodyweightBlastBeginnerTemplate = {
           { 
             id: generateUniqueId(), type: 'Warm-up', 
             exercises: [ 
-              { id: null, name: '3 Rounds of:'},
               { id: 'inverted-rows', name: '3 Inverted Rows (or Scapular Pulls)'},
               { id: 'push-ups', name: '5 Push-ups'}, 
               { id: 'air-squats', name: '10 Air Squats'} 
@@ -706,7 +704,7 @@ export const bodyweightBlastBeginnerTemplate = {
             exercises: [
               {id: 'box-jumps', name: 'Box Jumps (on stair/curb)', reps: '25'},
               {id: 'jumping-jack', name: 'Jumping Jacks', reps: '25'},
-              {id: 'simulated-kettlebell-swing', name: 'Kettlebell Swings (use backpack/heavy object)', reps: '25'},
+              {id: 'glute-bridges', name: 'Glute Bridges', reps: '25'},
               {id: 'bodyweight-walking-lunge', name: 'Walking Lunges', reps: '25'},
               {id: 'knees-to-elbows', name: 'Knees to Elbows', reps: '25'},
               {id: 'push-ups', name: 'Push-ups', reps: '25'},
