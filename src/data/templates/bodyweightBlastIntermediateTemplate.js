@@ -112,7 +112,6 @@ export const bodyweightBlastIntermediateTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'high-knees', name: 'High Knees (90s)' }, { id: 'butt-kicks', name: 'Butt Kicks (90s)' } ] },
           { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'burpees', name: 'Burpees' } ]},
-          { id: generateUniqueId(), type: 'Rest', duration: 180, note: 'Rest for 3 minutes before the next Tabata.' },
           { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'air-squats', name: 'Air Squats' } ]},
           { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'cobra-stretch', name: 'Cobra Stretch (90s)' }, { id: 'quad-stretch', name: 'Quad Stretch (45s each)'} ] }
       ]
