@@ -21,11 +21,17 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W1D1: Full Body Foundation A',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'stationary-bike', name: '5 mins Bike (easy pace)' }, { id: 'arm-circles', name: '15 Arm Circles (each way)' }, { id: 'leg-swings', name: '10 Leg Swings (each leg, each way)' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Focus on good form. Rest 60-90s between sets.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Focus on good form over heavy weight.',
+          rest: '90s',
+          exercises: [
             { id: 'dumbbell-goblet-squats', name: 'Dumbbell Goblet Squats', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
             { id: 'dumbbell-bench-press', name: 'Dumbbell Bench Press', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
-            { id: 'lat-pulldowns', name: 'Lat Pulldowns', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
-        ]},
+            { id: 'lat-pulldowns', name: 'Lat Pulldowns', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '12', load: '' })) },
+          ]
+        },
         { id: generateUniqueId(), type: 'Conditioning: AMRAP', duration: 8, exercises: [
             { id: 'kb-swing', name: 'Kettlebell Swings (20 lb)', reps: '10' },
             { id: 'push-ups', name: 'Push-ups (on knees or incline)', reps: '8' },
@@ -38,12 +44,17 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W1D2: Full Body Foundation B',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jumping-jack', name: '60s Jumping Jacks' }, { id: 'bodyweight-good-mornings', name: '15 Good Mornings' }, { id: 'band-pull-aparts', name: '15 Band Pull-Aparts' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Focus on form, not heavy weight. Rest 60-90s.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Focus on form, not heavy weight.', 
+          rest: '90s',
+          exercises: [
             { id: 'deadlift', name: 'Barbell Deadlift', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '8', load: '' })), note: 'Start with an empty barbell to learn the movement.' },
             { id: 'dumbbell-shoulder-press', name: 'Seated Dumbbell Shoulder Press', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
             { id: 't-bar-rows', name: 'T-Bar Rows', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
-        ]},
-        // FIXED: Changed type to 'Accessory / Carry' and corrected data structure
+          ]
+        },
         { id: generateUniqueId(), type: 'Accessory / Carry', exercises: [
             { id: 'jump-rope', name: 'Jump Rope Practice', sets: '3', weight: '', value: '60', unit: 'seconds' },
             { id: 'sit-up', name: 'Sit-ups', sets: '3', weight: '', value: '15', unit: 'reps' },
@@ -64,11 +75,16 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W1D4: Full Body Foundation C',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'air-squats', name: '20 Air Squats' }, { id: 'inchworms', name: '8 Inchworms' }, { id: 'scapular-pulls', name: '10 Scapular Pulls' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Rest 60s between sets.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          rest: '60s',
+          exercises: [
             { id: 'dumbbell-walking-lunges', name: 'Dumbbell Walking Lunges', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '20', load: '' })), note: '10 steps per leg' },
             { id: 'dip-bar-dips', name: 'Dip Bar Dips (use band for assist if needed)', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: 'Max', load: '' })) },
             { id: 'low-pulley-rows', name: 'Low Pulley Rows', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '12', load: '' })) },
-        ]},
+          ]
+        },
         { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 3, exercises: [
             { id: 'running', name: '200m Run', reps: '1' },
             { id: 'burpees', name: 'Burpees (no push-up)', reps: '10' },
@@ -97,7 +113,12 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W2D1: Full Body Strength A+',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'stationary-bike', name: '5 mins Bike (easy pace)' }, { id: 'arm-circles', name: '15 Arm Circles (each way)' }, { id: 'leg-swings', name: '10 Leg Swings (each leg, each way)' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Aim to add a small amount of weight from last week. Rest 60-90s.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Aim to add a small amount of weight from last week.', 
+          rest: '90s',
+          exercises: [
             { id: 'squat', name: 'Barbell Back Squat', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '8', load: '' })) },
             { id: 'dumbbell-incline-press', name: 'Dumbbell Incline Press', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
             { id: 'pullups', name: 'Pull-ups (banded or negatives)', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), reps: '5', load: '' })) },
@@ -114,7 +135,12 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W2D2: Full Body Strength B+',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jumping-jack', name: '60s Jumping Jacks' }, { id: 'bodyweight-good-mornings', name: '15 Good Mornings' }, { id: 'band-pull-aparts', name: '15 Band Pull-Aparts' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Rest 60-90s.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Rest 60-90s.', 
+          rest: '90s',
+          exercises: [
             { id: 'dumbbell-romanian-deadlifts', name: 'Barbell Romanian Deadlifts', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })) },
             { id: 'overhead_press', name: 'Barbell Overhead Press', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '8', load: '' })) },
             { id: 't-bar-rows', name: 'Landmine Rows', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })), note: 'per arm' },
@@ -136,7 +162,11 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W2D4: Full Body Strength C+',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'air-squats', name: '20 Air Squats' }, { id: 'inchworms', name: '8 Inchworms' }, { id: 'scapular-pulls', name: '10 Scapular Pulls' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Rest 60s between sets.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          rest: '60s',
+          exercises: [
             { id: 'dumbbell-step-ups', name: 'Dumbbell Step-ups', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10', load: '' })), note: 'per leg' },
             { id: 'dip-bar-dips', name: 'Dip Bar Dips', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), reps: 'Max', load: '' })), note: 'Use less assistance than last week.' },
             { id: 'single-arm-lat-pulldowns', name: 'Single-Arm Lat Pulldowns', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '12', load: '' })), note: 'per arm' },
@@ -166,7 +196,12 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W3D1: Strength & Power',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'stationary-bike', name: '5 mins Bike' }, { id: 'air-squats', name: '20 Air Squats' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Perform a set of Squats, then immediately a set of Push Press. Rest 90s. Repeat for 4 rounds.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Perform a set of Squats, then immediately a set of Push Press. Rest 90s. Repeat for 4 rounds.', 
+          rest: '90s',
+          exercises: [
             { id: 'squat', name: 'Barbell Back Squat', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), reps: '8', load: '' })) },
             { id: 'dumbbell-push-press', name: 'Barbell Push Press', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), reps: '8', load: '' })) },
         ]},
@@ -179,7 +214,12 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W3D2: Heavier Lifting',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jumping-jack', name: '60s Jumping Jacks' }, { id: 'bodyweight-good-mornings', name: '15 Good Mornings' }, { id: 'band-pull-aparts', name: '15 Band Pull-Aparts' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Work up to a challenging set of 5 reps. Rest 2-3 mins.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Work up to a challenging set of 5 reps.', 
+          rest: '180s',
+          exercises: [
             { id: 'deadlift', name: 'Barbell Deadlift', sets: Array.from({ length: 5 }, () => ({ id: generateUniqueId(), reps: '5', load: '' })) },
         ]},
         { id: generateUniqueId(), type: 'Accessory / Carry', note: '3 rounds for quality.', exercises: [
@@ -215,7 +255,12 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W3D5: Machine & Isolation',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'arm-circles', name: '15 Arm Circles (each way)' }, { id: 'band-pull-aparts', name: '20 Band Pull-Aparts' } ] },
-        { id: generateUniqueId(), type: 'Strength', note: 'Focus on slow, controlled movements. Rest 60s.', exercises: [
+        { 
+          id: generateUniqueId(), 
+          type: 'Strength', 
+          note: 'Focus on slow, controlled movements.', 
+          rest: '60s',
+          exercises: [
             { id: 'tricep-rope-pushdowns', name: 'Tricep Rope Pushdowns', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '15', load: '' })) },
             { id: 'pulley-bicep-curls', name: 'Pulley Bicep Curls', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '15', load: '' })) },
             { id: 'dumbbell-lateral-raises', name: 'Dumbbell Lateral Raises', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '15', load: '' })) },
