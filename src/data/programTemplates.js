@@ -16,6 +16,8 @@ import { benchmarkWodsTemplate } from './templates/benchmarkWods.js';
 import { heroWodsTemplate } from './templates/heroWods.js';
 import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js';
 import { couchTo5kTemplate } from './templates/couchTo5kTemplate.js';
+import { thirtyDayIntermediateFatLossTemplate } from './templates/thirtyDayIntermediateFatLossTemplate.js';
+import { beginnerFatLoss20DayTemplate } from './templates/beginnerFatLoss20DayTemplate.js';
 
 export const programTemplates = [
   // Bodyweight Programs
@@ -38,4 +40,6 @@ bodyweightBuilderIntermediateTemplate,
   heroWodsTemplate,
   pullupChallengeTemplate,
   couchTo5kTemplate,
+thirtyDayIntermediateFatLossTemplate,
+  beginnerFatLoss20DayTemplate,
 ];
