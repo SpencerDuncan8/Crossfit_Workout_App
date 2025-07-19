@@ -19,7 +19,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = async (event) => {
+        const handleSubmit = async (event) => {
         event.preventDefault();
         if (!stripe || !elements) return;
 
@@ -27,27 +27,31 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
         setErrorMessage('');
 
         try {
-            // Step 1: Create the user in Firebase Authentication right here.
-            const userCredential = await createUserWithEmailAndPassword(auth, userEmail, userPassword);
-            const user = userCredential.user;
-
-            if (!user || !user.uid) {
-                throw new Error("Failed to create user account. Please try again.");
-            }
-
-            // Step 2: Confirm the payment method.
+            // Step 1: Confirm the payment with Stripe FIRST.
+            // We ask Stripe to verify the card details before we do anything else.
             const { error, setupIntent } = await stripe.confirmSetup({
                 elements,
                 confirmParams: { return_url: window.location.href },
                 redirect: 'if_required'
             });
 
+            // Step 2: If the payment method fails (e.g., card declined), stop everything.
+            // The user will see an error and can try again. No Firebase user is created.
             if (error) {
-                // Ideally, you would delete the Firebase user here if payment fails.
-                throw new Error(`Payment failed: ${error.message}`);
+                throw new Error(error.message);
             }
 
-            // Step 3: Call the server API with the new user's UID.
+            // Step 3: ONLY if the payment method was successful, create the Firebase user.
+            // This code only runs if the card is valid.
+            const userCredential = await createUserWithEmailAndPassword(auth, userEmail, userPassword);
+            const user = userCredential.user;
+
+            if (!user || !user.uid) {
+                throw new Error("Failed to create user account after payment. Please contact support.");
+            }
+
+            // Step 4: Call the server API with the new user's UID to create the subscription.
+            // Now we connect the successful payment to the new user account.
             const response = await fetch('/api/complete-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -64,7 +68,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
                 throw new Error(result.error?.message || 'Failed to finalize subscription on server.');
             }
 
-            // Step 4: Update the local React state directly.
+            // Step 5: Update the local React state to reflect premium status.
             updateAppState({
                 isPremium: true,
                 stripeCustomerId: customerId,
@@ -75,7 +79,7 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
                 subscriptionCancelAtPeriodEnd: result.subscription.cancel_at_period_end,
             });
             
-            onSuccess();
+            onSuccess(); // Close the modal and celebrate!
 
         } catch (error) {
             console.error('Error during signup process:', error);
