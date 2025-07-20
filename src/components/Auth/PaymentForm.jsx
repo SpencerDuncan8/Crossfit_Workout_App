@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext, ThemeContext } from '../../context/AppContext';
-import { auth } from '../../firebase/config.js'; // <-- FIX: Import auth object
-import { createUserWithEmailAndPassword } from 'firebase/auth'; // <-- FIX: Import auth function
+import { auth } from '../../firebase/config.js'; 
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth'; // <-- 1. IMPORT sendEmailVerification
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import LoadingSpinner from '../Common/LoadingSpinner';
@@ -15,7 +15,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
     const stripe = useStripe();
     const elements = useElements();
-    const { updateAppState } = useContext(AppStateContext); // <-- FIX: Get updateAppState from context
+    const { updateAppState } = useContext(AppStateContext);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -28,30 +28,39 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
 
         try {
             // Step 1: Confirm the payment with Stripe FIRST.
-            // We ask Stripe to verify the card details before we do anything else.
             const { error, setupIntent } = await stripe.confirmSetup({
                 elements,
                 confirmParams: { return_url: window.location.href },
                 redirect: 'if_required'
             });
 
-            // Step 2: If the payment method fails (e.g., card declined), stop everything.
-            // The user will see an error and can try again. No Firebase user is created.
+            // Step 2: If the payment method fails, stop everything.
             if (error) {
                 throw new Error(error.message);
             }
 
             // Step 3: ONLY if the payment method was successful, create the Firebase user.
-            // This code only runs if the card is valid.
             const userCredential = await createUserWithEmailAndPassword(auth, userEmail, userPassword);
             const user = userCredential.user;
+
+            // --- 2. SEND VERIFICATION EMAIL ---
+            // After the user is created, we immediately trigger the verification email.
+            // This is a "fire-and-forget" action; we don't need to wait for it
+            // to complete to proceed with the subscription.
+            sendEmailVerification(user)
+              .then(() => {
+                console.log("Verification email sent successfully.");
+              })
+              .catch((error) => {
+                console.error("Error sending verification email:", error);
+              });
+            // --- END OF UPDATE ---
 
             if (!user || !user.uid) {
                 throw new Error("Failed to create user account after payment. Please contact support.");
             }
 
             // Step 4: Call the server API with the new user's UID to create the subscription.
-            // Now we connect the successful payment to the new user account.
             const response = await fetch('/api/complete-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

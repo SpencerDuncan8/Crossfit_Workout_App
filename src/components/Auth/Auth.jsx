@@ -5,10 +5,13 @@ import { AppStateContext } from '../../context/AppContext';
 import { X } from 'lucide-react';
 import './Auth.css';
 import PaymentForm from './PaymentForm';
+// --- 1. IMPORT FIREBASE AUTH FUNCTIONS ---
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../../firebase/config.js';
 
-  const Auth = ({ closeModal, defaultMode = "signin" }) => {
-  const { logIn } = useContext(AppStateContext); // Remove signUp from here
-    const [isLogin, setIsLogin] = useState(defaultMode === "signin");
+const Auth = ({ closeModal, defaultMode = "signin" }) => {
+  const { logIn } = useContext(AppStateContext);
+  const [isLogin, setIsLogin] = useState(defaultMode === "signin");
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,12 +26,11 @@ import PaymentForm from './PaymentForm';
         await logIn(email, password);
         closeModal();
       } else {
-        // NEW: Don't create Firebase user yet, just proceed to payment
         setAuthStep('payment');
       }
     } catch (err) {
       let message = "An unknown error occurred.";
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         message = 'Invalid email or password.';
       } else if (err.code === 'auth/email-already-in-use') {
         message = 'This email address is already in use.';
@@ -40,6 +42,27 @@ import PaymentForm from './PaymentForm';
       setError(message);
     }
   };
+
+  // --- 2. NEW HANDLER FUNCTION FOR PASSWORD RESET ---
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email address to reset your password.");
+      return;
+    }
+    setError(''); // Clear previous errors
+    
+    try {
+      await sendPasswordResetEmail(auth, email);
+      // Provide feedback to the user
+      alert("Password reset email sent! Please check your inbox (and spam folder).");
+      closeModal(); // Close the modal after sending the email
+    } catch (err) {
+      console.error("Password reset error:", err);
+      // Provide a user-friendly error message
+      setError("Could not send reset email. Please ensure the email address is correct and try again.");
+    }
+  };
+
 
   return (
     <div className="auth-card" style={{animation: 'none'}}>
@@ -62,6 +85,28 @@ import PaymentForm from './PaymentForm';
             <input type="email" className="auth-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             <input type="password" className="auth-input" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             {error && <p className="auth-error">{error}</p>}
+            
+            {/* --- 3. ADD THE "FORGOT PASSWORD?" BUTTON --- */}
+            {/* This button only appears when the user is in the "Log In" view. */}
+            {isLogin && (
+              <button 
+                type="button" // Important: type="button" prevents it from submitting the form
+                onClick={handleForgotPassword}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3b82f6', // Use a theme-friendly color
+                  cursor: 'pointer',
+                  textAlign: 'right',
+                  fontSize: '14px',
+                  padding: '0 4px 8px 0', // Adjust padding as needed
+                  alignSelf: 'flex-end' // Aligns the button to the right
+                }}>
+                Forgot Password?
+              </button>
+            )}
+            {/* --- END OF UPDATE --- */}
+            
             <button type="submit" className="auth-button">
               {isLogin ? 'Log In' : 'Continue to Payment'}
             </button>
