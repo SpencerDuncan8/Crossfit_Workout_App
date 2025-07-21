@@ -137,3 +137,17 @@
 .add-friend-btn:hover {
   background-color: #059669;
 }
+/* ADD THIS TO THE END of src/components/Community/CommunityView.css */
+
+.add-friend-btn.is-friend,
+.add-friend-btn.is-pending {
+  background-color: var(--bg-primary);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  border: 1px solid var(--border-color);
+}
+
+.add-friend-btn.is-friend:hover,
+.add-friend-btn.is-pending:hover {
+  background-color: var(--bg-primary);
+}
