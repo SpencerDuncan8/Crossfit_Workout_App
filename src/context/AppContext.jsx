@@ -42,6 +42,9 @@ const initialAppState = {
   subscriptionEndDate: null,
   // --- NEW FIELD FOR SOCIAL FEATURES ---
   username: null, 
+  friends: [],
+friendRequestsSent: [],
+friendRequestsReceived: [],
 };
 
 const saveToFirestore = async (uid, data) => {
@@ -481,6 +484,59 @@ const AppStateProviderComponent = ({ children }) => {
     });
   }, [setAppState]);
 
+ const sendFriendRequest = useCallback(async (receiverUid) => {
+     if (!currentUser) throw new Error("Not logged in.");
+
+     const response = await fetch('/api/sendFriendRequest', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ senderUid: currentUser.uid, receiverUid }),
+     });
+
+     const data = await response.json();
+     if (!response.ok) {
+         throw new Error(data.error || 'Failed to send friend request.');
+     }
+
+     // Optimistically update local state for instant feedback
+     updateAppState({
+         friendRequestsSent: [...(appState.friendRequestsSent || []), receiverUid]
+     });
+     
+     return data; // Return success data
+ }, [currentUser, appState.friendRequestsSent, updateAppState]);
+
+  const handleFriendRequest = useCallback(async (requesterUid, action) => {
+     if (!currentUser) throw new Error("Not logged in.");
+
+     const response = await fetch('/api/handleFriendRequest', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ currentUserUid: currentUser.uid, requesterUid, action }),
+     });
+
+     const data = await response.json();
+     if (!response.ok) {
+         throw new Error(data.error || `Failed to ${action} request.`);
+     }
+
+     // Optimistically update local state
+     const updatedRequests = (appState.friendRequestsReceived || []).filter(uid => uid !== requesterUid);
+     if (action === 'accept') {
+         const updatedFriends = [...(appState.friends || []), requesterUid];
+         updateAppState({
+             friendRequestsReceived: updatedRequests,
+             friends: updatedFriends,
+         });
+     } else { // decline
+         updateAppState({
+             friendRequestsReceived: updatedRequests,
+         });
+     }
+
+     return data;
+}, [currentUser, appState.friendRequestsReceived, appState.friends, updateAppState]);
+  
   const contextValue = useMemo(() => ({
     currentUser, authLoading, signUp, logIn, logOut, appState, allWorkouts,
     updateAppState, refreshSubscriptionData, createProgram, copyProgram,
@@ -494,6 +550,8 @@ const AppStateProviderComponent = ({ children }) => {
     getPreviousExercisePerformance, getPreviousBlockPerformance,
     removeWorkoutFromSchedule, openInfoModal, closeInfoModal,
     openPremiumModal, closePremiumModal, updateUserPremiumStatus,
+    sendFriendRequest,
+    handleFriendRequest,
   }), [
     currentUser, authLoading, signUp, logIn, logOut, appState, allWorkouts,
     updateAppState, refreshSubscriptionData, createProgram, copyProgram,
@@ -505,7 +563,9 @@ const AppStateProviderComponent = ({ children }) => {
     selectWorkoutToSchedule, clearWorkoutToSchedule, autoScheduleProgram,
     updateOneRepMax, toggleUnitSystem, hasExerciseDetails,
     removeWorkoutFromSchedule, openInfoModal, closeInfoModal,
-    openPremiumModal, closePremiumModal, updateUserPremiumStatus
+    openPremiumModal, closePremiumModal, updateUserPremiumStatus,
+    sendFriendRequest,
+handleFriendRequest,
   ]);
 
   return (
