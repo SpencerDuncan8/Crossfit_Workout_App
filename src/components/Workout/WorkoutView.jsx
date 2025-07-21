@@ -28,20 +28,30 @@ const WorkoutView = ({ setActiveView }) => {
   const activeWorkout = allWorkouts.find(w => w.id === workoutId);
   const isCompleted = !!scheduleEntry?.completedData;
 
-  const enrichedActiveWorkout = useMemo(() => {
+    const enrichedActiveWorkout = useMemo(() => {
     if (!activeWorkout) return null;
+    
+    // Deep clone to avoid direct state mutation issues
+    const workoutCopy = JSON.parse(JSON.stringify(activeWorkout));
+
     return {
-      ...activeWorkout,
-      blocks: activeWorkout.blocks.map(block => ({
+      ...workoutCopy,
+      blocks: workoutCopy.blocks.map(block => ({
         ...block,
+        // This part is for Conditioning blocks and is already working
         previousPerformance: getPreviousBlockPerformance(block.id, block.type, appState.viewingDate),
-        exercises: block.exercises?.map(ex => ({
+        
+        // --- THIS IS THE FIX ---
+        // We ensure the exercises array exists before mapping
+        exercises: (block.exercises || []).map(ex => ({
           ...ex,
+          // We call getPreviousExercisePerformance for EACH exercise using its unique ID (e.g., 'squat')
           previousPerformance: getPreviousExercisePerformance(ex.id, appState.viewingDate)
         }))
+        // --- END OF FIX ---
       }))
     };
-  }, [activeWorkout, appState.viewingDate, appState.workoutSchedule]);
+  }, [activeWorkout, appState.viewingDate, getPreviousBlockPerformance, getPreviousExercisePerformance]); // Add functions to dependency array
 
   useEffect(() => {
     if (appState.viewingDate && !appState.viewingScheduleId) {

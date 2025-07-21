@@ -316,9 +316,59 @@ const AppStateProviderComponent = ({ children }) => {
 
   const hasExerciseDetails = useCallback((exerciseId) => !!getExerciseByName(exerciseId), []);
 
-  const getPreviousExercisePerformance = useCallback(() => null, []);
-  const getPreviousBlockPerformance = useCallback(() => null, []);
+    const getPreviousExercisePerformance = useCallback((exerciseId, currentDateString) => {
+    if (!exerciseId) return null;
 
+    // Search backwards through dates to find the most recent performance
+    const completedWorkouts = Object.entries(appState.workoutSchedule)
+      .filter(([date]) => date < currentDateString)
+      .flatMap(([date, schedule]) => schedule.filter(item => item.completedData).map(item => ({...item, date})))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    for (const completed of completedWorkouts) {
+      const detailedProgress = completed.completedData?.detailedProgress;
+      if (detailedProgress) {
+        // Find the specific exercise progress within that completed workout
+        for (const progressKey in detailedProgress) {
+          if (progressKey.endsWith(`-${exerciseId}`)) {
+            const exerciseProgress = detailedProgress[progressKey];
+            // --- THIS IS THE FIX ---
+            // If we find the exercise and it has sets, return the entire progress object for it.
+            // This object contains the full array of `sets`.
+            if (exerciseProgress && exerciseProgress.sets) {
+              return exerciseProgress; 
+            }
+            // --- END OF FIX ---
+          }
+        }
+      }
+    }
+    return null; // Return null if no previous performance was found
+  }, [appState.workoutSchedule]);
+  
+  const getPreviousBlockPerformance = useCallback((blockId, blockType, currentDateString) => {
+      if (!blockId) return null;
+
+      const completedWorkouts = Object.entries(appState.workoutSchedule)
+          .filter(([date, schedule]) => date < currentDateString && schedule.some(item => item.completedData))
+          .flatMap(([date, schedule]) => schedule.filter(item => item.completedData))
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      for (const completed of completedWorkouts) {
+          const blockTimes = completed.completedData?.blockTimes;
+          if (blockTimes && blockTimes[blockId]) {
+              const result = blockTimes[blockId];
+              if (result.recordedTime) {
+                  return { type: 'TIME', time: result.recordedTime };
+              }
+              if (result.score) {
+                  return { type: 'SCORE', score: result.score, rounds: result.rounds };
+              }
+          }
+      }
+      return null;
+  }, [appState.workoutSchedule]);
+  
   const completeWorkout = useCallback((dateString, scheduleId, stats) => {
     setAppState(prev => {
       const newSchedule = { ...prev.workoutSchedule };

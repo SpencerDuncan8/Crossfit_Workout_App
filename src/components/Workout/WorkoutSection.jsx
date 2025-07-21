@@ -110,6 +110,7 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
                     startTimer={startTimer}
                     blockType={block.type}
                     setActiveView={setActiveView}
+                    previousPerformance={exercise.previousPerformance}
                   />
                 );
               })}
