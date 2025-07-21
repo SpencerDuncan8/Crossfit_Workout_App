@@ -25,7 +25,6 @@ const AccountModal = ({
     }
   }, [isOpen, refreshSubscriptionData]);
 
-  // This function sends the user to the Stripe portal to manage an ACTIVE subscription.
   const handleManageBilling = async () => {
     setIsLoading(true);
     try {
@@ -55,11 +54,10 @@ const AccountModal = ({
   };
 
   const handleReactivateClick = () => {
-    onClose(); // First, close this AccountModal.
-    setIsReactivationConfirmOpen(true); // Then, open the confirmation modal.
+    onClose();
+    setIsReactivationConfirmOpen(true);
   };
 
-  // This helper function remains the same.
   const formatDate = (dateValue) => {
     if (!dateValue) return 'N/A';
     try {
@@ -73,6 +71,17 @@ const AccountModal = ({
       return 'N/A';
     }
   };
+
+  // --- 1. NEW HANDLER FUNCTION FOR THE LOGOUT BUTTON ---
+  // This function controls the sequence of events.
+  const handleLogoutClick = () => {
+    // First, it calls the function to close *this* AccountModal.
+    onClose(); 
+    // Second, it calls the onLogout prop from App.jsx, which will
+    // trigger the logout confirmation modal to open.
+    onLogout(); 
+  };
+  // --- END OF UPDATE ---
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={
@@ -147,14 +156,11 @@ const AccountModal = ({
 
             <div className="subscription-actions">
               {isPremium ? (
-                // If user is premium, they can manage billing (which includes resuming a pending cancellation).
                 <button className="manage-billing-btn" onClick={handleManageBilling} disabled={isLoading}>
                   <Settings size={16} />
                   {isLoading ? 'Loading...' : 'Manage Billing'}
                 </button>
               ) : (
-                // If user is NOT premium but has a Stripe ID, they must have canceled.
-                // Show the Re-subscribe button.
                 <button className="manage-billing-btn" onClick={handleReactivateClick} disabled={isLoading}>
                   <Crown size={16} />
                   {isLoading ? 'Loading...' : 'Re-subscribe'}
@@ -166,7 +172,12 @@ const AccountModal = ({
 
         {/* Logout Section */}
         <div className="account-section actions-section">
-          <button className="logout-btn" onClick={onLogout}><LogOut size={16} />Sign Out</button>
+          {/* --- 2. UPDATED ONCLICK HANDLER --- */}
+          {/* The button now calls our new function instead of calling onLogout directly. */}
+          <button className="logout-btn" onClick={handleLogoutClick}>
+            <LogOut size={16} />Sign Out
+          </button>
+          {/* --- END OF UPDATE --- */}
         </div>
       </div>
     </Modal>
