@@ -1,7 +1,7 @@
 // src/App.jsx
 
 import React, { useState, useContext, useEffect } from 'react';
-import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen, LogOut, Cloud, UserCheck, Crown, Star, User } from 'lucide-react';
+import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen, LogOut, Cloud, UserCheck, Crown, Star, User, Users } from 'lucide-react';
 import { ThemeContext, AppStateContext } from './context/AppContext.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
 import WorkoutView from './components/Workout/WorkoutView.jsx';
@@ -20,6 +20,7 @@ import LoadingSpinner from './components/Common/LoadingSpinner.jsx';
 import PremiumModal from './components/Premium/PremiumModal.jsx';
 import AccountModal from './components/Premium/AccountModal.jsx';
 import ReactivationConfirmation from './components/Premium/ReactivationConfirmation.jsx';
+import CommunityView from './components/Community/CommunityView.jsx';
 
 import './App.css';
 import './components/Dashboard/Dashboard.css';
@@ -36,6 +37,7 @@ import './components/Auth/Auth.css';
 import './components/Common/LoadingSpinner.css';
 import './components/Premium/PremiumModal.css';
 import './components/Premium/AccountModal.css';
+import './components/Community/CommunityView.css';
 
 const NavItem = ({ icon: Icon, label, isActive, onClick, isMobile }) => {
   const baseStyle = { display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start', padding: isMobile ? '12px' : '12px 16px', borderRadius: '12px', transition: 'all 0.3s ease', cursor: 'pointer', border: 'none', background: isActive ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent', color: isActive ? '#ffffff' : 'var(--text-tertiary)', boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none', transform: isActive ? 'scale(1.02)' : 'scale(1)', width: '100%', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '12px', position: 'relative', overflow: 'hidden' };
@@ -123,6 +125,7 @@ export default function App() {
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'workout', label: 'Workout', icon: Dumbbell },
     { id: 'progress', label: 'Progress', icon: TrendingUp },
+    { id: 'community', label: 'Community', icon: Users },
   ];
 
   const renderView = () => {
@@ -131,6 +134,7 @@ export default function App() {
       case 'workout': return <WorkoutView setActiveView={setActiveView} />;
       case 'calendar': return <CalendarView setActiveView={setActiveView} />;
       case 'progress': return <ProgressView />;
+        case 'community': return <CommunityView />;
       case 'program': return <ProgramOverview setActiveView={setActiveView} />;
       default: return <ProgramOverview setActiveView={setActiveView} />;
     }
