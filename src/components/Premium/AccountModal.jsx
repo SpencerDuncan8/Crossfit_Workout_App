@@ -1,6 +1,7 @@
 // src/components/Premium/AccountModal.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AppStateContext } from '../../context/AppContext'; // NEW: Import AppStateContext
 import { Crown, User, CreditCard, Settings, LogOut, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 
@@ -17,13 +18,55 @@ const AccountModal = ({
   refreshSubscriptionData,
   setIsReactivationConfirmOpen
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  // --- START OF NEW CODE ---
+  const { appState, updateAppState } = useContext(AppStateContext);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [isUsernameLoading, setIsUsernameLoading] = useState(false);
 
+  // When the modal opens, pre-fill the input with the user's current username if it exists.
   useEffect(() => {
-    if (isOpen && refreshSubscriptionData) {
-      refreshSubscriptionData();
+    if (isOpen) {
+      if (refreshSubscriptionData) {
+        refreshSubscriptionData();
+      }
+      setUsernameInput(appState.username || '');
+      setUsernameError('');
     }
-  }, [isOpen, refreshSubscriptionData]);
+  }, [isOpen, appState.username, refreshSubscriptionData]);
+
+  const handleSetUsername = async (e) => {
+    e.preventDefault();
+    setIsUsernameLoading(true);
+    setUsernameError('');
+
+    try {
+      const response = await fetch('/api/setUsername', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: currentUser.uid, username: usernameInput }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to set username.');
+      }
+
+      // Success! Update the local state to reflect the change immediately.
+      updateAppState({ username: usernameInput.toLowerCase().trim() });
+      alert('Username successfully updated!');
+
+    } catch (error) {
+      console.error('Error setting username:', error);
+      setUsernameError(error.message);
+    } finally {
+      setIsUsernameLoading(false);
+    }
+  };
+  // --- END OF NEW CODE ---
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleManageBilling = async () => {
     setIsLoading(true);
@@ -72,16 +115,10 @@ const AccountModal = ({
     }
   };
 
-  // --- 1. NEW HANDLER FUNCTION FOR THE LOGOUT BUTTON ---
-  // This function controls the sequence of events.
   const handleLogoutClick = () => {
-    // First, it calls the function to close *this* AccountModal.
     onClose(); 
-    // Second, it calls the onLogout prop from App.jsx, which will
-    // trigger the logout confirmation modal to open.
     onLogout(); 
   };
-  // --- END OF UPDATE ---
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={
@@ -105,6 +142,39 @@ const AccountModal = ({
             </div>
           </div>
         </div>
+
+        {/* --- START OF NEW USERNAME SECTION --- */}
+        <div className="account-section">
+          <h4>
+            <User size={20} />
+            Public Username
+          </h4>
+          {appState.username ? (
+            <div className="subscription-detail">
+              <span>Your public username is:</span>
+              <span><strong>{appState.username}</strong></span>
+            </div>
+          ) : (
+            <form onSubmit={handleSetUsername} className="modal-form-container">
+              <p className="danger-zone-text" style={{margin: '0 0 16px 0'}}>
+                Create a unique username to add friends and engage with the community. This cannot be changed later.
+              </p>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="Choose a username"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                required
+              />
+              {usernameError && <p className="auth-error">{usernameError}</p>}
+              <button type="submit" className="manage-billing-btn" disabled={isUsernameLoading}>
+                {isUsernameLoading ? 'Saving...' : 'Save Username'}
+              </button>
+            </form>
+          )}
+        </div>
+        {/* --- END OF NEW USERNAME SECTION --- */}
 
         {/* Active Premium Features List (for active subscribers) */}
         {isPremium && (
@@ -172,12 +242,9 @@ const AccountModal = ({
 
         {/* Logout Section */}
         <div className="account-section actions-section">
-          {/* --- 2. UPDATED ONCLICK HANDLER --- */}
-          {/* The button now calls our new function instead of calling onLogout directly. */}
           <button className="logout-btn" onClick={handleLogoutClick}>
             <LogOut size={16} />Sign Out
           </button>
-          {/* --- END OF UPDATE --- */}
         </div>
       </div>
     </Modal>

@@ -1,6 +1,6 @@
 // src/context/AppContext.jsx
 
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
 import { db, auth } from '../firebase/config.js';
 import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import {
@@ -40,6 +40,8 @@ const initialAppState = {
   subscriptionCurrentPeriodEnd: null,
   subscriptionCancelAtPeriodEnd: false,
   subscriptionEndDate: null,
+  // --- NEW FIELD FOR SOCIAL FEATURES ---
+  username: null, 
 };
 
 const saveToFirestore = async (uid, data) => {
@@ -48,11 +50,11 @@ const saveToFirestore = async (uid, data) => {
     const {
       isModalOpen, modalContent, showConfetti,
       isWorkoutEditorOpen, editingInfo, workoutToScheduleId,
-      isInfoModalOpen, infoModalContent, isPremiumModalOpen, // NEW: Exclude from saving
+      isInfoModalOpen, infoModalContent, isPremiumModalOpen,
       ...saveableData
     } = data;
     const userDocRef = doc(db, 'users', uid);
-    await setDoc(userDocRef, saveableData);
+    await setDoc(userDocRef, saveableData, { merge: true }); // Use merge to be safe
   } catch (error) {
     console.error("Error saving to Firestore:", error);
   }
@@ -80,7 +82,12 @@ const AppStateProviderComponent = ({ children }) => {
         setCurrentUser(user);
         const cloudData = await loadFromFirestore(user.uid);
         if (cloudData) {
-          setAppState(prev => ({ ...prev, ...cloudData }));
+          // Convert Firestore Timestamps back to JS Dates
+          const convertedData = { ...cloudData };
+          if (convertedData.subscriptionCurrentPeriodEnd && convertedData.subscriptionCurrentPeriodEnd.toDate) {
+            convertedData.subscriptionCurrentPeriodEnd = convertedData.subscriptionCurrentPeriodEnd.toDate();
+          }
+          setAppState(prev => ({ ...prev, ...convertedData }));
         }
       } else {
         setCurrentUser(null);
@@ -88,7 +95,7 @@ const AppStateProviderComponent = ({ children }) => {
       setAuthLoading(false);
     });
     return () => unsubscribe();
-  }, []); 
+  }, [setAppState]); // setAppState dependency is stable
 
   useEffect(() => {
     if (authLoading || !currentUser) return;
@@ -98,311 +105,226 @@ const AppStateProviderComponent = ({ children }) => {
     return () => clearTimeout(handler);
   }, [appState, currentUser, authLoading]);
 
-  const signUp = async (email, password) => {
+  const updateAppState = useCallback((updates) => {
+    setAppState(prev => ({ ...prev, ...updates }));
+  }, [setAppState]);
+
+  const signUp = useCallback(async (email, password) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Invalid email format');
-    }
-    
-    if (password.length < 6) {
-      throw new Error('Password should be at least 6 characters');
-    }
-    
+    if (!emailRegex.test(email)) throw new Error('Invalid email format');
+    if (password.length < 6) throw new Error('Password should be at least 6 characters');
     return { email, password };
-  };
+  }, []);
 
-  const refreshSubscriptionData = async () => {
+  const refreshSubscriptionData = useCallback(async () => {
     if (!currentUser) return;
-
     try {
-      console.log('Refreshing subscription data from Firebase...');
       const cloudData = await loadFromFirestore(currentUser.uid);
-
       if (cloudData) {
-        // Only update subscription-related fields to avoid overwriting local changes
-        const periodEnd = cloudData.subscriptionCurrentPeriodEnd 
-            ? cloudData.subscriptionCurrentPeriodEnd.toDate() 
-            : null;
-        
-        setAppState(prev => ({
-          ...prev,
+        const periodEnd = cloudData.subscriptionCurrentPeriodEnd?.toDate ? cloudData.subscriptionCurrentPeriodEnd.toDate() : null;
+        updateAppState({
           isPremium: cloudData.isPremium || false,
           stripeCustomerId: cloudData.stripeCustomerId || null,
           subscriptionId: cloudData.subscriptionId || null,
           subscriptionStatus: cloudData.subscriptionStatus || null,
-          subscriptionPriceId: cloudData.subscriptionPriceId || null,
           subscriptionCurrentPeriodEnd: periodEnd,
           subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd || false,
-          subscriptionEndDate: cloudData.subscriptionEndDate || null,
-        }));
-        console.log('Subscription data refreshed:', {
-          isPremium: cloudData.isPremium,
-          subscriptionStatus: cloudData.subscriptionStatus,
-          subscriptionCancelAtPeriodEnd: cloudData.subscriptionCancelAtPeriodEnd,
-          subscriptionCurrentPeriodEnd: periodEnd
         });
       }
     } catch (error) {
       console.error('Error refreshing subscription data:', error);
     }
-  };
+  }, [currentUser, updateAppState]);
   
-  const logIn = (email, password) => {
+  const logIn = useCallback((email, password) => {
     if (appState.totalWorkoutsCompleted > 0 || appState.programs.length > 0) {
         const wantsToOverwrite = window.confirm(
             "You have unsynced local data. Logging in will replace this local data with your saved cloud data. Are you sure you want to continue?"
         );
-        if (!wantsToOverwrite) {
-            throw new Error("Login cancelled by user.");
-        }
+        if (!wantsToOverwrite) throw new Error("Login cancelled by user.");
     }
     return signInWithEmailAndPassword(auth, email, password);
-  };
+  }, [appState.totalWorkoutsCompleted, appState.programs.length]);
   
-  const logOut = async () => {
+  const logOut = useCallback(async () => {
     await signOut(auth);
     clearTimer();
     setAppState(initialAppState);
-  };
+  }, [clearTimer, setAppState]);
 
-  const updateUserPremiumStatus = async (uid, status) => {
+  const updateUserPremiumStatus = useCallback(async (uid, status) => {
     if (!uid) return;
     try {
         const userDocRef = doc(db, 'users', uid);
         await updateDoc(userDocRef, { isPremium: status });
         updateAppState({ isPremium: status });
-        console.log(`User ${uid} premium status updated to ${status}`);
     } catch (error) {
         console.error("Error updating premium status:", error);
     }
-  };
+  }, [updateAppState]);
 
-  const updateAppState = (updates) => setAppState(prev => ({ ...prev, ...updates }));
-
-  const openInfoModal = (content) => {
+  const openInfoModal = useCallback((content) => {
     updateAppState({ isInfoModalOpen: true, infoModalContent: content });
-  };
+  }, [updateAppState]);
   
-  const closeInfoModal = () => {
+  const closeInfoModal = useCallback(() => {
     updateAppState({ isInfoModalOpen: false, infoModalContent: null });
-  };
+  }, [updateAppState]);
 
-  // NEW: Premium modal functions
-  const openPremiumModal = () => {
+  const openPremiumModal = useCallback(() => {
     updateAppState({ isPremiumModalOpen: true });
-  };
+  }, [updateAppState]);
 
-  const closePremiumModal = () => {
+  const closePremiumModal = useCallback(() => {
     updateAppState({ isPremiumModalOpen: false });
-  };
+  }, [updateAppState]);
   
-  const toggleUnitSystem = () => {
-    setAppState(prev => ({
-      ...prev,
-      unitSystem: prev.unitSystem === 'imperial' ? 'metric' : 'imperial'
-    }));
-  };
+  const toggleUnitSystem = useCallback(() => {
+    setAppState(prev => ({ ...prev, unitSystem: prev.unitSystem === 'imperial' ? 'metric' : 'imperial' }));
+  }, [setAppState]);
   
-  const allWorkouts = appState.programs.flatMap(p => p.workouts);
+  const allWorkouts = useMemo(() => appState.programs.flatMap(p => p.workouts), [appState.programs]);
   
-  const updateOneRepMax = (exerciseId, weight) => {
+  const updateOneRepMax = useCallback((exerciseId, weight) => {
     const numericWeight = parseFloat(weight);
     if (isNaN(numericWeight)) return;
     setAppState(prev => ({...prev, oneRepMaxes: {...prev.oneRepMaxes, [exerciseId]: numericWeight, }}));
-  };
+  }, [setAppState]);
   
-  const createProgram = (name) => {
-    // NEW: Check program limit for free users
+  const createProgram = useCallback((name) => {
     const userPrograms = appState.programs.filter(p => !p.isTemplate);
     const isPremium = appState.isPremium || currentUser?.isPremium;
-    
     if (!isPremium && userPrograms.length >= 3) {
       openPremiumModal();
-      return null; // Don't create the program
+      return null;
     }
-
-    const newProgram = { id: generateUniqueId(), name: name, description: "A collection of your custom workouts.", workouts: [], isTemplate: false };
+    const newProgram = { id: generateUniqueId(), name, description: "A collection of your custom workouts.", workouts: [], isTemplate: false };
     setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
     return newProgram.id;
-  };
+  }, [appState.programs, appState.isPremium, currentUser, openPremiumModal, setAppState]);
   
-  const copyProgram = (programToCopy) => {
+  const copyProgram = useCallback((programToCopy) => {
     const newProgram = { ...JSON.parse(JSON.stringify(programToCopy)), id: generateUniqueId(), name: `${programToCopy.name} (Copy)`, isTemplate: false };
     setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
     alert(`"${programToCopy.name}" was copied to your programs.`);
-  };
+  }, [setAppState]);
   
-  const deleteProgram = (programId) => {
+  const deleteProgram = useCallback((programId) => {
     setAppState(prev => ({ ...prev, programs: prev.programs.filter(p => p.id !== programId) }));
-  };
+  }, [setAppState]);
   
-  const updateProgram = (programId, updates) => {
+  const updateProgram = useCallback((programId, updates) => {
     setAppState(prev => ({ ...prev, programs: prev.programs.map(p => p.id === programId ? { ...p, ...updates } : p) }));
-  };
+  }, [setAppState]);
   
-  const loadProgramTemplate = (template) => {
-  const existingProgram = appState.programs.find(p => p.id === template.id);
-  if (existingProgram) {
-    alert(`"${template.name}" is already in your library.`);
-    return;
-  }
+  const loadProgramTemplate = useCallback((template) => {
+    const isAlreadyLoaded = appState.programs.some(p => p.id === template.id);
+    if (isAlreadyLoaded) {
+      alert(`"${template.name}" is already in your library.`);
+      return;
+    }
+    const userPrograms = appState.programs.filter(p => !p.isTemplate);
+    const isPremium = appState.isPremium || currentUser?.isPremium;
+    if (!isPremium && userPrograms.length >= 3) {
+      openPremiumModal();
+      return;
+    }
+    const newProgram = { ...template, isTemplate: false };
+    setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
+  }, [appState.programs, appState.isPremium, currentUser, openPremiumModal, setAppState]);
   
-  // NEW: Check program limit for free users before loading template
-  const userPrograms = appState.programs.filter(p => !p.isTemplate);
-  const isPremium = appState.isPremium || currentUser?.isPremium;
-  
-  if (!isPremium && userPrograms.length >= 3) {
-    openPremiumModal();
-    return; // Don't load the template
-  }
-  
-  const newProgram = { ...template, isTemplate: false };
-  setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
-};
-  
-  const saveCustomWorkout = (programId, workout) => {
+  const saveCustomWorkout = useCallback((programId, workout) => {
     setAppState(prev => ({
       ...prev,
       programs: prev.programs.map(program => {
         if (program.id === programId) {
-          const existingWorkoutIndex = program.workouts.findIndex(w => w.id === workout.id);
-          if (existingWorkoutIndex !== -1) {
-            const updatedWorkouts = [...program.workouts];
-            updatedWorkouts[existingWorkoutIndex] = workout;
-            return { ...program, workouts: updatedWorkouts };
-          } else {
-            return { ...program, workouts: [...program.workouts, workout] };
-          }
+          const existingIdx = program.workouts.findIndex(w => w.id === workout.id);
+          const newWorkouts = [...program.workouts];
+          if (existingIdx !== -1) newWorkouts[existingIdx] = workout;
+          else newWorkouts.push(workout);
+          return { ...program, workouts: newWorkouts };
         }
         return program;
       })
     }));
-  };
+  }, [setAppState]);
   
-  const deleteCustomWorkout = (workoutId, programId) => {
+  const deleteCustomWorkout = useCallback((workoutId, programId) => {
     setAppState(prev => ({
       ...prev,
-      programs: prev.programs.map(program => 
-        program.id === programId 
-          ? { ...program, workouts: program.workouts.filter(w => w.id !== workoutId) }
-          : program
-      )
+      programs: prev.programs.map(p => p.id === programId ? { ...p, workouts: p.workouts.filter(w => w.id !== workoutId) } : p)
     }));
-  };
+  }, [setAppState]);
 
-const copyCustomWorkout = (programId, workoutId) => {
-    setAppState(prev => {
-        const programs = structuredClone(prev.programs); 
-        
-        const program = programs.find(p => p.id === programId);
-        if (!program) {
-            console.error("Program not found for copying workout.");
-            return prev;
-        }
-
+  const copyCustomWorkout = useCallback((programId, workoutId) => {
+      const programs = structuredClone(appState.programs);
+      const program = programs.find(p => p.id === programId);
+      if (!program) return;
       const workoutToCopy = program.workouts.find(w => w.id === workoutId);
-      if (!workoutToCopy) {
-          console.error("Workout not found for copying.");
-          return prev;
-      }
-
-          const newWorkout = structuredClone(workoutToCopy);
-          newWorkout.id = generateUniqueId();
-          newWorkout.name = `${workoutToCopy.name} (Copy)`;
-
-          newWorkout.blocks.forEach(block => {
-              block.id = generateUniqueId();
-                  if (block.exercises && Array.isArray(block.exercises)) {
-                    block.exercises.forEach(exercise => {
-                          exercise.instanceId = generateUniqueId(); 
-
-                          if (exercise.sets && Array.isArray(exercise.sets)) {
-                        exercise.sets.forEach(set => {
-                            set.id = generateUniqueId();
-                        });
-                    }
-                });
-            }
-            if (block.minutes && Array.isArray(block.minutes)) {
-                block.minutes.forEach(minute => {
-                    minute.id = generateUniqueId();
-              });
-          }
+      if (!workoutToCopy) return;
+      const newWorkout = structuredClone(workoutToCopy);
+      newWorkout.id = generateUniqueId();
+      newWorkout.name = `${workoutToCopy.name} (Copy)`;
+      newWorkout.blocks.forEach(block => {
+          block.id = generateUniqueId();
+          if (block.exercises) block.exercises.forEach(ex => {
+              ex.instanceId = generateUniqueId();
+              if (ex.sets) ex.sets.forEach(s => s.id = generateUniqueId());
+          });
+          if (block.minutes) block.minutes.forEach(m => m.id = generateUniqueId());
       });
+      const originalIndex = program.workouts.findIndex(w => w.id === workoutId);
+      program.workouts.splice(originalIndex + 1, 0, newWorkout);
+      setAppState(prev => ({...prev, programs}));
+  }, [appState.programs, setAppState]);
 
-        // Insert the new workout right after the original one
-  const originalWorkoutIndex = program.workouts.findIndex(w => w.id === workoutId);
-          program.workouts.splice(originalWorkoutIndex + 1, 0, newWorkout);
+  const openWorkoutEditor = useCallback((programId, workoutId = null) => {
+    updateAppState({ isWorkoutEditorOpen: true, editingInfo: { programId, workoutId } });
+  }, [updateAppState]);
 
-          return { ...prev, programs };
-      });
-  };
+  const closeWorkoutEditor = useCallback(() => {
+    updateAppState({ isWorkoutEditorOpen: false, editingInfo: null });
+  }, [updateAppState]);
 
-  // FIXED: Correct parameter order (programId first, workoutId second)
-  const openWorkoutEditor = (programId, workoutId = null) => {
-    updateAppState({ 
-      isWorkoutEditorOpen: true, 
-      editingInfo: { programId, workoutId } 
-    });
-  };
-
-  const closeWorkoutEditor = () => {
-    updateAppState({ 
-      isWorkoutEditorOpen: false, 
-      editingInfo: null 
-    });
-  };
-
-  const openExerciseModal = (exerciseId) => {
+  const openExerciseModal = useCallback((exerciseId) => {
     const exerciseData = getExerciseByName(exerciseId);
-    if (exerciseData) {
-      updateAppState({ isModalOpen: true, modalContent: exerciseData });
-    }
-  };
+    if (exerciseData) updateAppState({ isModalOpen: true, modalContent: exerciseData });
+  }, [updateAppState]);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     updateAppState({ isModalOpen: false, modalContent: null });
-  };
+  }, [updateAppState]);
 
-  // RESTORED: Original addWeightEntry function
-  const addWeightEntry = (newWeight) => {
+  const addWeightEntry = useCallback((newWeight) => {
     const today = new Date().toLocaleDateString();
     const entry = { date: today, weight: newWeight };
-    const updated = [...appState.weightHistory, entry].sort((a,b) => new Date(a.date) - new Date(b.date));
-    const start = appState.startingWeight || newWeight;
-    updateAppState({ startingWeight: start, currentWeight: newWeight, weightHistory: updated });
-  };
+    setAppState(prev => {
+        const updated = [...prev.weightHistory, entry].sort((a,b) => new Date(a.date) - new Date(b.date));
+        const start = prev.startingWeight || newWeight;
+        return { ...prev, startingWeight: start, currentWeight: newWeight, weightHistory: updated };
+    });
+  }, [setAppState]);
 
-  // RESTORED: Original addPhotoEntry function
-  const addPhotoEntry = (photoUrl) => {
+  const addPhotoEntry = useCallback((photoUrl) => {
     const today = new Date().toLocaleDateString();
     const photo = { date: today, url: photoUrl };
-    const updated = [...appState.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date));
-    updateAppState({ photos: updated });
-  };
+    setAppState(prev => {
+        const updated = [...prev.photos, photo].sort((a,b) => new Date(a.date) - new Date(b.date));
+        return { ...prev, photos: updated };
+    });
+  }, [setAppState]);
 
-  const hasExerciseDetails = (exerciseId) => {
-    return !!getExerciseByName(exerciseId);
-  };
+  const hasExerciseDetails = useCallback((exerciseId) => !!getExerciseByName(exerciseId), []);
 
-  const getPreviousExercisePerformance = (exerciseName, date) => {
-    return null;
-  };
+  const getPreviousExercisePerformance = useCallback(() => null, []);
+  const getPreviousBlockPerformance = useCallback(() => null, []);
 
-  const getPreviousBlockPerformance = (blockId, date) => {
-    return null;
-  };
-
-  // RESTORED: Original completeWorkout function
-  const completeWorkout = (dateString, scheduleId, stats) => {
+  const completeWorkout = useCallback((dateString, scheduleId, stats) => {
     setAppState(prev => {
       const newSchedule = { ...prev.workoutSchedule };
-      const daySchedule = (newSchedule[dateString] || []).map(item => { 
-        if (item.scheduleId === scheduleId) { 
-          return { ...item, completedData: stats }; 
-        } 
-        return item; 
-      });
+      const daySchedule = (newSchedule[dateString] || []).map(item => 
+        item.scheduleId === scheduleId ? { ...item, completedData: stats } : item
+      );
       newSchedule[dateString] = daySchedule;
       return { 
         ...prev, 
@@ -415,170 +337,126 @@ const copyCustomWorkout = (programId, workoutId) => {
       };
     });
     setTimeout(() => updateAppState({ showConfetti: false }), 5000);
-  };
+  }, [setAppState]);
 
-  const resetAllData = () => {
+  const resetAllData = useCallback(() => {
       clearLocalState();
       setAppState(initialAppState);
-  };
+  }, [clearLocalState, setAppState]);
   
-  const scheduleWorkoutForDate = (date, workoutId) => {
+  const scheduleWorkoutForDate = useCallback((date, workoutId) => {
     const dateString = date.toISOString().split('T')[0];
-    const scheduleId = generateUniqueId();
-    const newEntry = { workoutId, scheduleId };
-    
+    const newEntry = { workoutId, scheduleId: generateUniqueId() };
     setAppState(prev => {
       const newSchedule = { ...prev.workoutSchedule };
-      if (!newSchedule[dateString]) {
-        newSchedule[dateString] = [];
-      }
+      if (!newSchedule[dateString]) newSchedule[dateString] = [];
       newSchedule[dateString] = [...newSchedule[dateString], newEntry];
       return { ...prev, workoutSchedule: newSchedule, workoutToScheduleId: null };
     });
-  };
+  }, [setAppState]);
   
-  const navigateToDate = (dateString, scheduleId = null) => {
+  const navigateToDate = useCallback((dateString, scheduleId = null) => {
     updateAppState({ viewingDate: dateString, viewingScheduleId: scheduleId });
-  };
+  }, [updateAppState]);
   
-  const navigateToPrevScheduled = () => {
+  const getScheduledDates = useCallback(() => {
+    return Object.keys(appState.workoutSchedule)
+      .filter(date => appState.workoutSchedule[date]?.length > 0)
+      .sort();
+  }, [appState.workoutSchedule]);
+
+  const navigateToPrevScheduled = useCallback(() => {
     const dates = getScheduledDates(); 
     const currentIndex = dates.indexOf(appState.viewingDate);
     if (currentIndex > 0) { 
       const prevDateString = dates[currentIndex - 1]; 
       const prevDaySchedule = appState.workoutSchedule[prevDateString]; 
-      if (prevDaySchedule && prevDaySchedule.length > 0) { 
+      if (prevDaySchedule?.length > 0) { 
         navigateToDate(prevDateString, prevDaySchedule[0].scheduleId); 
       } 
     }
-  };
+  }, [getScheduledDates, appState.viewingDate, appState.workoutSchedule, navigateToDate]);
   
-  const navigateToNextScheduled = () => {
+  const navigateToNextScheduled = useCallback(() => {
     const dates = getScheduledDates(); 
     const currentIndex = dates.indexOf(appState.viewingDate);
     if (currentIndex > -1 && currentIndex < dates.length - 1) { 
       const nextDateString = dates[currentIndex + 1]; 
       const nextDaySchedule = appState.workoutSchedule[nextDateString]; 
-      if (nextDaySchedule && nextDaySchedule.length > 0) { 
+      if (nextDaySchedule?.length > 0) { 
         navigateToDate(nextDateString, nextDaySchedule[0].scheduleId); 
       } 
     }
-  };
+  }, [getScheduledDates, appState.viewingDate, appState.workoutSchedule, navigateToDate]);
   
-  const getScheduledDates = () => {
-    return Object.keys(appState.workoutSchedule).filter(date => 
-      appState.workoutSchedule[date] && appState.workoutSchedule[date].length > 0
-    ).sort();
-  };
-  
-  const selectWorkoutToSchedule = (workoutId) => {
+  const selectWorkoutToSchedule = useCallback((workoutId) => {
     updateAppState({ workoutToScheduleId: workoutId });
-  };
+  }, [updateAppState]);
   
-  const clearWorkoutToSchedule = () => {
+  const clearWorkoutToSchedule = useCallback(() => {
     updateAppState({ workoutToScheduleId: null });
-  };
+  }, [updateAppState]);
 
-  const removeWorkoutFromSchedule = (date, scheduleId) => {
+  const removeWorkoutFromSchedule = useCallback((date, scheduleId) => {
     const dateString = date.toISOString().split('T')[0];
     setAppState(prev => {
       const daySchedule = (prev.workoutSchedule[dateString] || []).filter(item => item.scheduleId !== scheduleId);
       const newSchedule = { ...prev.workoutSchedule };
-      if (daySchedule.length > 0) { 
-        newSchedule[dateString] = daySchedule; 
-      } else { 
-        delete newSchedule[dateString]; 
-      }
+      if (daySchedule.length > 0) newSchedule[dateString] = daySchedule; 
+      else delete newSchedule[dateString]; 
       return { ...prev, workoutSchedule: newSchedule };
     });
-  };
+  }, [setAppState]);
 
-  // Replace the old function with this new version
+  const autoScheduleProgram = useCallback((workouts, selectedDays) => {
+    if (!selectedDays || selectedDays.length === 0) return;
+    setAppState(prev => {
+        const newSchedule = { ...prev.workoutSchedule };
+        let scheduleDate = new Date();
+        scheduleDate.setHours(0, 0, 0, 0);
+        for (const workout of workouts) {
+            while (true) {
+                const dayOfWeek = scheduleDate.getDay();
+                const dateString = scheduleDate.toISOString().split('T')[0];
+                const dayIsOccupied = newSchedule[dateString]?.length > 0;
+                if (selectedDays.includes(dayOfWeek) && !dayIsOccupied) {
+                    newSchedule[dateString] = [{ workoutId: workout.id, scheduleId: generateUniqueId() }];
+                    break;
+                }
+                scheduleDate.setDate(scheduleDate.getDate() + 1);
+            }
+            scheduleDate.setDate(scheduleDate.getDate() + 1);
+        }
+        return { ...prev, workoutSchedule: newSchedule };
+    });
+  }, [setAppState]);
 
-const autoScheduleProgram = (workouts, selectedDays) => {
-  if (!selectedDays || selectedDays.length === 0) {
-    console.error("Auto-scheduling failed: No days were selected.");
-    return; // Exit if no days are provided
-  }
-
-  const workoutsToSchedule = workouts.slice();
-  const currentSchedule = { ...appState.workoutSchedule };
-  let scheduleDate = new Date(); // Start searching from today
-  scheduleDate.setHours(0, 0, 0, 0);
-
-  // Loop through each workout that needs to be scheduled
-  for (const workout of workoutsToSchedule) {
-    // For each workout, find the next valid day to place it
-    while (true) {
-      const dayOfWeek = scheduleDate.getDay(); // 0 for Sun, 1 for Mon, etc.
-      const dateString = scheduleDate.toISOString().split('T')[0];
-      const dayIsOccupied = currentSchedule[dateString] && currentSchedule[dateString].length > 0;
-
-      // A day is valid if it's one of the user's selected days AND isn't already occupied.
-      if (selectedDays.includes(dayOfWeek) && !dayIsOccupied) {
-        // We found a valid slot!
-        const newEntry = { workoutId: workout.id, scheduleId: generateUniqueId() };
-        currentSchedule[dateString] = [newEntry]; // Schedule the workout
-        break; // Exit the while loop to move to the next workout
-      }
-
-      // If the current day wasn't valid, move to the next day and check again.
-      scheduleDate.setDate(scheduleDate.getDate() + 1);
-    }
-    
-    // After scheduling a workout, always advance one day to avoid scheduling two workouts on the same day.
-    scheduleDate.setDate(scheduleDate.getDate() + 1);
-  }
-
-  updateAppState({ workoutSchedule: currentSchedule });
-};
-
-  const contextValue = {
-    currentUser,
-    authLoading,
-    signUp,
-    logIn,
-    logOut,
-    appState,
-    allWorkouts,
-    updateAppState,
-    refreshSubscriptionData,
-    createProgram,
-    copyProgram,
-    deleteProgram,
-    updateProgram,
-    saveCustomWorkout,
-    deleteCustomWorkout,
-    copyCustomWorkout,
-    openWorkoutEditor,
-    loadProgramTemplate,
-    closeWorkoutEditor,
-    openExerciseModal,
-    closeModal,
-    addWeightEntry,
-    addPhotoEntry,
-    completeWorkout,
-    resetAllData,
-    scheduleWorkoutForDate,
-    navigateToDate,
-    navigateToPrevScheduled,
-    navigateToNextScheduled,
-    getScheduledDates,
-    selectWorkoutToSchedule,
-    clearWorkoutToSchedule,
-    autoScheduleProgram,
-    updateOneRepMax,
-    toggleUnitSystem,
-    hasExerciseDetails,
-    getPreviousExercisePerformance,
-    getPreviousBlockPerformance,
-    removeWorkoutFromSchedule,
-    openInfoModal,
-    closeInfoModal,
-    openPremiumModal, // NEW: Added to context
-    closePremiumModal, // NEW: Added to context
-    updateUserPremiumStatus,
-  };
+  const contextValue = useMemo(() => ({
+    currentUser, authLoading, signUp, logIn, logOut, appState, allWorkouts,
+    updateAppState, refreshSubscriptionData, createProgram, copyProgram,
+    deleteProgram, updateProgram, saveCustomWorkout, deleteCustomWorkout,
+    copyCustomWorkout, openWorkoutEditor, loadProgramTemplate, closeWorkoutEditor,
+    openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
+    completeWorkout, resetAllData, scheduleWorkoutForDate, navigateToDate,
+    navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates,
+    selectWorkoutToSchedule, clearWorkoutToSchedule, autoScheduleProgram,
+    updateOneRepMax, toggleUnitSystem, hasExerciseDetails,
+    getPreviousExercisePerformance, getPreviousBlockPerformance,
+    removeWorkoutFromSchedule, openInfoModal, closeInfoModal,
+    openPremiumModal, closePremiumModal, updateUserPremiumStatus,
+  }), [
+    currentUser, authLoading, signUp, logIn, logOut, appState, allWorkouts,
+    updateAppState, refreshSubscriptionData, createProgram, copyProgram,
+    deleteProgram, updateProgram, saveCustomWorkout, deleteCustomWorkout,
+    copyCustomWorkout, openWorkoutEditor, loadProgramTemplate, closeWorkoutEditor,
+    openExerciseModal, closeModal, addWeightEntry, addPhotoEntry,
+    completeWorkout, resetAllData, scheduleWorkoutForDate, navigateToDate,
+    navigateToPrevScheduled, navigateToNextScheduled, getScheduledDates,
+    selectWorkoutToSchedule, clearWorkoutToSchedule, autoScheduleProgram,
+    updateOneRepMax, toggleUnitSystem, hasExerciseDetails,
+    removeWorkoutFromSchedule, openInfoModal, closeInfoModal,
+    openPremiumModal, closePremiumModal, updateUserPremiumStatus
+  ]);
 
   return (
     <AppStateContext.Provider value={contextValue}>
