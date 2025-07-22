@@ -38,8 +38,6 @@ import './components/Common/LoadingSpinner.css';
 import './components/Premium/PremiumModal.css';
 import './components/Premium/AccountModal.css';
 import './components/Community/CommunityView.css';
-import './components/Community/FriendDetailView.css';
-import './components/Program/WorkoutDetailView.css';
 
 const NavItem = ({ icon: Icon, label, isActive, onClick, isMobile }) => {
   const baseStyle = { display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start', padding: isMobile ? '12px' : '12px 16px', borderRadius: '12px', transition: 'all 0.3s ease', cursor: 'pointer', border: 'none', background: isActive ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent', color: isActive ? '#ffffff' : 'var(--text-tertiary)', boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none', transform: isActive ? 'scale(1.02)' : 'scale(1)', width: '100%', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '12px', position: 'relative', overflow: 'hidden' };

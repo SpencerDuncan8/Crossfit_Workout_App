@@ -35,12 +35,14 @@ export default async function handler(req, res) {
 
     const userData = userDoc.data();
 
-    // Prepare a safe, public version of the user's data
-    // Crucially, we are ONLY sending the username and workoutSchedule.
+    // --- THIS IS THE FIX ---
+    // Now we send back their programs list as well.
     const publicFriendData = {
       username: userData.username || 'Unknown User',
       workoutSchedule: userData.workoutSchedule || {},
+      programs: userData.programs || [], // Send the friend's programs
     };
+    // --- END OF FIX ---
 
     res.status(200).json(publicFriendData);
 
