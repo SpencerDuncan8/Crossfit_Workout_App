@@ -373,7 +373,7 @@ const AppStateProviderComponent = ({ children }) => {
       return null;
   }, [appState.workoutSchedule]);
   
-  const completeWorkout = useCallback((dateString, scheduleId, stats) => {
+  const completeWorkout = useCallback((dateString, scheduleId, stats, callback) => {
     setAppState(prev => {
       // Find the definition of the workout that was just completed.
       const workoutDef = prev.programs.flatMap(p => p.workouts).find(w => {
@@ -414,6 +414,10 @@ const AppStateProviderComponent = ({ children }) => {
         showConfetti: true, 
       };
     });
+
+    if (callback) {
+      callback();
+    }
     setTimeout(() => updateAppState({ showConfetti: false }), 5000);
   }, [setAppState, updateAppState]);
 

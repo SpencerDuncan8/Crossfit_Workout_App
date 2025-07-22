@@ -224,8 +224,14 @@ const WorkoutView = ({ setActiveView }) => {
         stopTimer();
     }
 
-    completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats);
+  completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats, () => {
     setActiveView('dashboard');
+    // A tiny delay ensures the view has time to render before we scroll.
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.querySelector('.main-content')?.scrollTo(0, 0);
+    }, 50);
+  });
   };
 
   const scheduledDates = getScheduledDates();
