@@ -164,7 +164,25 @@ export default function App() {
             </div>
           </div>
           <main className="main-content">{renderView()}</main>
-          <div className="mobile-nav"><div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', padding: '8px' }}>{navItems.map(item => (<NavItem key={item.id} icon={item.icon} label={item.label} isActive={activeView === item.id} onClick={() => setActiveView(item.id)} isMobile={true} />))}</div></div>
+                    <div className="mobile-nav">
+            {/* --- THIS IS THE CORRECTED FIX --- */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(6, 1fr)', // Change from 5 to 6
+              padding: '8px' 
+            }}>
+              {navItems.map(item => (
+                <NavItem 
+                  key={item.id} 
+                  icon={item.icon} 
+                  label={item.label} 
+                  isActive={activeView === item.id} 
+                  onClick={() => setActiveView(item.id)} 
+                  isMobile={true} 
+                />
+              ))}
+            </div>
+          </div>
         </>
       ) : (
         <>
