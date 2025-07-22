@@ -1,24 +1,30 @@
 // /api/shareProgram.js
 
 import admin from 'firebase-admin';
-import { generateUniqueId } from '../../utils/idUtils.js'; // We'll create this utility file next
 
+// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+    });
+  } catch (error) {
+    console.error('Firebase admin initialization error', error.stack);
+  }
 }
 
 const db = admin.firestore();
 
-// A simple utility function to generate unique IDs on the server
+// --- THIS IS THE FIX ---
+// The utility function is now directly inside this file, removing any import/require issues.
 const serverGenerateUniqueId = () => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
+// --- END OF FIX ---
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -46,13 +52,11 @@ export default async function handler(req, res) {
     }
     
     // 2. Create a deep, safe copy of the program.
-    // This is crucial to give every workout and block a new, unique ID for the recipient.
     const newProgram = JSON.parse(JSON.stringify(programToShare));
-    newProgram.id = serverGenerateUniqueId(); // Give the program itself a new ID
+    newProgram.id = serverGenerateUniqueId();
     newProgram.name = `${programToShare.name} (Shared by ${senderData.username || 'a friend'})`;
-    newProgram.isTemplate = false; // It's a user program now
+    newProgram.isTemplate = false;
 
-    // Assign new IDs to all workouts and their internal blocks/sets
     if (newProgram.workouts) {
         newProgram.workouts.forEach(workout => {
             workout.id = serverGenerateUniqueId();
@@ -61,7 +65,7 @@ export default async function handler(req, res) {
                     block.id = serverGenerateUniqueId();
                     if (block.exercises) {
                         block.exercises.forEach(ex => {
-                            ex.instanceId = serverGenerateUniqueId(); // The React key
+                            ex.instanceId = serverGenerateUniqueId();
                             if (ex.sets) ex.sets.forEach(s => s.id = serverGenerateUniqueId());
                         });
                     }
