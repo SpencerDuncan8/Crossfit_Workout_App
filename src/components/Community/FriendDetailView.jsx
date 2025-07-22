@@ -1,11 +1,14 @@
 // src/components/Community/FriendDetailView.jsx
 
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AppStateContext } from '../../context/AppContext';
 import { generateMonthDays } from '../../utils/calendarUtils.js';
+import Modal from '../Common/Modal.jsx'; // Import Modal
+import WorkoutDetailView from '../Program/WorkoutDetailView.jsx'; // Import WorkoutDetailView
+import { CheckCircle } from 'lucide-react'; // Import CheckCircle icon
 
-// A simple day cell for the friend's calendar
-const FriendDayCell = ({ day, scheduledItems }) => {
+// UPDATED: Day cell is now a button to be clickable
+const FriendDayCell = ({ day, scheduledItems, onDayClick }) => {
   let cellClass = 'day-cell';
   if (day.isBlank) return <div className={cellClass + ' blank'}></div>;
   if (day.isToday) cellClass += ' today';
@@ -14,70 +17,125 @@ const FriendDayCell = ({ day, scheduledItems }) => {
   const isPlanned = scheduledItems.length > 0 && !isCompleted;
 
   if (isCompleted) cellClass += ' completed';
-
+  
+  // Use a button for accessibility and click handling
   return (
-    <div className={cellClass}>
+    <button className={cellClass} onClick={() => onDayClick(day, scheduledItems)}>
       <span className="day-number">{day.dayNumber}</span>
       <div className="dot-container">
         {isPlanned && scheduledItems.map(item => <div key={item.scheduleId} className="workout-dot"></div>)}
       </div>
-    </div>
+    </button>
   );
 };
 
 const FriendDetailView = ({ friendData }) => {
   const { allWorkouts } = useContext(AppStateContext);
-  const currentDate = new Date(); // Always show the current month
+  const [viewingDate, setViewingDate] = useState(null); // State for the modal
+  const currentDate = new Date();
   const monthDays = generateMonthDays(currentDate.getFullYear(), currentDate.getMonth());
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Get today's date string in YYYY-MM-DD format
-  const todayString = new Date().toISOString().split('T')[0];
+  // --- NEW: Function to handle day clicks ---
+  const handleDayClick = (day, scheduledItems) => {
+    if (day.isBlank || scheduledItems.length === 0) return;
+    setViewingDate(day.date);
+  };
 
-  // Filter for upcoming workouts (today or later)
+  const closeModal = () => setViewingDate(null);
+
+  // --- NEW: Function to render content inside the modal ---
+  const renderModalContent = () => {
+    if (!viewingDate) return null;
+    const dateString = viewingDate.toISOString().split('T')[0];
+    const scheduledItems = friendData.workoutSchedule[dateString] || [];
+
+    if (scheduledItems.length === 0) return <p>No workout found for this day.</p>;
+
+    return (
+      <div className="assign-workout-list">
+        {scheduledItems.map(item => {
+          const workout = allWorkouts.find(w => w.id === item.workoutId);
+          if (!workout) return <p key={item.scheduleId}>Workout not found.</p>;
+          return (
+            <div key={item.scheduleId}>
+              <div className="assign-workout-item" style={{ marginBottom: '12px' }}>
+                <span className="assign-workout-name">
+                  {item.completedData && <CheckCircle size={16} style={{ color: '#10b981' }} />}
+                  {workout.name}
+                </span>
+              </div>
+              {/* Reuse the WorkoutDetailView to show the structure/results */}
+              <WorkoutDetailView workout={workout} completedData={item.completedData} />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+  
+  const todayString = new Date().toISOString().split('T')[0];
   const upcomingWorkouts = Object.entries(friendData.workoutSchedule)
     .filter(([date]) => date >= todayString)
     .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
     .flatMap(([date, schedule]) => schedule.map(item => ({...item, date})))
-    .slice(0, 5); // Show up to 5 upcoming workouts
+    .slice(0, 5);
 
   return (
-    <div className="friend-detail-view">
-      <div className="friend-calendar-container">
-        <h4 className="friend-section-title">This Month's Activity</h4>
-        <div className="calendar-grid">
-          {daysOfWeek.map(day => <div key={day} className="day-of-week-header">{day}</div>)}
-          {monthDays.map(day => {
-            const dateString = day.date ? day.date.toISOString().split('T')[0] : '';
-            const scheduledItems = friendData.workoutSchedule[dateString] || [];
-            return <FriendDayCell key={day.key} day={day} scheduledItems={scheduledItems} />;
-          })}
+    <>
+      <div className="friend-detail-view">
+        <div className="friend-calendar-container">
+          <h4 className="friend-section-title">This Month's Activity</h4>
+          <div className="calendar-grid">
+            {daysOfWeek.map(day => <div key={day} className="day-of-week-header">{day}</div>)}
+            {monthDays.map(day => {
+              const dateString = day.date ? day.date.toISOString().split('T')[0] : '';
+              const scheduledItems = friendData.workoutSchedule[dateString] || [];
+              return (
+                <FriendDayCell 
+                  key={day.key} 
+                  day={day} 
+                  scheduledItems={scheduledItems} 
+                  onDayClick={handleDayClick} 
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="friend-upcoming-container">
+          <h4 className="friend-section-title">Upcoming Workouts</h4>
+          {upcomingWorkouts.length > 0 ? (
+            <ul className="friend-workout-list">
+              {upcomingWorkouts.map(item => {
+                const workout = allWorkouts.find(w => w.id === item.workoutId);
+                if (!workout) return null;
+                const workoutDate = new Date(item.date).toLocaleDateString(undefined, {
+                  weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC'
+                });
+                return (
+                  <li key={item.scheduleId} className="friend-workout-item">
+                    <span className="friend-workout-date">{workoutDate}</span>
+                    <span className="friend-workout-name">{workout.name}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="search-status-text">No upcoming workouts scheduled.</p>
+          )}
         </div>
       </div>
 
-      <div className="friend-upcoming-container">
-        <h4 className="friend-section-title">Upcoming Workouts</h4>
-        {upcomingWorkouts.length > 0 ? (
-          <ul className="friend-workout-list">
-            {upcomingWorkouts.map(item => {
-              const workout = allWorkouts.find(w => w.id === item.workoutId);
-              if (!workout) return null;
-              const workoutDate = new Date(item.date).toLocaleDateString(undefined, {
-                weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC'
-              });
-              return (
-                <li key={item.scheduleId} className="friend-workout-item">
-                  <span className="friend-workout-date">{workoutDate}</span>
-                  <span className="friend-workout-name">{workout.name}</span>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="search-status-text">No upcoming workouts scheduled.</p>
-        )}
-      </div>
-    </div>
+      {/* --- NEW: Modal to display the workout details --- */}
+      <Modal 
+        isOpen={!!viewingDate} 
+        onClose={closeModal}
+        title={viewingDate ? new Date(viewingDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' }) : ''}
+      >
+        {renderModalContent()}
+      </Modal>
+    </>
   );
 };
 
