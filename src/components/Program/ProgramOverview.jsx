@@ -1,12 +1,12 @@
-
 // src/components/Program/ProgramOverview.jsx
 
 import React, { useState, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, CalendarPlus, ChevronsRight, ArrowLeft, Copy, Share2 } from 'lucide-react';
 import CompactWorkoutPreview from './CompactWorkoutPreview.jsx';
 import Modal from '../Common/Modal.jsx';
-import TemplateLibrary from './TemplateLibrary.jsx'; // <-- IMPORT THE NEW COMPONENT
+import TemplateLibrary from './TemplateLibrary.jsx'; 
+import ShareProgramModal from './ShareProgramModal.jsx';
 import './ProgramOverview.css';
 
 const ProgramOverview = ({ setActiveView }) => {
@@ -30,19 +30,18 @@ const ProgramOverview = ({ setActiveView }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newProgramName, setNewProgramName] = useState('My New Program');
   const [programToDelete, setProgramToDelete] = useState(null);
-
+  const [programToShare, setProgramToShare] = useState(null);
+  
   const handleScheduleWorkout = (workoutId) => {
     selectWorkoutToSchedule(workoutId);
     setActiveView('calendar');
   };
 
   const handleCreateProgram = () => {
-    // --- THIS IS THE NEW LOGIC ---
     if (!isPremium && programCount >= maxPrograms) {
-      openPremiumModal(); // Use the existing function from context
+      openPremiumModal();
       return;
     }
-    // --- END OF NEW LOGIC ---
     setNewProgramName('My New Program');
     setIsCreateModalOpen(true);
   };
@@ -99,32 +98,29 @@ const ProgramOverview = ({ setActiveView }) => {
 
           {isEditingThisProgram ? (
             <form onSubmit={handleSaveProgram} className="program-edit-form">
-              <input
-                type="text"
-                className="program-name-edit-input"
-                value={editingProgramName}
-                onChange={(e) => setEditingProgramName(e.target.value)}
-                autoFocus
-              />
-              <textarea
-                value={editingProgramDescription}
-                onChange={(e) => setEditingProgramDescription(e.target.value)}
-                className="program-description-edit-textarea"
-                placeholder="Enter program description..."
-                rows="4"
-              />
+              <input type="text" className="program-name-edit-input" value={editingProgramName} onChange={(e) => setEditingProgramName(e.target.value)} autoFocus />
+              <textarea value={editingProgramDescription} onChange={(e) => setEditingProgramDescription(e.target.value)} className="program-description-edit-textarea" placeholder="Enter program description..." rows="4" />
               <button type="submit" className="save-program-btn">Save</button>
             </form>
           ) : (
             <>
               <div className="program-title-header">
-                  <h1>{viewingProgram.name}</h1>
+                <h1>{viewingProgram.name}</h1>
+                <div className="program-header-actions">
                   {!viewingProgram.isTemplate && <button className="icon-btn" onClick={() => handleStartEditProgram(viewingProgram)}><Edit size={20}/></button>}
+                  {isPremium && !viewingProgram.isTemplate && (
+                    <button className="icon-btn share-btn" onClick={() => setProgramToShare(viewingProgram)}>
+                      <Share2 size={20} />
+                    </button>
+                  )}
+                </div>
               </div>
+              {/* --- THIS <p> TAG WAS MISSING --- */}
               <p>{viewingProgram.description}</p>
             </>
           )}
         </div>
+        
         <div className="custom-workouts-list">
           {viewingProgram.workouts.map(workout => (
             <div key={workout.id} className="custom-workout-card">
@@ -138,19 +134,9 @@ const ProgramOverview = ({ setActiveView }) => {
                 </button>
                 {!viewingProgram.isTemplate && (
                   <>
-                    <button 
-                      className="action-btn edit-btn" 
-                      onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}>
-                      <Edit size={18} /> Edit
-                    </button>
-                    <button 
-                      className="action-btn copy-btn" 
-                      onClick={() => copyCustomWorkout(viewingProgram.id, workout.id)}>
-                      <Copy size={18} /> Copy
-                    </button>
-                    <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(workout.id, viewingProgram.id)}>
-                      <Trash2 size={18} />
-                    </button>
+                    <button className="action-btn edit-btn" onClick={() => openWorkoutEditor(viewingProgram.id, workout.id)}><Edit size={18} /> Edit</button>
+                    <button className="action-btn copy-btn" onClick={() => copyCustomWorkout(viewingProgram.id, workout.id)}><Copy size={18} /> Copy</button>
+                    <button className="action-btn delete-btn" onClick={() => deleteCustomWorkout(workout.id, viewingProgram.id)}><Trash2 size={18} /></button>
                   </>
                 )}
               </div>
@@ -176,12 +162,8 @@ const ProgramOverview = ({ setActiveView }) => {
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1>My Programs</h1>
-            {!isPremium && (
-              <p>Select a program to view its workouts. ({programCount}/{maxPrograms} programs)</p>
-            )}
-            {isPremium && (
-              <p>Select a program to view its workouts.</p>
-            )}
+            {!isPremium && (<p>Select a program to view its workouts. ({programCount}/{maxPrograms} programs)</p>)}
+            {isPremium && (<p>Select a program to view its workouts.</p>)}
           </div>
           <button className="create-workout-btn" onClick={handleCreateProgram}>
             <PlusCircle size={20} />
@@ -204,10 +186,7 @@ const ProgramOverview = ({ setActiveView }) => {
               <p>You haven't created or loaded any programs yet. Create a new one or load a template below to get started.</p>
           </div>
         )}
-
-        {/* --- THIS IS THE KEY CHANGE. THE OLD LOGIC IS GONE. --- */}
         <TemplateLibrary />
-        
       </div>
     );
   }
@@ -219,14 +198,7 @@ const ProgramOverview = ({ setActiveView }) => {
       <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Program">
         <form onSubmit={handleConfirmCreateProgram} className="modal-form-container">
           <label htmlFor="newProgramName" className="modal-label">Program Name</label>
-          <input
-            id="newProgramName"
-            type="text"
-            className="modal-input"
-            value={newProgramName}
-            onChange={(e) => setNewProgramName(e.target.value)}
-            autoFocus
-          />
+          <input id="newProgramName" type="text" className="modal-input" value={newProgramName} onChange={(e) => setNewProgramName(e.target.value)} autoFocus />
           <div className="modal-actions">
             <button type="button" className="action-btn" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
             <button type="submit" className="action-btn schedule-btn">Create Program</button>
@@ -245,6 +217,13 @@ const ProgramOverview = ({ setActiveView }) => {
           </div>
         </div>
       </Modal>
+
+      {/* --- CORRECT PLACEMENT FOR THE SHARE MODAL --- */}
+      <ShareProgramModal
+        isOpen={!!programToShare}
+        onClose={() => setProgramToShare(null)}
+        programToShare={programToShare}
+      />
     </>
   );
 };

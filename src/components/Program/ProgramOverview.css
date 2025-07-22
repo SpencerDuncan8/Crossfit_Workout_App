@@ -631,3 +631,38 @@
   transform: scale(1.05);
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
 }
+/* ADD THIS TO THE END of src/components/Program/ProgramOverview.css */
+
+.program-title-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* This will push actions to the right */
+    gap: 12px;
+}
+
+.program-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.icon-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.icon-btn.share-btn:hover {
+  color: #10b981; /* Green color on hover */
+  background-color: rgba(16, 185, 129, 0.1);
+}

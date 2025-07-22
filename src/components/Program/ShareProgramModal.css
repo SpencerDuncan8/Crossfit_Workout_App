@@ -1,0 +1,64 @@
+/* src/components/Program/ShareProgramModal.css */
+
+.share-modal-content {
+  min-height: 200px;
+}
+
+.share-friend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.share-friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-tertiary);
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.share-btn:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: scale(1.05);
+}
+
+.share-btn:disabled {
+  cursor: not-allowed;
+}
+
+.share-btn.sending {
+  background-color: var(--bg-primary);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+.share-btn.success {
+  background-color: #10b981;
+  color: #fff;
+}
+
+.share-btn.error {
+  background-color: #ef4444;
+  color: #fff;
+}

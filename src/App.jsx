@@ -32,6 +32,7 @@ import './components/Common/Modal.css';
 import './components/Progress/Progress.css';
 import './components/Program/ProgramOverview.css';
 import './components/Program/WorkoutEditor.css';
+import './components/Program/ShareProgramModal.css';
 import './components/Common/InfoModal.css';
 import './components/Auth/Auth.css';
 import './components/Common/LoadingSpinner.css';
