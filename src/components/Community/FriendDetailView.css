@@ -125,3 +125,30 @@
   font-weight: 500;
   color: var(--text-primary);
 }
+/* ADD THIS TO THE END of src/components/Community/FriendDetailView.css */
+
+/* This makes the calendar grid inside the friend view responsive */
+.friend-calendar-container .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* Force 7 equal columns */
+  gap: 4px; /* Reduce gap slightly to help it fit */
+}
+
+/* Adjust padding on smaller screens to give the calendar more space */
+@media (max-width: 640px) {
+  .friend-calendar-container {
+    padding: 12px;
+  }
+  .friend-calendar-container .day-cell {
+    min-height: 40px; /* Allow cells to be shorter on mobile */
+    padding: 4px;
+  }
+  .friend-calendar-container .day-number {
+    font-size: 12px;
+  }
+  .friend-calendar-container .day-cell.today .day-number {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+}
