@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import MetricCard from './MetricCard.jsx';
 import WeightChart from './WeightChart.jsx';
-import { Weight, TrendingDown, Repeat, BarChart, CheckCircle, Dumbbell, TrendingUp, Flame } from 'lucide-react';
+import { Weight, TrendingDown, Repeat, BarChart, CheckCircle, Dumbbell, TrendingUp, Flame, Clock } from 'lucide-react';
 import { lbsToKg, getUnitLabel } from '../../utils/unitUtils.js';
 import { calculateWorkoutStreak } from '../../utils/progressCalculations.js';
 import './Dashboard.css';
@@ -64,15 +64,16 @@ const Dashboard = ({ setActiveView }) => {
     };
   }
 
-    const metricCardsData = [
-      { icon: CheckCircle, title: "Total Workouts", value: appState.totalWorkoutsCompleted, unit: "Done", color: "#10b981" },
-      { icon: Flame, title: "Workout Streak", value: workoutStreak, unit: "Days", color: "#fb923c", iconElement: <Flame size={24} color="#ffffff" className="fire-icon" /> },
-      { icon: Weight, title: "Current Weight", value: convertWeight(currentWeight), unit: unitLabel, color: "#3b82f6" },
-      weightChangeCard,
-      { icon: Dumbbell, title: "Total Volume", value: convertWeight(appState.totalLbsLifted), unit: unitLabel, color: "#fb923c" },
-      { icon: BarChart, title: "Total Sets", value: appState.totalSets, unit: "", color: "#ef4444" },
-      { icon: Repeat, title: "Total Reps", value: appState.totalReps, unit: "", color: "#8b5cf6" },
-    ];
+  const metricCardsData = [
+    { icon: CheckCircle, title: "Total Workouts", value: appState.totalWorkoutsCompleted, unit: "Done", color: "#10b981" },
+    { icon: Flame, title: "Workout Streak", value: workoutStreak, unit: "Days", color: "#fb923c", iconElement: <Flame size={24} color="#ffffff" className="fire-icon" /> },
+    { icon: Weight, title: "Current Weight", value: convertWeight(currentWeight), unit: unitLabel, color: "#3b82f6" },
+    weightChangeCard,
+    { icon: Dumbbell, title: "Total Volume", value: convertWeight(appState.totalLbsLifted), unit: unitLabel, color: "#fb923c" },
+    { icon: BarChart, title: "Total Sets", value: appState.totalSets, unit: "", color: "#ef4444" },
+    { icon: Repeat, title: "Total Reps", value: appState.totalReps, unit: "", color: "#8b5cf6" },
+    { icon: Clock, title: "Total Cardio", value: appState.totalCardioMinutes, unit: "min", color: "#06b6d4" }, // <-- ADD THIS ENTIRE LINE
+  ];
 
   return (
     <div className="dashboard-container">

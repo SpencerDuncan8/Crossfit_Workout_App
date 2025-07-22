@@ -20,6 +20,7 @@ export const ThemeContext = createContext();
 const initialAppState = {
   startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
   weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
+  totalCardioMinutes: 0,
   programs: [],
   workoutSchedule: {},
   viewingDate: new Date().toISOString().split('T')[0],
@@ -374,23 +375,47 @@ const AppStateProviderComponent = ({ children }) => {
   
   const completeWorkout = useCallback((dateString, scheduleId, stats) => {
     setAppState(prev => {
+      // Find the definition of the workout that was just completed.
+      const workoutDef = prev.programs.flatMap(p => p.workouts).find(w => {
+          const daySchedule = prev.workoutSchedule[dateString] || [];
+          const scheduleEntry = daySchedule.find(item => item.scheduleId === scheduleId);
+          return scheduleEntry && w.id === scheduleEntry.workoutId;
+      });
+
+      // --- START OF NEW LOGIC ---
+      // Calculate total cardio minutes from this specific workout.
+      let cardioMinutes = 0;
+      if (workoutDef) {
+        const cardioBlocks = workoutDef.blocks.filter(b => b.type === 'Cardio');
+        for (const block of cardioBlocks) {
+          if (block.exercises) {
+            for (const exercise of block.exercises) {
+              cardioMinutes += parseInt(exercise.duration, 10) || 0;
+            }
+          }
+        }
+      }
+      // --- END OF NEW LOGIC ---
+
       const newSchedule = { ...prev.workoutSchedule };
       const daySchedule = (newSchedule[dateString] || []).map(item => 
         item.scheduleId === scheduleId ? { ...item, completedData: stats } : item
       );
       newSchedule[dateString] = daySchedule;
+      
       return { 
         ...prev, 
         workoutSchedule: newSchedule, 
         totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1, 
         totalSets: prev.totalSets + (stats.sets || 0), 
         totalReps: prev.totalReps + (stats.reps || 0), 
-        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0), 
+        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0),
+        totalCardioMinutes: (prev.totalCardioMinutes || 0) + cardioMinutes, // <-- ADD THIS LINE
         showConfetti: true, 
       };
     });
     setTimeout(() => updateAppState({ showConfetti: false }), 5000);
-  }, [setAppState]);
+  }, [setAppState, updateAppState]);
 
   const resetAllData = useCallback(() => {
       clearLocalState();
