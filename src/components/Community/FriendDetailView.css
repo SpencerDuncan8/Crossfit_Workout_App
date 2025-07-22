@@ -20,13 +20,77 @@
   border-radius: 12px;
 }
 
+/* --- START: NEW & UPDATED STYLES --- */
+
+/* Make the friend calendar day cells buttons for accessibility */
 .friend-calendar-container .day-cell {
-  cursor: default; /* Clicks do nothing on a friend's calendar */
-  min-height: 50px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 8px; /* Reset padding for button */
+  min-height: 70px; /* Match main calendar */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  position: relative;
 }
-.friend-calendar-container .day-cell:hover {
-  background-color: transparent; /* No hover effect */
+
+.friend-calendar-container .day-cell:not(.blank):hover {
+  background-color: var(--bg-tertiary);
 }
+
+.friend-calendar-container .day-cell.blank {
+  cursor: default;
+  background: none !important;
+}
+
+/* These styles are copied from Calendar.css for consistency */
+.friend-calendar-container .day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  align-self: flex-start;
+}
+
+.friend-calendar-container .day-cell.completed {
+  background-color: var(--workout-color);
+}
+
+.friend-calendar-container .day-cell.completed .day-number {
+  color: white;
+}
+
+.friend-calendar-container .day-cell.completed .workout-dot {
+  display: none;
+}
+
+.friend-calendar-container .dot-container {
+  display: flex;
+  gap: 4px;
+}
+
+.friend-calendar-container .workout-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--workout-color);
+}
+
+.friend-calendar-container .day-cell.today .day-number {
+  background-color: #FF6B35;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* --- END: NEW & UPDATED STYLES --- */
 
 .friend-workout-list {
   list-style: none;
