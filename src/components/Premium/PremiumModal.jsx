@@ -30,8 +30,8 @@ const PremiumModal = ({ isOpen, onClose }) => {
     },
     {
       icon: <Users size={20} />,
-      title: "Social Features",
-      description: "Share workouts, add friends, and compete on leaderboards"
+      title: "Add Friends & Share",
+      description: "Connect with friends, view their activity, and share your custom programs."
     },
     {
       icon: <TrendingUp size={20} />,

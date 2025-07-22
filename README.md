@@ -2,12 +2,12 @@
 
 A premium web application to guide your fitness journey. Get started immediately with professionally designed programs from the Template Library or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
 
-## 🎯 Current Status: Complete Freemium Model & Template Library ✅
+## 🎯 Current Status: Now with Community Features & Sharing ✅
 
-The application now features a complete freemium model with secure payment processing and a powerful, filterable Template Library. Users can experience the full app locally before upgrading to premium for cloud synchronization.
+The application is fully featured with a freemium model, secure payment processing, a filterable Template Library, and a complete social system for premium users.
 
--   **Goal:** Provide a full-featured experience without requiring immediate sign-up, while enabling powerful cross-device synchronization for paid subscribers.
--   **Method:** The free tier saves all user data in **`localStorage`** for single-device use. Premium users get **Firebase Authentication** + **Cloud Firestore** sync across all devices.
+-   **Goal:** Provide a full-featured experience without requiring immediate sign-up, while enabling powerful cross-device synchronization and community interaction for paid subscribers.
+-   **Method:** The free tier saves all user data in **`localStorage`**. Premium users get **Firebase Authentication** + **Cloud Firestore** sync, plus the ability to add friends and share programs.
 -   **Security:** Users only gain cloud access **after** successful payment completion. Email addresses are captured for follow-up even if payment is abandoned.
 
 ## 🗺️ Project Roadmap
@@ -22,17 +22,16 @@ The project is being developed in distinct phases to ensure a high-quality, user
 
 *   **Phase 2: User Authentication & Cloud Sync** - ✅ **Complete**
     *   Implemented user accounts using **Firebase Authentication**.
-    *   Implemented a one-time data migration for premium users, moving their data from `localStorage` to **Cloud Firestore** to enable cross-device data synchronization.
+    *   Implemented a one-time data migration for premium users, moving their data from `localStorage` to **Cloud Firestore**.
 
 *   **Phase 3: Premium Tier & Monetization** - ✅ **Complete**
     *   Integrated **Stripe** for secure payment processing.
     *   Launched "Premium" subscription tier ($4.99/month) that unlocks cloud sync.
-    *   Secure payment flow - users only get access after successful payment.
 
-*   **Phase 4: Template Library & Community Features** - **In Progress**
-    *   ✅ **Complete:** Built a filterable **Template Library** to allow users to easily find programs by skill level, goal, and equipment.
+*   **Phase 4: Template Library & Community Features** - ✅ **Complete**
+    *   ✅ **Complete:** Built a filterable **Template Library** with programs by skill, goal, and equipment.
     *   ✅ **Complete:** Added new program types including **Benchmarks (The Girls)**, **Hero WODs**, and skill-based **Challenges**.
-    *   **Planned:** Ability for premium users to share their custom programs with the community.
+    *   ✅ **Complete:** Premium users can now create a unique username, add friends, view their activity, and share their custom programs.
     *   **Planned:** Leaderboards for benchmark workouts.
 
 ## 💰 Monetization & Business Model
@@ -52,7 +51,8 @@ The application follows a **Freemium** model with a secure payment gateway to pr
     *   **Cross-Device Access:** Access your programs, logs, and progress from any device.
     *   **Unlimited Custom Programs:** Create and save as many workout programs as you want.
     *   **Full Template Library Access:** Load and schedule any template without program-count restrictions.
-    *   **Future Social Features:** Early access to community features as they are released.
+    *   **Community & Sharing:** Add friends, view their workout calendar, and share your custom programs with them.
+    *   **Advanced Analytics:** Access the progress dashboard and track historical performance on lifts and workouts.
 
 ## 🔒 Payment Security
 
@@ -65,45 +65,41 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 ## 🚀 Features
 
 ### 1. Program Management & Template Library
-- **Intelligent Program Design:** Templates are designed with specific goals and durations in mind (e.g., 4-week strength cycles, 30-day skill challenges), ensuring users can find a program that's effective and fits their schedule.
-- **Filterable Template Library:** Discover the perfect program by filtering a rich library of templates. Filter by:
-    - **Program Type:** Structured Programs, Benchmarks, Hero WODs, and Challenges.
-    - **Skill Level:** Beginner, Intermediate, Advanced.
-    - **Primary Goal:** Get Strong, Build Muscle, Lose Weight, General Fitness.
-    - **Equipment:** Bodyweight, Dumbbells, Kettlebells, Full Gym.
-- **Load & Auto-Schedule:** A "quick start" option instantly adds a template to your library and intelligently schedules its workouts onto your calendar based on your selected training days.
+- **Intelligent Program Design:** Templates are designed with specific goals and durations in mind (e.g., 4-week strength cycles, 30-day skill challenges).
+- **Filterable Template Library:** Discover the perfect program by filtering a rich library of templates by Program Type, Skill Level, Goal, and Equipment.
+- **Load & Auto-Schedule:** A "quick start" option instantly adds a template to your library and intelligently schedules its workouts onto your calendar.
 - **Create From Scratch:** Build your own custom programs from the ground up. *(Free tier limited to 3 programs)*.
-- **Full Customization:** For any program you own, easily rename the program, create new workouts, edit existing ones, or delete workouts.
+- **Full Customization:** For any program you own, easily rename it, create new workouts, or edit existing ones.
 
 ### 2. Powerful Workout Editor
-- **Modular Blocks:** Build workouts using a variety of block types: Warm-up, Strength, Bodyweight, Accessory / Carry, Cardio, Cool-down, and multiple Conditioning formats.
+- **Modular Blocks:** Build workouts using a variety of block types: Warm-up, Strength, Conditioning, Cardio, and more.
 - **Strength Blocks:** Define exercises with unique sets, reps, and load. Supports percentage-based loading which automatically calculates weight based on your saved 1-Rep Max.
-- **Conditioning Blocks:**
-  - **AMRAP (As Many Rounds As Possible):** Set a time, list the exercises, and log your final score (total rounds + reps) to track performance.
-  - **RFT (Rounds for Time):** Define rounds and exercises, backed by a lap timer to record split times.
-  - **Chipper:** Create a high-rep list of exercises to be completed once for time.
-  - **Tabata:** A true Tabata protocol (8 rounds of 20s work, 10s rest). Log reps for each of the 8 rounds to automatically calculate your official Tabata score (lowest reps).
-  - **EMOM (Every Minute On the Minute):** Customize minute-by-minute tasks for high-intensity training.
-  - **Intervals:** A flexible HIIT block where you can customize work time, rest time, and total rounds.
+- **Conditioning Blocks:** AMRAP, RFT, Chipper, Tabata, EMOM, and custom Intervals.
 
 ### 3. Interactive Workout Experience
-- **Live Tracking & Timers:** Log sets/reps in real-time and use context-aware timers (Stopwatch, Countdown, AMRAP, EMOM, Tabata, Intervals) that launch automatically for the block you're on.
-- **Live Feedback & Score Logging:** Log round times for RFTs, record final times for Chippers, enter your total reps/rounds for AMRAPs, and log reps for each round of a Tabata to save detailed performance data with your workout results.
-- **1RM Percentage Calculation:** The app displays the calculated target weight based on your saved 1-Rep Max.
-- **Seamless Navigation:** Use arrow buttons in the Workout View and Calendar modals to easily flip between days.
+- **Live Tracking & Timers:** Log sets/reps in real-time and use context-aware timers (Stopwatch, Countdown, AMRAP, etc.).
+- **Live Feedback & Score Logging:** Log round times, record final times, and enter reps/rounds to save detailed performance data.
+- **1RM Percentage Calculation:** Automatically displays the target weight based on your saved 1-Rep Max.
 
 ### 4. Full-Featured Calendar & Logbook
-- **Multi-Workout Scheduling:** Add multiple workouts to a single day and track each one's completion status individually.
+- **Multi-Workout Scheduling:** Add multiple workouts to a single day and track completion status individually.
 - **Interactive Day Modal:** Click a day to view all scheduled workouts, start a new one, or review completed sessions with a full performance summary.
-- **Detailed Logbook:** Completed workouts are marked on the calendar, offering a review of all logged data, including times and scores.
+- **Detailed Logbook:** Completed workouts are marked on the calendar, offering a review of all logged data.
 
 ### 5. Advanced Progress Tracking
-- **At-a-Glance Dashboard:** Displays key metrics like total workouts, lifetime lbs lifted, and total reps.
-- **1-Rep Max (1RM) Tracking:** A dedicated editor to log your personal bests for key lifts, powering percentage-based calculations.
-- **Weight & Photo Logging:** Track your body weight and visualize it on a chart. Upload progress photos and compare them side-by-side.
+- **At-a-Glance Dashboard:** Displays key metrics like total workouts, lifetime volume lifted, and total reps.
+- **1-Rep Max (1RM) Tracking:** A dedicated editor to log your personal bests for key lifts.
+- **Historical Performance:** Automatically view your previous performance for a given exercise or benchmark WOD when you start a workout.
+- **Weight & Photo Logging:** Track your body weight and visualize it on a chart. Upload and compare progress photos side-by-side.
 
-### 6. Quality of Life Features
-- **In-App Explanations:** Click the help icon next to any conditioning workout type (AMRAP, RFT, Tabata, etc.) to get a detailed explanation of the rules and scoring.
+### 6. Community & Social Features (Premium)
+- **Unique Usernames:** Create a public username to connect with others in the BlockFit community.
+- **Build Your Network:** Search for other users by their username and send friend requests to build your fitness circle.
+- **View Friend Activity:** Once connected, you can view your friends' workout calendars to see what they've completed and what's coming up, helping with motivation and accountability.
+- **Share Your Genius:** Share any of your custom-built workout programs with a friend with a single click. They receive a full, independent copy of your program to use in their own training.
+
+### 7. Quality of Life Features
+- **In-App Explanations:** Click the help icon next to any conditioning workout type (AMRAP, RFT, etc.) to get a detailed explanation.
 - **Light & Dark Mode:** Toggle between a sleek dark theme and a clean light theme.
 - **Responsive Design:** A mobile-first design ensures a seamless experience on any device.
 
@@ -113,7 +109,7 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 - **Styling:** CSS with variables for theming
 - **Backend:** Firebase (Authentication & Cloud Firestore)
 - **Payments:** Stripe (SetupIntent + Subscriptions API)
-- **Deployment:** Vercel (Frontend + Serverless Functions)
+- **Deployment:** Vercel (Frontend + Serverless Functions for API)
 - **Libraries:**
   - `recharts` for progress charts
   - `lucide-react` for icons
@@ -129,7 +125,7 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 3. **Payment:** Stripe processes payment and stores customer data
 4. **Account Creation:** Firebase user created only after successful payment
 5. **Data Migration:** Local data automatically synced to cloud storage
-6. **Premium Access:** Full cross-device synchronization activated
+6. **Premium Access:** Full cross-device synchronization and social features activated
 
 ### Data Storage
 - **Free Tier:** Browser localStorage for single-device persistence
@@ -139,11 +135,10 @@ The application follows a **Freemium** model with a secure payment gateway to pr
 ## 🚀 Getting Started
 
 ### For Users
-1. Visit the app and start using it immediately (no signup required)
-2. Browse the **Template Library** to find a program that fits your goals and equipment.
-3. Load a program, plan workouts, and track your progress locally.
-4. When ready for cross-device sync and unlimited programs, upgrade to Premium.
-5. Your local data automatically transfers to the cloud.
+1. Visit the app and start using it immediately (no signup required).
+2. Browse the **Template Library** to find a program that fits your goals.
+3. When ready for cloud sync, unlimited programs, and social features, upgrade to Premium.
+4. Create your unique username, add friends, and start sharing your fitness journey!
 
 ### For Developers
 1. Clone the repository
