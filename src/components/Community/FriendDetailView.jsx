@@ -6,7 +6,6 @@ import Modal from '../Common/Modal.jsx';
 import WorkoutDetailView from '../Program/WorkoutDetailView.jsx';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
-// UPDATED: DayCell now uses getWorkoutColor to show dots correctly
 const FriendDayCell = ({ day, scheduledItems, onDayClick }) => {
   let cellClass = 'day-cell';
   if (day.isBlank) return <div className={cellClass + ' blank'}></div>;
@@ -23,7 +22,7 @@ const FriendDayCell = ({ day, scheduledItems, onDayClick }) => {
     <button 
       className={cellClass} 
       onClick={() => onDayClick(day, scheduledItems)}
-      style={{'--workout-color': workoutColor}} // This passes the color for the dot/background
+      style={{'--workout-color': workoutColor}}
     >
       <span className="day-number">{day.dayNumber}</span>
       <div className="dot-container">
@@ -47,7 +46,6 @@ const FriendDetailView = ({ friendData }) => {
 
   const closeModal = () => setViewingDate(null);
 
-  // --- NEW: Functions to handle day navigation in the modal ---
   const handlePrevDayInModal = () => {
     setViewingDate(prev => {
       if (!prev) return null;
@@ -94,7 +92,6 @@ const FriendDetailView = ({ friendData }) => {
     );
   };
 
-  // --- NEW: A function to create the navigable modal title ---
   const getModalTitleWithNav = () => {
     if (!viewingDate) return '';
     const d = new Date(viewingDate);
@@ -110,13 +107,6 @@ const FriendDetailView = ({ friendData }) => {
         </div>
     );
   }
-  
-  const todayString = new Date().toISOString().split('T')[0];
-  const upcomingWorkouts = Object.entries(friendData.workoutSchedule)
-    .filter(([date]) => date >= todayString)
-    .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
-    .flatMap(([date, schedule]) => schedule.map(item => ({...item, date})))
-    .slice(0, 5);
 
   return (
     <>
@@ -132,26 +122,12 @@ const FriendDetailView = ({ friendData }) => {
             })}
           </div>
         </div>
-
-        <div className="friend-upcoming-container">
-          <h4 className="friend-section-title">Upcoming Workouts</h4>
-          {upcomingWorkouts.length > 0 ? (
-            <ul className="friend-workout-list">
-              {upcomingWorkouts.map(item => {
-                const workout = friendAllWorkouts.find(w => w.id === item.workoutId);
-                if (!workout) return null;
-                const workoutDate = new Date(item.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
-                return ( <li key={item.scheduleId} className="friend-workout-item"> <span className="friend-workout-date">{workoutDate}</span> <span className="friend-workout-name">{workout.name}</span> </li> );
-              })}
-            </ul>
-          ) : ( <p className="search-status-text">No upcoming workouts scheduled.</p> )}
-        </div>
       </div>
 
       <Modal 
         isOpen={!!viewingDate} 
         onClose={closeModal}
-        title={getModalTitleWithNav()} // Use the new title function
+        title={getModalTitleWithNav()}
       >
         {renderModalContent()}
       </Modal>
