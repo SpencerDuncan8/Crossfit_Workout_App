@@ -246,7 +246,6 @@ export const bodyweightBlastIntermediateTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (90s)'}, {id: 'pogo-hops', name: 'Pogo Hops (60s)'} ]},
           { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 45, rest: 15, rounds: 6, exercises: [{id: 'broad-jumps', name: 'Broad Jumps'}] },
-          { id: generateUniqueId(), type: 'Rest', duration: 180, note: 'Rest 3 minutes.'},
           { id: generateUniqueId(), type: 'Conditioning: Intervals', work: 35, rest: 10, rounds: 6, exercises: [{id: 'jumping-jack', name: 'Jumping Jacks'}] },
           { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'hamstring-stretch', name: 'Hamstring Stretch (60s each)'}, {id: 'quad-stretch', name: 'Quad Stretch (60s each)'} ]}
       ]
