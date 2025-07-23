@@ -144,11 +144,11 @@ export const bodyweightBlastBeginnerTemplate = {
                     {
                       id: generateUniqueId(), type: 'Conditioning: EMOM',
                       minutes: [
-                        { id: 'air-squats', task: '15 Air Squats' },
-                        { id: 'push-ups', task: '12 Push-ups (on knees if needed)' },
-                        { id: 'sit-ups', task: '15 Sit-ups' },
-                        { id: 'plank', task: '45s Plank' },
-                        { id: 'jumping-jacks', task: '60s Jumping Jacks' },
+                        { id: generateUniqueId(), task: '15 Air Squats', exercises: [{ instanceId: generateUniqueId(), id: 'air-squats', name: 'Air Squats', reps: '15' }] },
+                        { id: generateUniqueId(), task: '12 Push-ups (on knees if needed)', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '12' }] },
+                        { id: generateUniqueId(), task: '15 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '15' }] },
+                        { id: generateUniqueId(), task: '45s Plank', exercises: [{ instanceId: generateUniqueId(), id: 'plank', name: 'Plank', reps: '45s' }] },
+                        { id: generateUniqueId(), task: '60s Jumping Jacks', exercises: [{ instanceId: generateUniqueId(), id: 'jumping-jack', name: 'Jumping Jacks', reps: '60s' }] },
                       ]
                     },
           // Block 4: Cool-down
@@ -299,19 +299,20 @@ export const bodyweightBlastBeginnerTemplate = {
         // --- MAIN WORKOUT ---
         {
           id: generateUniqueId(), type: 'Conditioning: EMOM',
+          // --- AFTER (Day 10) ---
           minutes: [
-            { id: generateUniqueId(), task: 'Minute 1: 15 Push-ups' },
-            { id: generateUniqueId(), task: 'Minute 2: 20 Lunges' },
-            { id: generateUniqueId(), task: 'Minute 3: 25 Sit-ups' },
-            { id: generateUniqueId(), task: 'Minute 4: Rest' },
-            { id: generateUniqueId(), task: 'Minute 5: 15 Push-ups' },
-            { id: generateUniqueId(), task: 'Minute 6: 20 Lunges' },
-            { id: generateUniqueId(), task: 'Minute 7: 25 Sit-ups' },
-            { id: generateUniqueId(), task: 'Minute 8: Rest' },
-            { id: generateUniqueId(), task: 'Minute 9: 15 Push-ups' },
-            { id: generateUniqueId(), task: 'Minute 10: 20 Lunges' },
-            { id: generateUniqueId(), task: 'Minute 11: 25 Sit-ups' },
-            { id: generateUniqueId(), task: 'Minute 12: Rest' },
+            { id: generateUniqueId(), task: 'Minute 1: 15 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '15' }] },
+            { id: generateUniqueId(), task: 'Minute 2: 20 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '20' }] },
+            { id: generateUniqueId(), task: 'Minute 3: 25 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '25' }] },
+            { id: generateUniqueId(), task: 'Minute 4: Rest', exercises: [] },
+            { id: generateUniqueId(), task: 'Minute 5: 15 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '15' }] },
+            { id: generateUniqueId(), task: 'Minute 6: 20 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '20' }] },
+            { id: generateUniqueId(), task: 'Minute 7: 25 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '25' }] },
+            { id: generateUniqueId(), task: 'Minute 8: Rest', exercises: [] },
+            { id: generateUniqueId(), task: 'Minute 9: 15 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '15' }] },
+            { id: generateUniqueId(), task: 'Minute 10: 20 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '20' }] },
+            { id: generateUniqueId(), task: 'Minute 11: 25 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '25' }] },
+            { id: generateUniqueId(), task: 'Minute 12: Rest', exercises: [] },
           ],
           note: 'Perform the prescribed exercise at the top of each minute for 12 minutes total (3 rounds of the circuit).'
         },
@@ -477,13 +478,18 @@ export const bodyweightBlastBeginnerTemplate = {
           // --- MAIN WORKOUT ---
           { 
             id: generateUniqueId(), type: 'Conditioning: EMOM',
-            minutes: [
-              {id: generateUniqueId(), task: 'Min 1: 1 Burpee'}, {id: generateUniqueId(), task: 'Min 2: 2 Burpees'},
-              {id: generateUniqueId(), task: 'Min 3: 3 Burpees'}, {id: generateUniqueId(), task: 'Min 4: 4 Burpees'},
-              {id: generateUniqueId(), task: 'Min 5: 5 Burpees'}, {id: generateUniqueId(), task: 'Min 6: 6 Burpees'},
-              {id: generateUniqueId(), task: 'Min 7: 7 Burpees'}, {id: generateUniqueId(), task: 'Min 8: 8 Burpees'},
-              {id: generateUniqueId(), task: 'Min 9: 9 Burpees'}, {id: generateUniqueId(), task: 'Min 10: 10 Burpees'},
-            ],
+              minutes: [
+                { id: generateUniqueId(), task: 'Min 1: 1 Burpee', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '1' }] },
+                { id: generateUniqueId(), task: 'Min 2: 2 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '2' }] },
+                { id: generateUniqueId(), task: 'Min 3: 3 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '3' }] },
+                { id: generateUniqueId(), task: 'Min 4: 4 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '4' }] },
+                { id: generateUniqueId(), task: 'Min 5: 5 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '5' }] },
+                { id: generateUniqueId(), task: 'Min 6: 6 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '6' }] },
+                { id: generateUniqueId(), task: 'Min 7: 7 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '7' }] },
+                { id: generateUniqueId(), task: 'Min 8: 8 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '8' }] },
+                { id: generateUniqueId(), task: 'Min 9: 9 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '9' }] },
+                { id: generateUniqueId(), task: 'Min 10: 10 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '10' }] },
+              ],
             note: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute.'
           },
           // --- COOL-DOWN ---

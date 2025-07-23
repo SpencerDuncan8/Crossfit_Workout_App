@@ -12,6 +12,44 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
   const unitLabel = getUnitLabel(appState.unitSystem);
 
   const updateBlockField = (field, value) => onUpdate({ ...block, [field]: value });
+
+  const addExerciseToMinute = (minuteIndex) => {
+    const newBlocks = { ...block };
+    const newMinutes = [...newBlocks.minutes];
+    const newExercise = { instanceId: generateUniqueId(), id: null, name: '', reps: '10' };
+    
+    // Ensure the exercises array exists
+    if (!newMinutes[minuteIndex].exercises) {
+      newMinutes[minuteIndex].exercises = [];
+    }
+
+    newMinutes[minuteIndex].exercises.push(newExercise);
+    onUpdate({ ...block, minutes: newMinutes });
+  };
+
+  const updateExerciseInMinute = (minuteIndex, exIndex, field, value) => {
+    const newMinutes = [...block.minutes];
+    newMinutes[minuteIndex].exercises[exIndex][field] = value;
+    onUpdate({ ...block, minutes: newMinutes });
+  };
+
+  const handleExerciseSelectionInMinute = (minuteIndex, exIndex, selectedExercise) => {
+    const newMinutes = [...block.minutes];
+    const existingExercise = newMinutes[minuteIndex].exercises[exIndex];
+    newMinutes[minuteIndex].exercises[exIndex] = {
+        ...existingExercise,
+        id: selectedExercise.id,
+        name: selectedExercise.name,
+        oneRepMaxId: selectedExercise.oneRepMaxId || null,
+    };
+    onUpdate({ ...block, minutes: newMinutes });
+  };
+
+  const removeExerciseFromMinute = (minuteIndex, exIndex) => {
+    const newMinutes = [...block.minutes];
+    newMinutes[minuteIndex].exercises.splice(exIndex, 1);
+    onUpdate({ ...block, minutes: newMinutes });
+  };
   
   // This function now handles BOTH text changes and property updates for an exercise.
   const updateExerciseField = (exIndex, field, value) => {
@@ -66,8 +104,9 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
     onUpdate(n);
   };
 
-  const addMinute = () => { const n = [...(block.minutes || []), { id: generateUniqueId(), task: '' }]; onUpdate({ ...block, minutes: n }); };
+  const addMinute = () => { const n = [...(block.minutes || []), { id: generateUniqueId(), task: '', exercises: [] }]; onUpdate({ ...block, minutes: n }); };
   const updateMinuteTask = (index, task) => { const n = [...block.minutes]; n[index] = { ...n[index], task: task }; onUpdate({ ...block, minutes: n }); };
+  
   const removeMinute = (minuteId) => { const n = block.minutes.filter(m => m.id !== minuteId); onUpdate({ ...block, minutes: n }); };
 
   // This function creates a new exercise object with a stable 'instanceId'.
@@ -160,8 +199,53 @@ const WorkoutBlockEditor = ({ block, onUpdate, onDelete }) => {
           </div>
         );
 
-      case 'Conditioning: EMOM':
-        return ( <div className="minute-editor-list"><label className="editor-label">Tasks per minute</label>{(block.minutes || []).map((min, index) => (<div key={min.id} className="minute-editor-row"><span className="minute-label">Min {index + 1}</span><input type="text" placeholder="e.g., 10 Cal Row, 12 Burpees" value={min.task} onChange={(e) => updateMinuteTask(index, e.target.value)} /><button className="remove-minute-btn" onClick={() => removeMinute(min.id)}><X size={16} /></button></div>))}<button className="add-minute-btn" onClick={addMinute}><PlusCircle size={16} /> Add Minute</button></div> );
+              case 'Conditioning: EMOM':
+                return (
+                  <div className="minute-editor-list">
+                    <label className="editor-label">Tasks per minute</label>
+                    {(block.minutes || []).map((min, minuteIndex) => (
+                      <div key={min.id} className="strength-exercise-editor"> {/* Reusing this class for style */}
+                        
+<div className="minute-editor-row" style={{ marginBottom: '8px' }}>
+  <span className="minute-label">Min {minuteIndex + 1}</span>
+  <button className="remove-minute-btn" onClick={() => removeMinute(min.id)}>
+    <X size={16} />
+  </button>
+</div>
+                        {/* Nested Exercise Editor */}
+                        <div className="exercise-editor-list" style={{ paddingLeft: '16px' }}>
+                          {(min.exercises || []).map((ex, exIndex) => (
+                            <div key={ex.instanceId} className="exercise-editor-item">
+                              <input
+                                type="text"
+                                className="reps-input for-time-reps"
+                                placeholder="Reps"
+                                value={ex.reps || ''}
+                                onChange={(e) => updateExerciseInMinute(minuteIndex, exIndex, 'reps', e.target.value)}
+                              />
+                              <span className="for-time-x">x</span>
+                              <ExerciseAutocompleteInput
+                                value={ex.name}
+                                onChange={(newValue) => updateExerciseInMinute(minuteIndex, exIndex, 'name', newValue)}
+                                onSelect={(selected) => handleExerciseSelectionInMinute(minuteIndex, exIndex, selected)}
+                                placeholder="Exercise Name"
+                              />
+                              <button className="remove-exercise-btn" onClick={() => removeExerciseFromMinute(minuteIndex, exIndex)}>
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ))}
+                          <button className="add-exercise-btn" onClick={() => addExerciseToMinute(minuteIndex)}>
+                            <PlusCircle size={16} /> Add Exercise to Minute
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button className="add-minute-btn" onClick={addMinute}>
+                      <PlusCircle size={16} /> Add Minute
+                    </button>
+                  </div>
+                );
 
       case 'Conditioning: RFT':
       case 'Conditioning: Chipper':

@@ -28,17 +28,26 @@ const CompactWorkoutPreview = ({ blocks }) => {
       {blocks.map(block => (
         <div key={block.id} className="compact-preview-block">
           <h5 className="compact-preview-title">{block.type.replace('Conditioning: ', '')}</h5>
-          <ul className="compact-preview-list">
-            {block.type === 'Conditioning: EMOM' ? (
-              (block.minutes || []).map((min, i) => (
-                <li key={i}>{`Min ${i + 1}: ${min.task.substring(0, 25)}${min.task.length > 25 ? '...' : ''}`}</li>
-              ))
-            ) : (
-              (block.exercises || []).map((ex, i) => (
-                <li key={i}>{renderExerciseLine(block, ex)}</li>
-              ))
-            )}
-          </ul>
+<ul className="compact-preview-list">
+  {block.type === 'Conditioning: EMOM' ? (
+    (block.minutes || []).map((min, i) => {
+      // Create the descriptive text from the new structured exercises
+      const taskDescription = (min.exercises || [])
+        .map(ex => `${ex.reps || ''} ${ex.name}`.trim())
+        .join(', ');
+      
+      return (
+        <li key={i}>
+          {`Min ${i + 1}: ${taskDescription.substring(0, 25)}${taskDescription.length > 25 ? '...' : ''}`}
+        </li>
+      );
+    })
+  ) : (
+    (block.exercises || []).map((ex, i) => (
+      <li key={i}>{renderExerciseLine(block, ex)}</li>
+    ))
+  )}
+</ul>
         </div>
       ))}
     </div>

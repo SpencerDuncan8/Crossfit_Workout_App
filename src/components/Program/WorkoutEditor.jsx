@@ -89,8 +89,8 @@ const WorkoutEditor = () => {
         newBlock = { ...newBlock, rounds: 3, exercises: [{id: generateUniqueId(), name: '', reps: '10'}] };
         break;
       case 'Conditioning: EMOM':
-        newBlock = { ...newBlock, minutes: [{ id: generateUniqueId(), task: '' }] };
-        break;
+  newBlock = { ...newBlock, minutes: [{ id: generateUniqueId(), task: '', exercises: [] }] };
+  break;
       case 'Conditioning: Intervals':
         newBlock = { ...newBlock, work: 30, rest: 15, rounds: 5, exercises: [] };
         break;

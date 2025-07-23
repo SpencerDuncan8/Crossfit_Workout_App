@@ -71,27 +71,67 @@ export const bodyweightBlastIntermediateTemplate = {
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (60s)'}, {id: 'air-squats', name: 'Air Squats (15 reps)'}, {id: 'inchworms', name: 'Inchworms (8 reps)'} ]},
         {
           id: generateUniqueId(), type: 'Conditioning: EMOM',
-          minutes: [
-            { id: 'air-squats', task: '18 Air Squats' }, { id: 'push-ups', task: '15 Push-ups' }, { id: 'sit-up', task: '18 Sit-ups' }, { id: 'plank', task: '50s Plank' }, { id: null, task: 'Rest' },
-            { id: 'air-squats', task: '18 Air Squats' }, { id: 'push-ups', task: '15 Push-ups' }, { id: 'sit-up', task: '18 Sit-ups' }, { id: 'plank', task: '50s Plank' }, { id: null, task: 'Rest' },
-          ],
+minutes: [
+  { id: generateUniqueId(), task: '18 Air Squats', exercises: [{ instanceId: generateUniqueId(), id: 'air-squats', name: 'Air Squats', reps: '18' }] },
+  { id: generateUniqueId(), task: '15 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '15' }] },
+  { id: generateUniqueId(), task: '18 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '18' }] },
+  { id: generateUniqueId(), task: '50s Plank', exercises: [{ instanceId: generateUniqueId(), id: 'plank', name: 'Plank', reps: '50s' }] },
+  { id: generateUniqueId(), task: 'Rest', exercises: [] },
+  { id: generateUniqueId(), task: '18 Air Squats', exercises: [{ instanceId: generateUniqueId(), id: 'air-squats', name: 'Air Squats', reps: '18' }] },
+  { id: generateUniqueId(), task: '15 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '15' }] },
+  { id: generateUniqueId(), task: '18 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '18' }] },
+  { id: generateUniqueId(), task: '50s Plank', exercises: [{ instanceId: generateUniqueId(), id: 'plank', name: 'Plank', reps: '50s' }] },
+  { id: generateUniqueId(), task: 'Rest', exercises: [] },
+],
           note: "This is a 10-minute EMOM (2 rounds of the 5-minute circuit)."
         },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'}, {id: 'quad-stretch', name: 'Quad Stretch (60s each)'}, {id: 'childs-pose', name: 'Child\'s Pose (60s)'} ]}
       ]
     },
     // --- WEEK 2 ---
+    // --- Replace the existing Day 6 object with this entire block ---
     { // Day 6
       id: generateUniqueId(),
-      name: 'W2D1: Leg Stamina',
+      name: 'W2D1: Strength & Stamina',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jumping-jack', name: 'Jumping Jacks (90s)' }, { id: 'torso-twists', name: 'Torso Twists (45s)' } ] },
-          { id: generateUniqueId(), type: 'Bodyweight', exercises: [
-              { id: 'bodyweight-bulgarian-split-squats', name: 'Bulgarian Split Squats (L)', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), value: '15', trackingType: 'reps' })) },
-              { id: 'bodyweight-bulgarian-split-squats', name: 'Bulgarian Split Squats (R)', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), value: '15', trackingType: 'reps' })) },
-              { id: 'push-ups', name: 'Decline Push-ups', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), value: '20', trackingType: 'reps' })) },
-          ]},
-          { id: generateUniqueId(), type: 'Cardio', exercises: [ { id: 'high-knees', name: 'Jog in Place / High Knees', duration: 12 } ] },
+          { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'jumping-jack', name: 'Jumping Jacks (60s)' }, { id: 'torso-twists', name: 'Torso Twists (30s)' } ] },
+          { 
+            id: generateUniqueId(), 
+            type: 'Bodyweight',
+            exercises: [
+                { 
+                  instanceId: generateUniqueId(), 
+                  id: 'bodyweight-bulgarian-split-squats', 
+                  name: 'Bulgarian Split Squats (L)', 
+                  sets: [
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                  ]
+                },
+                { 
+                  instanceId: generateUniqueId(), 
+                  id: 'bodyweight-bulgarian-split-squats', 
+                  name: 'Bulgarian Split Squats (R)', 
+                  sets: [
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '12', trackingType: 'reps'},
+                  ]
+                },
+                { 
+                  instanceId: generateUniqueId(), 
+                  id: 'push-ups', 
+                  name: 'Decline Push-ups', 
+                  sets: [
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                      {id: generateUniqueId(), value: '15', trackingType: 'reps'},
+                  ]
+                },
+            ] // <-- This closing bracket was missing in the previous snippet
+          },
+          { id: generateUniqueId(), type: 'Cardio', exercises: [ { id: 'jump-rope', name: 'Jog in Place or Jump Rope', duration: 10 } ] },
           { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'quad-stretch', name: 'Quad Stretch (60s each)'}, {id: 'pigeon-pose', name: 'Pigeon Pose (60s each)'} ]}
       ]
     },
@@ -137,11 +177,24 @@ export const bodyweightBlastIntermediateTemplate = {
       blocks: [
           { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (60s)'}, {id: 'push-ups', name: 'Push-ups (10 reps)'}, {id: 'bodyweight-lunge', name: 'Alternating Lunges (10 reps)'} ]},
           { id: generateUniqueId(), type: 'Conditioning: EMOM', note: 'Perform the task every minute for 16 minutes (4 rounds).',
+            // --- AFTER (Day 10) ---
             minutes: [
-              { id: 'push-ups', task: '18 Push-ups' }, { id: 'bodyweight-lunge', task: '24 Lunges' }, { id: 'sit-up', task: '30 Sit-ups' }, { id: null, task: 'Rest' },
-              { id: 'push-ups', task: '18 Push-ups' }, { id: 'bodyweight-lunge', task: '24 Lunges' }, { id: 'sit-up', task: '30 Sit-ups' }, { id: null, task: 'Rest' },
-              { id: 'push-ups', task: '18 Push-ups' }, { id: 'bodyweight-lunge', task: '24 Lunges' }, { id: 'sit-up', task: '30 Sit-ups' }, { id: null, task: 'Rest' },
-              { id: 'push-ups', task: '18 Push-ups' }, { id: 'bodyweight-lunge', task: '24 Lunges' }, { id: 'sit-up', task: '30 Sit-ups' }, { id: null, task: 'Rest' },
+              { id: generateUniqueId(), task: '18 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '18' }] },
+              { id: generateUniqueId(), task: '24 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '24' }] },
+              { id: generateUniqueId(), task: '30 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '30' }] },
+              { id: generateUniqueId(), task: 'Rest', exercises: [] },
+              { id: generateUniqueId(), task: '18 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '18' }] },
+              { id: generateUniqueId(), task: '24 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '24' }] },
+              { id: generateUniqueId(), task: '30 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '30' }] },
+              { id: generateUniqueId(), task: 'Rest', exercises: [] },
+              { id: generateUniqueId(), task: '18 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '18' }] },
+              { id: generateUniqueId(), task: '24 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '24' }] },
+              { id: generateUniqueId(), task: '30 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '30' }] },
+              { id: generateUniqueId(), task: 'Rest', exercises: [] },
+              { id: generateUniqueId(), task: '18 Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-ups', reps: '18' }] },
+              { id: generateUniqueId(), task: '24 Lunges', exercises: [{ instanceId: generateUniqueId(), id: 'bodyweight-lunge', name: 'Lunges', reps: '24' }] },
+              { id: generateUniqueId(), task: '30 Sit-ups', exercises: [{ instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-ups', reps: '30' }] },
+              { id: generateUniqueId(), task: 'Rest', exercises: [] },
             ]
           },
           { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'}, {id: 'quad-stretch', name: 'Quad Stretch (60s each)'}, {id: 'cobra-stretch', name: 'Cobra Stretch (60s)'} ]}
@@ -189,16 +242,25 @@ export const bodyweightBlastIntermediateTemplate = {
       id: generateUniqueId(),
       name: 'W3D4: Continuous Burpees',
       blocks: [
-          { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (90s)'}, {id: 'air-squats', name: 'Air Squats (20 reps)'} ]},
-          { id: generateUniqueId(), type: 'Conditioning: EMOM', note: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute. Your score is the last completed round.',
-            minutes: [
-              {id: 'burpees', task: 'Min 1: 3 Burpees'}, {id: 'burpees', task: 'Min 2: 4 Burpees'},
-              {id: 'burpees', task: 'Min 3: 5 Burpees'}, {id: 'burpees', task: 'Min 4: 6 Burpees'},
-              {id: 'burpees', task: 'Min 5: 7 Burpees'}, {id: 'burpees', task: 'Min 6: 8 Burpees'},
-              {id: 'burpees', task: 'Min 7: 9 Burpees'}, {id: 'burpees', task: 'Min 8: 10 Burpees'},
-              {id: 'burpees', task: 'Min 9: 11 Burpees'}, {id: 'burpees', task: 'Min 10: 12 Burpees'},
-          ]},
-          { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'}, {id: 'quad-stretch', name: 'Quad Stretch (60s each)'} ]}
+        { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (90s)'}, {id: 'air-squats', name: 'Air Squats (20 reps)'} ] },
+        { 
+          id: generateUniqueId(), 
+          type: 'Conditioning: EMOM',
+          note: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute.',
+          minutes: [
+            { id: generateUniqueId(), task: 'Min 1: 3 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '3' }] },
+            { id: generateUniqueId(), task: 'Min 2: 4 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '4' }] },
+            { id: generateUniqueId(), task: 'Min 3: 5 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '5' }] },
+            { id: generateUniqueId(), task: 'Min 4: 6 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '6' }] },
+            { id: generateUniqueId(), task: 'Min 5: 7 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '7' }] },
+            { id: generateUniqueId(), task: 'Min 6: 8 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '8' }] },
+            { id: generateUniqueId(), task: 'Min 7: 9 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '9' }] },
+            { id: generateUniqueId(), task: 'Min 8: 10 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '10' }] },
+            { id: generateUniqueId(), task: 'Min 9: 11 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '11' }] },
+            { id: generateUniqueId(), task: 'Min 10: 12 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '12' }] },
+          ]
+        },
+        { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'}, {id: 'quad-stretch', name: 'Quad Stretch (60s each)'} ] }
       ]
     },
     { // Day 15

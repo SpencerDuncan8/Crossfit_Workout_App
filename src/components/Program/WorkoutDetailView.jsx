@@ -96,11 +96,24 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                 )}
                 {/* --- END OF THE FIX --- */}
                 
-                {block.type === 'Conditioning: EMOM' ? (
-                  block.minutes.map((min, i) => <li key={i}><strong>Min {i + 1}:</strong> {min.task}</li>)
-                ) : 
-                (
-                  (block.exercises || []).map((ex, i) => {
+{block.type === 'Conditioning: EMOM' ? (
+  block.minutes.map((min, i) => (
+    <li key={i}>
+      <strong>Min {i + 1}:</strong>{' '}
+      {/* Check for the new structure first */}
+      {min.exercises && min.exercises.length > 0
+        ? min.exercises.map((ex, exIndex) => (
+            <span key={exIndex}>
+              {`${ex.reps || ''} ${ex.name}${exIndex < min.exercises.length - 1 ? ', ' : ''}`}
+            </span>
+          ))
+        : min.task /* Fallback for old data */
+      }
+    </li>
+  ))
+) : (
+  (block.exercises || []).map((ex, i) => {
+    
                     const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
 
                     if (completedData?.detailedProgress && trackedBlockTypes.includes(block.type)) {

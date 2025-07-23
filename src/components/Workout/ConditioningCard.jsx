@@ -32,7 +32,6 @@ const ConditioningCard = ({ block, previousPerformance }) => {
     } else if (type === 'Conditioning: Tabata') {
         startTimer({ type: 'tabata', tabataRounds: 8, tabataWork: 20, tabataRest: 10 });
     } else if (type === 'Conditioning: Intervals') {
-        // --- FIX: Pass 'intervals' as the type ---
         startTimer({ type: 'intervals', tabataRounds: rounds, tabataWork: work, tabataRest: rest });
     } else if (type === 'Conditioning: EMOM') {
         startTimer({ type: 'emom', duration: (minutes?.length || 0) * 60 });
@@ -104,12 +103,27 @@ const ConditioningCard = ({ block, previousPerformance }) => {
         </div>
       )}
       
+      {/* --- START OF THE CHANGED SECTION --- */}
       <ul className="exercise-list">
         {minutes?.map((min, index) => (
-            <li key={index} className="exercise-list-item">
-                <span className="exercise-list-reps">{`Min ${index + 1}`}</span>
-                <span className="exercise-list-name">{min.task}</span>
-            </li>
+          <li key={index} className="exercise-list-item">
+            <span className="exercise-list-reps">{`Min ${index + 1}`}</span>
+            <span className="exercise-list-name">
+              {min.exercises && min.exercises.length > 0 ? (
+                min.exercises.map((ex, exIndex) => (
+                  <span
+                    key={ex.instanceId || exIndex}
+                    className={hasExerciseDetails(ex.id) ? 'clickable-exercise' : ''}
+                    onClick={() => hasExerciseDetails(ex.id) && handleExerciseClick(ex)}
+                  >
+                    {`${ex.reps || ''} ${ex.name}${exIndex < min.exercises.length - 1 ? ', ' : ''}`}
+                  </span>
+                ))
+              ) : (
+                min.task
+              )}
+            </span>
+          </li>
         ))}
         {exercises?.map((ex, index) => (
           <li key={index} className="exercise-list-item clickable" onClick={() => handleExerciseClick(ex)}>
@@ -121,6 +135,7 @@ const ConditioningCard = ({ block, previousPerformance }) => {
           </li>
         ))}
       </ul>
+      {/* --- END OF THE CHANGED SECTION --- */}
 
       <button className={`start-wod-button ${buttonInfo.style}`} onClick={handleStartWOD}>
         <Play size={20} />

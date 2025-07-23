@@ -41,13 +41,33 @@ export const bodyweightBlastAdvancedTemplate = {
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'quad-stretch', name: 'Quad Stretch (60s each)'}, {id: 'hamstring-stretch', name: 'Hamstring Stretch (60s each)'} ]},
       ]
     },
+    
     { // Day 3
       id: generateUniqueId(),
       name: 'W1D3: Push-Pull Power',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'arm-circles', name: 'Arm Circles (30s each way)'}, {id: 'cat-cow-stretch', name: 'Cat-Cow Stretch (10 reps)'} ]},
-        { id: generateUniqueId(), type: 'Conditioning: EMOM', note: 'Every minute on the minute for 14 minutes.', minutes: Array.from({ length: 7 }, () => [{ id: 'hand-release-push-ups', task: 'Max Reps Hand-Release Push-ups' }, { id: null, task: 'Rest 60s' }]).flat()},
-        { id: generateUniqueId(), type: 'Bodyweight', exercises: [ { id: 'inverted-rows', name: 'Inverted Rows (feet elevated)', sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), value: '15', trackingType: 'reps' })) } ], note: "For Inverted Rows, use a sturdy table and elevate your feet on a chair."},
+        { 
+          id: generateUniqueId(), 
+          type: 'Conditioning: EMOM', 
+          note: 'Every minute on the minute for 14 minutes.', 
+          minutes: Array.from({ length: 7 }, () => [
+            { id: generateUniqueId(), task: 'Max Reps Hand-Release Push-ups', exercises: [{ instanceId: generateUniqueId(), id: 'hand-release-push-ups', name: 'Hand-Release Push-ups', reps: 'Max'}] }, 
+            { id: generateUniqueId(), task: 'Rest 60s', exercises: [] }
+          ]).flat()
+        },
+        { 
+          id: generateUniqueId(), 
+          type: 'Bodyweight', 
+          note: "For Inverted Rows, use a sturdy table and elevate your feet on a chair.",
+          exercises: [ 
+            { 
+              id: 'inverted-rows', 
+              name: 'Inverted Rows (feet elevated)', 
+              sets: Array.from({ length: 4 }, () => ({ id: generateUniqueId(), value: '15', trackingType: 'reps' })) 
+            } 
+          ]
+        },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'}, {id: 'lat-stretch', name: 'Lat Stretch (60s)'} ]},
       ]
     },
@@ -76,7 +96,16 @@ export const bodyweightBlastAdvancedTemplate = {
       name: 'W2D1: Gymnastics Volume',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'handstand-hold', name: '30s Handstand Hold'}, {id: 'pistol-squats-box', name: '10 Pistol Squats to box'}, {id: 'scapular-pulls', name: '10 Scapular Pulls (from table)'} ]},
-        { id: generateUniqueId(), type: 'Conditioning: EMOM', duration: 20, note: 'Perform for 20 minutes total (10 rounds of each).', exercises: [ {id: 'handstand-push-ups', name: 'Odd Mins: 5-10 Handstand Push-ups'}, {id: 'pistol-squats', name: 'Even Mins: 10-15 Pistol Squats (alt.)'} ]},
+        { 
+          id: generateUniqueId(), 
+          type: 'Conditioning: RFT', 
+          rounds: 10, // CORRECTED: 10 rounds to match the original EMOM volume
+          note: 'Complete 10 rounds for time.',
+          exercises: [ 
+            { instanceId: generateUniqueId(), id: 'handstand-push-ups', name: 'Handstand Push-ups', reps: '5-10' }, 
+            { instanceId: generateUniqueId(), id: 'pistol-squats', name: 'Pistol Squats (alternating)', reps: '10-15' } 
+          ]
+        },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'pigeon-pose', name: 'Pigeon Pose (90s each)'}, {id: 'cross-body-shoulder-stretch', name: 'Shoulder Stretch (60s each)'} ]},
       ]
     },
@@ -174,19 +203,30 @@ export const bodyweightBlastAdvancedTemplate = {
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'childs-pose', name: 'Child\'s Pose (120s)'} ]},
       ]
     },
-    { // Day 15 - REPLACED ACTIVE RECOVERY
+    // --- AFTER ---
+    { // Day 15
       id: generateUniqueId(),
-      name: 'W3D5: Death By...',
+      name: 'W3D5: Continuous Burpees',
       blocks: [
-        { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'inchworms', name: 'Inchworms (10 reps)'}, {id: 'jumping-jack', name: 'Jumping Jacks (60s)'}, {id: 'air-squats', name: '20 Air Squats'} ]},
-        { id: generateUniqueId(), type: 'Conditioning: EMOM', note: "DEATH BY...: On Min 1, do 1 rep. On Min 2, do 2 reps. Continue adding 1 rep per minute until you can't complete the reps in the minute. Your score is your last completed round.",
-          exercises: [ {id: 'hand-release-push-ups', name: 'Hand-Release Push-ups'}]
+        { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (90s)'}, {id: 'air-squats', name: 'Air Squats (20 reps)'} ] },
+        { 
+          id: generateUniqueId(), 
+          type: 'Conditioning: EMOM',
+          note: 'Continue adding 1 burpee per minute until you cannot complete the reps within the minute.',
+          minutes: [
+            { id: generateUniqueId(), task: 'Min 1: 3 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '3' }] },
+            { id: generateUniqueId(), task: 'Min 2: 4 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '4' }] },
+            { id: generateUniqueId(), task: 'Min 3: 5 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '5' }] },
+            { id: generateUniqueId(), task: 'Min 4: 6 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '6' }] },
+            { id: generateUniqueId(), task: 'Min 5: 7 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '7' }] },
+            { id: generateUniqueId(), task: 'Min 6: 8 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '8' }] },
+            { id: generateUniqueId(), task: 'Min 7: 9 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '9' }] },
+            { id: generateUniqueId(), task: 'Min 8: 10 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '10' }] },
+            { id: generateUniqueId(), task: 'Min 9: 11 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '11' }] },
+            { id: generateUniqueId(), task: 'Min 10: 12 Burpees', exercises: [{ instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '12' }] },
+          ]
         },
-        { id: generateUniqueId(), type: 'Rest', duration: 300, note: 'Rest 5 minutes before the next part.'},
-        { id: generateUniqueId(), type: 'Conditioning: EMOM', note: "DEATH BY...: On Min 1, do 2 reps (1 each leg). On Min 2, do 4 reps... Continue adding 2 reps per minute until failure.",
-          exercises: [ {id: 'jumping-lunges', name: 'Jumping Lunges'}]
-        },
-        { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Chest Stretch (60s)'}, {id: 'pigeon-pose', name: 'Pigeon Pose (90s each)'} ]},
+        { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)'}, {id: 'quad-stretch', name: 'Quad Stretch (60s each)'} ] }
       ]
     },
     // --- WEEK 4 ---
