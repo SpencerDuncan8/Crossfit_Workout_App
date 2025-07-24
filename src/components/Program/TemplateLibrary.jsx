@@ -22,7 +22,7 @@ const TemplateLibrary = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
-  const initialFilters = { type: 'Structured Program', level: null, goal: null, equipment: null };
+  const initialFilters = { type: null, level: null, goal: null, equipment: null };
   const [activeFilters, setActiveFilters] = useState(initialFilters);
 
   const isPremium = appState.isPremium || currentUser?.isPremium;
