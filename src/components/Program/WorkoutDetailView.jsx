@@ -8,9 +8,23 @@ import './WorkoutDetailView.css';
 
 const WorkoutDetailView = ({ workout, completedData }) => {
   const { appState } = useContext(AppStateContext);
-  
-  if (!workout) return null;
 
+  // --- START OF NEW LOGIC ---
+  // If a snapshot exists in completedData, use it as the source of truth.
+  // Otherwise, fall back to the `workout` prop (for viewing non-completed workouts).
+  const workoutToDisplay = completedData?.workoutSnapshot || workout;
+  // Handle both old and new data structures for backward compatibility.
+  const performanceStats = completedData?.stats || completedData; 
+  // --- END OF NEW LOGIC ---
+
+  if (!workoutToDisplay) {
+    // Gracefully handle old logged data where the program was deleted before the snapshot feature was added.
+    if (completedData) {
+      return <p className="compact-preview-empty">This workout's definition was deleted, but the logged stats are preserved.</p>;
+    }
+    return null;
+  }
+  
   const formatTime = (seconds) => {
     if (typeof seconds !== 'number') return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -22,8 +36,8 @@ const WorkoutDetailView = ({ workout, completedData }) => {
   const unitLabel = getUnitLabel(appState.unitSystem);
   
   let displayVolume = 0;
-  if (completedData) {
-      const volumeLbs = completedData.weight || 0;
+  if (performanceStats) {
+      const volumeLbs = performanceStats.weight || 0;
       displayVolume = isMetric ? lbsToKg(volumeLbs).toFixed(1) : volumeLbs.toLocaleString();
   }
 
@@ -37,10 +51,10 @@ const WorkoutDetailView = ({ workout, completedData }) => {
     }
   }
 
-  const timedResults = (completedData?.blockTimes
-    ? Object.keys(completedData.blockTimes).map(blockId => {
-        const blockResult = completedData.blockTimes[blockId];
-        const blockDef = workout.blocks.find(b => b.id === blockId);
+  const timedResults = (performanceStats?.blockTimes
+    ? Object.keys(performanceStats.blockTimes).map(blockId => {
+        const blockResult = performanceStats.blockTimes[blockId];
+        const blockDef = workoutToDisplay.blocks.find(b => b.id === blockId);
         if (!blockDef || (!blockResult.recordedTime && !blockResult.score)) return null;
 
         return (
@@ -54,7 +68,7 @@ const WorkoutDetailView = ({ workout, completedData }) => {
 
   return (
     <div className="workout-detail-container">
-      {completedData && (
+      {performanceStats && (
         <div className="completed-summary">
           <h4>Workout Completed!</h4>
           
@@ -64,12 +78,12 @@ const WorkoutDetailView = ({ workout, completedData }) => {
             </div>
           )}
 
-          {completedData.sets > 0 && (
+          {performanceStats.sets > 0 && (
             <div className="summary-stats-section">
               <h5 className="summary-stats-title">Strength & Volume</h5>
               <div className="summary-stats">
-                <span>Sets: {completedData.sets}</span>
-                <span>Reps: {completedData.reps}</span>
+                <span>Sets: {performanceStats.sets}</span>
+                <span>Reps: {performanceStats.reps}</span>
                 <span>Volume: {displayVolume} {unitLabel}</span>
               </div>
             </div>
@@ -78,8 +92,8 @@ const WorkoutDetailView = ({ workout, completedData }) => {
       )}
 
       <div className="detail-blocks-container">
-        {workout.blocks.map(block => {
-          const completedBlockData = completedData?.blockTimes?.[block.id];
+        {workoutToDisplay.blocks.map(block => {
+          const completedBlockData = performanceStats?.blockTimes?.[block.id];
           const shouldShowLapsForBlock = completedBlockData?.laps?.length > 0;
           const tabataRounds = completedBlockData?.rounds;
 
@@ -88,37 +102,33 @@ const WorkoutDetailView = ({ workout, completedData }) => {
               <h5 className="detail-block-title">{block.type.replace('Conditioning: ', '')}</h5>
               
               <ul className="detail-exercise-list">
-                {/* --- START OF THE FIX --- */}
                 {block.type === 'Conditioning: Intervals' && (
                   <li>
                     <strong>{block.rounds} Rounds:</strong> {block.work}s ON / {block.rest}s OFF
                   </li>
                 )}
-                {/* --- END OF THE FIX --- */}
                 
-{block.type === 'Conditioning: EMOM' ? (
-  block.minutes.map((min, i) => (
-    <li key={i}>
-      <strong>Min {i + 1}:</strong>{' '}
-      {/* Check for the new structure first */}
-      {min.exercises && min.exercises.length > 0
-        ? min.exercises.map((ex, exIndex) => (
-            <span key={exIndex}>
-              {`${ex.reps || ''} ${ex.name}${exIndex < min.exercises.length - 1 ? ', ' : ''}`}
-            </span>
-          ))
-        : min.task /* Fallback for old data */
-      }
-    </li>
-  ))
-) : (
-  (block.exercises || []).map((ex, i) => {
-    
+                {block.type === 'Conditioning: EMOM' ? (
+                  block.minutes.map((min, i) => (
+                    <li key={i}>
+                      <strong>Min {i + 1}:</strong>{' '}
+                      {min.exercises && min.exercises.length > 0
+                        ? min.exercises.map((ex, exIndex) => (
+                            <span key={exIndex}>
+                              {`${ex.reps || ''} ${ex.name}${exIndex < min.exercises.length - 1 ? ', ' : ''}`}
+                            </span>
+                          ))
+                        : min.task
+                      }
+                    </li>
+                  ))
+                ) : (
+                  (block.exercises || []).map((ex, i) => {
                     const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
 
-                    if (completedData?.detailedProgress && trackedBlockTypes.includes(block.type)) {
+                    if (performanceStats?.detailedProgress && trackedBlockTypes.includes(block.type)) {
                       const exerciseId = `${block.id}-${ex.id}`;
-                      const progress = completedData.detailedProgress[exerciseId];
+                      const progress = performanceStats.detailedProgress[exerciseId];
 
                       if (!progress) return null;
 
@@ -160,7 +170,7 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                       }
                     } else {
                       return (
-                        <li key={i}>
+                        <li key={ex.id || i}>
                           {block.type === 'Strength' && `${ex.sets.length} x `}
                           {(ex.reps || ex.duration) && `${ex.reps || ex.duration} `}
                           {ex.name}

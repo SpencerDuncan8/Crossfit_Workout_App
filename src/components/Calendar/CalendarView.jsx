@@ -14,7 +14,8 @@ const CalendarView = ({ setActiveView }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modalContent, setModalContent] = useState(null);
   const [previewWorkoutId, setPreviewWorkoutId] = useState(null);
-  const [selectedProgramId, setSelectedProgramId] = useState(null); // <-- NEW STATE
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
+  const [viewingCompletedData, setViewingCompletedData] = useState(null); // <-- NEW STATE
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthDays = generateMonthDays(currentDate.getFullYear(), currentDate.getMonth());
@@ -28,30 +29,30 @@ const CalendarView = ({ setActiveView }) => {
     setModalContent({ type: 'day-schedule', date: day.date });
   };
   
-  // UPDATED: Reset all modal states on close
   const closeModal = () => {
     setModalContent(null);
     setPreviewWorkoutId(null);
     setSelectedProgramId(null);
+    setViewingCompletedData(null); // <-- UPDATED
   };
 
   const handlePrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   
-  // UPDATED: Reset more states on day change
   const handlePrevDayInModal = () => {
     setModalContent(prev => { if (!prev) return null; const newDate = new Date(prev.date); newDate.setUTCDate(newDate.getUTCDate() - 1); return { ...prev, date: newDate }; });
     setPreviewWorkoutId(null);
     setSelectedProgramId(null);
+    setViewingCompletedData(null); // <-- UPDATED
   };
 
   const handleNextDayInModal = () => {
     setModalContent(prev => { if (!prev) return null; const newDate = new Date(prev.date); newDate.setUTCDate(newDate.getUTCDate() + 1); return { ...prev, date: newDate }; });
     setPreviewWorkoutId(null);
     setSelectedProgramId(null);
+    setViewingCompletedData(null); // <-- UPDATED
   };
 
-  const previewWorkout = previewWorkoutId ? allWorkouts.find(w => w.id === previewWorkoutId) : null;
   const workoutToSchedule = appState.workoutToScheduleId ? allWorkouts.find(w => w.id === appState.workoutToScheduleId) : null;
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
 
@@ -65,22 +66,19 @@ const CalendarView = ({ setActiveView }) => {
 
     // --- START REFACTORED LOGIC ---
 
-    // Step 1: Previewing a specific workout (deepest level)
-    if (previewWorkoutId && selectedProgram) {
+    // A completed workout detail is being viewed (highest priority view)
+    if (viewingCompletedData) {
       return (
         <>
-          <button className="modal-back-btn" onClick={() => setPreviewWorkoutId(null)}>
-            <ArrowLeft size={18}/> Back to {selectedProgram.name}
+          <button className="modal-back-btn" onClick={() => setViewingCompletedData(null)}>
+            <ArrowLeft size={18} /> Back to Schedule
           </button>
-          <WorkoutDetailView workout={previewWorkout} />
-          <button className="action-btn schedule-btn" style={{marginTop: '16px', width: '100%'}} onClick={() => { scheduleWorkoutForDate(date, previewWorkout.id); closeModal(); }}>
-            <CheckCircle size={20}/> Schedule This Workout
-          </button>
+          <WorkoutDetailView workout={null} completedData={viewingCompletedData} />
         </>
       );
     }
     
-    // Step 2: A program is selected, show its workouts
+    // A program is selected, show its workouts for scheduling
     if (selectedProgramId && selectedProgram) {
         return (
             <>
@@ -105,7 +103,43 @@ const CalendarView = ({ setActiveView }) => {
         );
     }
 
-    // Step 3: No program selected, show the list of programs
+    // Default view for a day with items already scheduled
+    if (modalContent.type === 'day-schedule' && scheduledItems.length > 0) {
+      return (
+        <div className="assign-workout-list">
+          {scheduledItems.map(item => {
+            const workoutName = item.completedData?.workoutSnapshot?.name || allWorkouts.find(w => w.id === item.workoutId)?.name || "Workout Not Found";
+
+            const handleAction = () => {
+              if (item.completedData) {
+                setViewingCompletedData(item.completedData); // Set the full data object to view
+              } else {
+                navigateToDate(date.toISOString().split('T')[0], item.scheduleId);
+                setActiveView('workout');
+                closeModal();
+              }
+            };
+
+            return (
+              <div key={item.scheduleId} className={`assign-workout-item ${item.completedData ? 'completed' : ''}`}>
+                <span className="assign-workout-name" onClick={handleAction}>
+                  {item.completedData ? <CheckCircle size={16} /> : <Play size={16} />}
+                  {workoutName}
+                </span>
+                <button className="assign-btn trash-btn" onClick={() => removeWorkoutFromSchedule(date, item.scheduleId)}>
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            );
+          })}
+          <button className="action-btn schedule-btn" onClick={() => setModalContent({ type: 'assign', date, scheduledItems })}>
+              <PlusCircle size={18} /> Add another workout
+          </button>
+        </div>
+      );
+    }
+
+    // No program selected, and the day is empty or user chose to add another. Show program list.
     if (modalContent.type === 'assign' || (modalContent.type === 'day-schedule' && scheduledItems.length === 0)) {
         if (userPrograms.length === 0) {
             return (
@@ -130,60 +164,19 @@ const CalendarView = ({ setActiveView }) => {
         );
     }
 
-    // Step 4: Default view for a day with items already scheduled
-    if (modalContent.type === 'day-schedule' && scheduledItems.length > 0) {
-      if (previewWorkout) { // Allow previewing completed workouts
-        const scheduleItem = scheduledItems.find(i => i.workoutId === previewWorkoutId);
-        return (
-            <>
-              <button className="modal-back-btn" onClick={() => setPreviewWorkoutId(null)}><ArrowLeft size={18}/> Back to Schedule</button>
-              <WorkoutDetailView workout={previewWorkout} completedData={scheduleItem?.completedData}/>
-            </>
-        );
-      }
-
-      return (
-        <div className="assign-workout-list">
-          {scheduledItems.map(item => {
-            const workout = allWorkouts.find(w => w.id === item.workoutId);
-            if (!workout) return null;
-            
-            const handleAction = () => {
-              if (item.completedData) setPreviewWorkoutId(item.workoutId);
-              else { navigateToDate(date.toISOString().split('T')[0], item.scheduleId); setActiveView('workout'); closeModal(); }
-            };
-
-            return (
-              <div key={item.scheduleId} className={`assign-workout-item ${item.completedData ? 'completed' : ''}`}>
-                <span className="assign-workout-name" onClick={handleAction}>
-                  {item.completedData ? <CheckCircle size={16} /> : <Eye size={16}/>}
-                  {workout.name}
-                </span>
-                <button className="assign-btn trash-btn" onClick={() => removeWorkoutFromSchedule(date, item.scheduleId)}>
-                    <Trash2 size={20} />
-                </button>
-              </div>
-            );
-          })}
-          <button className="action-btn schedule-btn" onClick={() => setModalContent({ type: 'assign', date, scheduledItems })}>
-              <PlusCircle size={18} /> Add another workout
-          </button>
-        </div>
-      );
-    }
-
     return null; // Fallback
     // --- END REFACTORED LOGIC ---
   };
 
-  // UPDATED: This function now builds a more dynamic title
   const getModalTitleWithNav = () => {
     if (!modalContent) return '';
     const d = new Date(modalContent.date);
     const formattedDate = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
     
     let subTitle = "Today's Schedule";
-    if (modalContent.type === 'assign' || (modalContent.type === 'day-schedule' && (appState.workoutSchedule[modalContent.date.toISOString().split('T')[0]] || []).length === 0)) {
+    if (viewingCompletedData) {
+      subTitle = "Workout Review";
+    } else if (modalContent.type === 'assign' || (modalContent.type === 'day-schedule' && (appState.workoutSchedule[modalContent.date.toISOString().split('T')[0]] || []).length === 0)) {
         subTitle = selectedProgramId ? `Select a Workout` : 'Select a Program';
     }
 

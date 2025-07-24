@@ -24,34 +24,42 @@ const WorkoutView = ({ setActiveView }) => {
   const daySchedule = appState.workoutSchedule[appState.viewingDate] || [];
   const scheduleEntry = daySchedule.find(item => item.scheduleId === appState.viewingScheduleId);
 
-  const workoutId = scheduleEntry?.workoutId;
-  const activeWorkout = allWorkouts.find(w => w.id === workoutId);
-  const isCompleted = !!scheduleEntry?.completedData;
+  // --- START OF THE FIX ---
+  // This is the core logic change. We now find the active workout by first checking
+  // for a snapshot, then falling back to the allWorkouts list.
+  const activeWorkout = useMemo(() => {
+    if (!scheduleEntry) return null;
+    
+    // Priority #1: If it's a completed workout with a snapshot, use that.
+    if (scheduleEntry.completedData?.workoutSnapshot) {
+      return scheduleEntry.completedData.workoutSnapshot;
+    }
+    
+    // Priority #2: Fallback for non-completed workouts or old data.
+    const workoutId = scheduleEntry.workoutId;
+    return allWorkouts.find(w => w.id === workoutId) || null;
+  }, [scheduleEntry, allWorkouts]);
+  // --- END OF THE FIX ---
 
-    const enrichedActiveWorkout = useMemo(() => {
+  const enrichedActiveWorkout = useMemo(() => {
     if (!activeWorkout) return null;
     
-    // Deep clone to avoid direct state mutation issues
     const workoutCopy = JSON.parse(JSON.stringify(activeWorkout));
 
     return {
       ...workoutCopy,
       blocks: workoutCopy.blocks.map(block => ({
         ...block,
-        // This part is for Conditioning blocks and is already working
         previousPerformance: getPreviousBlockPerformance(block.id, block.type, appState.viewingDate),
-        
-        // --- THIS IS THE FIX ---
-        // We ensure the exercises array exists before mapping
         exercises: (block.exercises || []).map(ex => ({
           ...ex,
-          // We call getPreviousExercisePerformance for EACH exercise using its unique ID (e.g., 'squat')
           previousPerformance: getPreviousExercisePerformance(ex.id, appState.viewingDate)
         }))
-        // --- END OF FIX ---
       }))
     };
-  }, [activeWorkout, appState.viewingDate, getPreviousBlockPerformance, getPreviousExercisePerformance]); // Add functions to dependency array
+  }, [activeWorkout, appState.viewingDate, getPreviousBlockPerformance, getPreviousExercisePerformance]);
+
+  const isCompleted = !!scheduleEntry?.completedData;
 
   useEffect(() => {
     if (appState.viewingDate && !appState.viewingScheduleId) {
@@ -106,11 +114,7 @@ const WorkoutView = ({ setActiveView }) => {
                   }
                   progressSet = { ...progressSet, weight: targetWeight, reps: set.reps, percentageInfo };
                 } else if (block.type === 'Bodyweight') {
-                  // --- START OF FIX ---
-                  // This was the missing piece. We now correctly initialize the progress
-                  // state with the value and tracking type from the exercise definition.
                   progressSet = { ...progressSet, value: set.value, trackingType: set.trackingType };
-                  // --- END OF FIX ---
                 }
                 return progressSet;
               })
@@ -188,14 +192,10 @@ const WorkoutView = ({ setActiveView }) => {
               sessionStats.reps += reps;
               sessionStats.weight += reps * weightInLbs;
             } else if (block.type === 'Bodyweight') {
-              // --- START OF FIX ---
-              // The calculation now correctly reads from the live `progressSet`
-              // which was properly initialized in the `useEffect` hook above.
               if (progressSet.trackingType === 'reps') {
                 const reps = parseInt(progressSet.value, 10) || 0;
                 sessionStats.reps += reps;
               }
-              // --- END OF FIX ---
             }
           }
         });
@@ -226,7 +226,6 @@ const WorkoutView = ({ setActiveView }) => {
 
   completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats, () => {
     setActiveView('dashboard');
-    // A tiny delay ensures the view has time to render before we scroll.
     setTimeout(() => {
         window.scrollTo(0, 0);
         document.querySelector('.main-content')?.scrollTo(0, 0);

@@ -213,9 +213,39 @@ const AppStateProviderComponent = ({ children }) => {
     alert(`"${programToCopy.name}" was copied to your programs.`);
   }, [setAppState]);
   
-  const deleteProgram = useCallback((programId) => {
-    setAppState(prev => ({ ...prev, programs: prev.programs.filter(p => p.id !== programId) }));
-  }, [setAppState]);
+      const deleteProgram = useCallback((programId) => {
+        setAppState(prev => {
+          const programToDelete = prev.programs.find(p => p.id === programId);
+          if (!programToDelete) {
+            return prev;
+          }
+          const workoutIdsToDelete = new Set(programToDelete.workouts.map(w => w.id));
+
+          const newSchedule = { ...prev.workoutSchedule };
+          for (const date in newSchedule) {
+            // --- THIS IS THE ONLY LINE THAT CHANGES ---
+            // Keep an item if it's NOT from the deleted program OR if it has been completed.
+            const updatedDaySchedule = newSchedule[date].filter(
+              item => !workoutIdsToDelete.has(item.workoutId) || item.completedData
+            );
+            // --- END OF CHANGE ---
+
+            if (updatedDaySchedule.length > 0) {
+              newSchedule[date] = updatedDaySchedule;
+            } else {
+              delete newSchedule[date];
+            }
+          }
+
+          const newPrograms = prev.programs.filter(p => p.id !== programId);
+
+          return {
+            ...prev,
+            programs: newPrograms,
+            workoutSchedule: newSchedule,
+          };
+        });
+      }, [setAppState]);
   
   const updateProgram = useCallback((programId, updates) => {
     setAppState(prev => ({ ...prev, programs: prev.programs.map(p => p.id === programId ? { ...p, ...updates } : p) }));
@@ -350,76 +380,89 @@ const AppStateProviderComponent = ({ children }) => {
     return null; // Return null if no previous performance was found
   }, [appState.workoutSchedule]);
   
-  const getPreviousBlockPerformance = useCallback((blockId, blockType, currentDateString) => {
-      if (!blockId) return null;
+                     const getPreviousBlockPerformance = useCallback((blockId, blockType, currentDateString) => {
+                       if (!blockId) return null;
 
-      const completedWorkouts = Object.entries(appState.workoutSchedule)
-          .filter(([date, schedule]) => date < currentDateString && schedule.some(item => item.completedData))
-          .flatMap(([date, schedule]) => schedule.filter(item => item.completedData))
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
+                       const completedWorkouts = Object.entries(appState.workoutSchedule)
+                           .filter(([date, schedule]) => date < currentDateString && schedule.some(item => item.completedData))
+                           .flatMap(([date, schedule]) => schedule.filter(item => item.completedData))
+                           .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      for (const completed of completedWorkouts) {
-          const blockTimes = completed.completedData?.blockTimes;
-          if (blockTimes && blockTimes[blockId]) {
-              const result = blockTimes[blockId];
-              if (result.recordedTime) {
-                  return { type: 'TIME', time: result.recordedTime };
-              }
-              if (result.score) {
-                  return { type: 'SCORE', score: result.score, rounds: result.rounds };
-              }
-          }
-      }
-      return null;
-  }, [appState.workoutSchedule]);
+                       for (const completed of completedWorkouts) {
+                           // --- START OF FIX ---
+                           // Check for the new data structure (inside `stats`) first,
+                           // then fall back to the old structure for backward compatibility.
+                           const blockTimes = completed.completedData?.stats?.blockTimes || completed.completedData?.blockTimes;
+                           // --- END OF FIX ---
+
+                           if (blockTimes && blockTimes[blockId]) {
+                               const result = blockTimes[blockId];
+                               if (result.recordedTime) {
+                                   return { type: 'TIME', time: result.recordedTime };
+                               }
+                               if (result.score) {
+                                   return { type: 'SCORE', score: result.score, rounds: result.rounds };
+                               }
+                           }
+                       }
+                       return null;
+                     }, [appState.workoutSchedule]);
   
-  const completeWorkout = useCallback((dateString, scheduleId, stats, callback) => {
-    setAppState(prev => {
-      // Find the definition of the workout that was just completed.
-      const workoutDef = prev.programs.flatMap(p => p.workouts).find(w => {
-          const daySchedule = prev.workoutSchedule[dateString] || [];
-          const scheduleEntry = daySchedule.find(item => item.scheduleId === scheduleId);
-          return scheduleEntry && w.id === scheduleEntry.workoutId;
-      });
+                                                                     // This is the new, corrected version
+                                                                     const completeWorkout = useCallback((dateString, scheduleId, stats, callback) => {
+                                                                       setAppState(prev => {
+                                                                         // Find the definition of the workout that was just completed.
+                                                                         const workoutDef = prev.programs.flatMap(p => p.workouts).find(w => {
+                                                                             const daySchedule = prev.workoutSchedule[dateString] || [];
+                                                                             const scheduleEntry = daySchedule.find(item => item.scheduleId === scheduleId);
+                                                                             return scheduleEntry && w.id === scheduleEntry.workoutId;
+                                                                         });
 
-      // --- START OF NEW LOGIC ---
-      // Calculate total cardio minutes from this specific workout.
-      let cardioMinutes = 0;
-      if (workoutDef) {
-        const cardioBlocks = workoutDef.blocks.filter(b => b.type === 'Cardio');
-        for (const block of cardioBlocks) {
-          if (block.exercises) {
-            for (const exercise of block.exercises) {
-              cardioMinutes += parseInt(exercise.duration, 10) || 0;
-            }
-          }
-        }
-      }
-      // --- END OF NEW LOGIC ---
+                                                                         // --- START OF FIX ---
+                                                                         // Create the final completedData object which now includes a snapshot of the workout.
+                                                                         const finalCompletedData = {
+                                                                           stats: stats,
+                                                                           workoutSnapshot: workoutDef ? JSON.parse(JSON.stringify(workoutDef)) : null
+                                                                         };
+                                                                         // --- END OF FIX ---
 
-      const newSchedule = { ...prev.workoutSchedule };
-      const daySchedule = (newSchedule[dateString] || []).map(item => 
-        item.scheduleId === scheduleId ? { ...item, completedData: stats } : item
-      );
-      newSchedule[dateString] = daySchedule;
-      
-      return { 
-        ...prev, 
-        workoutSchedule: newSchedule, 
-        totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1, 
-        totalSets: prev.totalSets + (stats.sets || 0), 
-        totalReps: prev.totalReps + (stats.reps || 0), 
-        totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0),
-        totalCardioMinutes: (prev.totalCardioMinutes || 0) + cardioMinutes, // <-- ADD THIS LINE
-        showConfetti: true, 
-      };
-    });
+                                                                         // Calculate total cardio minutes from this specific workout.
+                                                                         let cardioMinutes = 0;
+                                                                         if (workoutDef) {
+                                                                           const cardioBlocks = workoutDef.blocks.filter(b => b.type === 'Cardio');
+                                                                           for (const block of cardioBlocks) {
+                                                                             if (block.exercises) {
+                                                                               for (const exercise of block.exercises) {
+                                                                                 cardioMinutes += parseInt(exercise.duration, 10) || 0;
+                                                                               }
+                                                                             }
+                                                                           }
+                                                                         }
 
-    if (callback) {
-      callback();
-    }
-    setTimeout(() => updateAppState({ showConfetti: false }), 5000);
-  }, [setAppState, updateAppState]);
+                                                                         const newSchedule = { ...prev.workoutSchedule };
+                                                                         const daySchedule = (newSchedule[dateString] || []).map(item => 
+                                                                           // Save the new, comprehensive completedData object
+                                                                           item.scheduleId === scheduleId ? { ...item, completedData: finalCompletedData } : item
+                                                                         );
+                                                                         newSchedule[dateString] = daySchedule;
+
+                                                                         return { 
+                                                                           ...prev, 
+                                                                           workoutSchedule: newSchedule, 
+                                                                           totalWorkoutsCompleted: prev.totalWorkoutsCompleted + 1, 
+                                                                           totalSets: prev.totalSets + (stats.sets || 0), 
+                                                                           totalReps: prev.totalReps + (stats.reps || 0), 
+                                                                           totalLbsLifted: prev.totalLbsLifted + (stats.weight || 0),
+                                                                           totalCardioMinutes: (prev.totalCardioMinutes || 0) + cardioMinutes,
+                                                                           showConfetti: true, 
+                                                                         };
+                                                                       });
+
+                                                                       if (callback) {
+                                                                         callback();
+                                                                       }
+                                                                       setTimeout(() => updateAppState({ showConfetti: false }), 5000);
+                                                                     }, [setAppState, updateAppState]);
 
   const resetAllData = useCallback(() => {
       clearLocalState();
