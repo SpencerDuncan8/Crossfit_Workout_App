@@ -15,7 +15,7 @@ const CalendarView = ({ setActiveView }) => {
   const [modalContent, setModalContent] = useState(null);
   const [previewWorkoutId, setPreviewWorkoutId] = useState(null);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
-  const [viewingCompletedData, setViewingCompletedData] = useState(null); // <-- NEW STATE
+  const [viewingCompletedData, setViewingCompletedData] = useState(null);
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthDays = generateMonthDays(currentDate.getFullYear(), currentDate.getMonth());
@@ -33,7 +33,7 @@ const CalendarView = ({ setActiveView }) => {
     setModalContent(null);
     setPreviewWorkoutId(null);
     setSelectedProgramId(null);
-    setViewingCompletedData(null); // <-- UPDATED
+    setViewingCompletedData(null);
   };
 
   const handlePrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -43,18 +43,20 @@ const CalendarView = ({ setActiveView }) => {
     setModalContent(prev => { if (!prev) return null; const newDate = new Date(prev.date); newDate.setUTCDate(newDate.getUTCDate() - 1); return { ...prev, date: newDate }; });
     setPreviewWorkoutId(null);
     setSelectedProgramId(null);
-    setViewingCompletedData(null); // <-- UPDATED
+    setViewingCompletedData(null);
   };
 
   const handleNextDayInModal = () => {
     setModalContent(prev => { if (!prev) return null; const newDate = new Date(prev.date); newDate.setUTCDate(newDate.getUTCDate() + 1); return { ...prev, date: newDate }; });
     setPreviewWorkoutId(null);
     setSelectedProgramId(null);
-    setViewingCompletedData(null); // <-- UPDATED
+    setViewingCompletedData(null);
   };
 
   const workoutToSchedule = appState.workoutToScheduleId ? allWorkouts.find(w => w.id === appState.workoutToScheduleId) : null;
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
+
+  const previewWorkout = previewWorkoutId ? allWorkouts.find(w => w.id === previewWorkoutId) : null;
 
   const renderModalContent = () => {
     if (!modalContent) return null;
@@ -63,10 +65,13 @@ const CalendarView = ({ setActiveView }) => {
     const dateString = date.toISOString().split('T')[0];
     const scheduledItems = appState.workoutSchedule[dateString] || [];
     const selectedProgram = appState.programs.find(p => p.id === selectedProgramId);
+    
+    // Find the workout to preview based on the ID set by the "eye" icon
+    
 
-    // --- START REFACTORED LOGIC ---
+    // --- NEW LOGICAL ORDER ---
 
-    // A completed workout detail is being viewed (highest priority view)
+    // Priority 1: A completed workout detail is being viewed.
     if (viewingCompletedData) {
       return (
         <>
@@ -77,8 +82,23 @@ const CalendarView = ({ setActiveView }) => {
         </>
       );
     }
+
+    // Priority 2: A workout is being PREVIEWED before scheduling. THIS IS THE FIX.
+    if (previewWorkout) {
+      return (
+        <>
+          <button className="modal-back-btn" onClick={() => setPreviewWorkoutId(null)}>
+            <ArrowLeft size={18}/> Back to {selectedProgram?.name || 'Workouts'}
+          </button>
+          <WorkoutDetailView workout={previewWorkout} />
+          <button className="action-btn schedule-btn" style={{marginTop: '16px', width: '100%'}} onClick={() => { scheduleWorkoutForDate(date, previewWorkout.id); closeModal(); }}>
+            <CheckCircle size={20}/> Schedule This Workout
+          </button>
+        </>
+      );
+    }
     
-    // A program is selected, show its workouts for scheduling
+    // Priority 3: A program is selected, so show its list of workouts.
     if (selectedProgramId && selectedProgram) {
         return (
             <>
@@ -103,7 +123,7 @@ const CalendarView = ({ setActiveView }) => {
         );
     }
 
-    // Default view for a day with items already scheduled
+    // Priority 4: A day with items already scheduled is being viewed.
     if (modalContent.type === 'day-schedule' && scheduledItems.length > 0) {
       return (
         <div className="assign-workout-list">
@@ -114,6 +134,7 @@ const CalendarView = ({ setActiveView }) => {
               if (item.completedData) {
                 setViewingCompletedData(item.completedData); // Set the full data object to view
               } else {
+                // This is for starting a non-completed workout
                 navigateToDate(date.toISOString().split('T')[0], item.scheduleId);
                 setActiveView('workout');
                 closeModal();
@@ -139,7 +160,7 @@ const CalendarView = ({ setActiveView }) => {
       );
     }
 
-    // No program selected, and the day is empty or user chose to add another. Show program list.
+    // Priority 5: Default view for an empty day, or when "Add another" is clicked. Show program list.
     if (modalContent.type === 'assign' || (modalContent.type === 'day-schedule' && scheduledItems.length === 0)) {
         if (userPrograms.length === 0) {
             return (
@@ -165,7 +186,6 @@ const CalendarView = ({ setActiveView }) => {
     }
 
     return null; // Fallback
-    // --- END REFACTORED LOGIC ---
   };
 
   const getModalTitleWithNav = () => {
@@ -176,6 +196,8 @@ const CalendarView = ({ setActiveView }) => {
     let subTitle = "Today's Schedule";
     if (viewingCompletedData) {
       subTitle = "Workout Review";
+    } else if (previewWorkout) {
+      subTitle = "Workout Preview";
     } else if (modalContent.type === 'assign' || (modalContent.type === 'day-schedule' && (appState.workoutSchedule[modalContent.date.toISOString().split('T')[0]] || []).length === 0)) {
         subTitle = selectedProgramId ? `Select a Workout` : 'Select a Program';
     }
