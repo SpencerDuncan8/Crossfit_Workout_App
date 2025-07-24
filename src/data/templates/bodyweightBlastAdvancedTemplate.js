@@ -183,9 +183,7 @@ export const bodyweightBlastAdvancedTemplate = {
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'jumping-jack', name: 'Jumping Jacks (120s)'} ]},
         { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'burpees', name: 'Burpees' } ]},
-        { id: generateUniqueId(), type: 'Rest', duration: 60, note: 'Rest 1 minute'},
         { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'v-up', name: 'V-Ups' } ]},
-        { id: generateUniqueId(), type: 'Rest', duration: 60, note: 'Rest 1 minute'},
         { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'jumping-lunges', name: 'Jumping Lunges' } ]},
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'cobra-stretch', name: 'Cobra Stretch (90s)'} ]},
       ]
@@ -237,7 +235,7 @@ export const bodyweightBlastAdvancedTemplate = {
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'run', name: 'Run 400m'}, {id: 'jumping-jack', name: 'Jumping Jacks (60s)'} ]},
         { id: generateUniqueId(), type: 'Conditioning: Chipper', exercises: [
           {id: 'run', name: 'Run 800m', reps: '1'},
-          {id: 'inverted-rows', name: 'Inverted Rows (feet elevated)', reps: '50'},
+          {id: 'pullups', name: 'Pullups', reps: '50'},
           {id: 'push-ups', name: 'Push-ups', reps: '100'},
           {id: 'air-squats', name: 'Air Squats', reps: '150'},
           {id: 'run', name: 'Run 800m', reps: '1'},
@@ -269,14 +267,27 @@ export const bodyweightBlastAdvancedTemplate = {
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'cobra-stretch', name: 'Cobra Stretch (90s)'} ]},
       ]
     },
+    // --- AFTER ---
     { // Day 19
       id: generateUniqueId(),
       name: 'W4D4: The Longest Mile',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ {id: 'run', name: 'Run 400m at easy pace'}, {id: 'burpees', name: '5 Burpees'} ]},
-        { id: generateUniqueId(), type: 'Conditioning: Chipper', exercises: [
-            {id: 'run', name: 'Run 1 Mile + Burpees', reps: '1'},
-        ], note: 'For Time: Run 1 mile. At the start, and after every 100m, perform 10 burpees. (Total: 17 stops for 170 burpees).'},
+        { 
+          id: generateUniqueId(), 
+          type: 'Conditioning: RFT', 
+          rounds: 4,
+          exercises: [
+            { instanceId: generateUniqueId(), id: 'burpees', name: 'Burpees', reps: '10' },
+            { instanceId: generateUniqueId(), id: 'running', name: 'Run 100 meters', reps: '1' },
+            { instanceId: generateUniqueId(), id: 'air-squats', name: 'Air Squats', reps: '10' },
+            { instanceId: generateUniqueId(), id: 'running', name: 'Run 100 meters', reps: '1' },
+            { instanceId: generateUniqueId(), id: 'push-ups', name: 'Push-Ups', reps: '10' },
+            { instanceId: generateUniqueId(), id: 'running', name: 'Run 100 meters', reps: '1' },
+            { instanceId: generateUniqueId(), id: 'sit-up', name: 'Sit-Ups', reps: '10' },
+            { instanceId: generateUniqueId(), id: 'running', name: 'Run 100 meters', reps: '1' },
+          ]
+        },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ {id: 'quad-stretch', name: 'Quad Stretch (60s each)'}, {id: 'childs-pose', name: 'Child\'s Pose (120s)'} ]},
       ]
     },
