@@ -19,15 +19,15 @@ export const calculateWorkoutStreak = (workoutSchedule) => {
     return 0; // No completed workouts, no streak.
   }
 
-  // Sort the dates to make sure they are in order.
+  // Sort the dates to make sure they are in order, most recent first.
   const sortedDates = completedDates.map(d => new Date(d)).sort((a, b) => b - a);
 
   // Get today's date (at the very start of the day).
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Get the most recent workout date.
-  const mostRecentWorkout = sortedDates[0];
+  // Create a NEW Date object for the most recent workout to avoid mutating the original array.
+  const mostRecentWorkout = new Date(sortedDates[0]);
   mostRecentWorkout.setHours(0, 0, 0, 0);
 
   // Check if the most recent workout was today or yesterday. If not, the streak is broken.
@@ -41,8 +41,11 @@ export const calculateWorkoutStreak = (workoutSchedule) => {
   // Now, let's count the streak!
   let streak = 1;
   for (let i = 0; i < sortedDates.length - 1; i++) {
-    const current = sortedDates[i];
-    const previous = sortedDates[i + 1];
+    // Create NEW Date objects for comparison inside the loop to avoid mutation.
+    const current = new Date(sortedDates[i]);
+    current.setHours(0, 0, 0, 0);
+    const previous = new Date(sortedDates[i + 1]);
+    previous.setHours(0, 0, 0, 0);
 
     // Calculate the difference in days between the current and previous workout.
     const dayDifference = (current.getTime() - previous.getTime()) / (1000 * 3600 * 24);
