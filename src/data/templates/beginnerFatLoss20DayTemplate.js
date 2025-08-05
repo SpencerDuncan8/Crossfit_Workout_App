@@ -281,9 +281,9 @@ export const beginnerFatLoss20DayTemplate = {
       name: 'W4D2: Benchmark Test',
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'air-squats', name: '20 Air Squats' }, { id: 'scapular-pulls', name: '10 Scapular Pulls' } ] },
-        { id: generateUniqueId(), type: 'Conditioning: RFT', note: 'For Time: 21-15-9 reps of each movement.', exercises: [
-            { id: 'dumbbell-goblet-squats', name: 'Goblet Squats', reps: '21-15-9' },
-            { id: 'lat-pulldowns', name: 'Lat Pulldowns', reps: '21-15-9' },
+        { id: generateUniqueId(), type: 'Conditioning: RFT', rounds: 3, exercises: [
+              { id: 'dumbbell-goblet-squats', name: 'Goblet Squats', reps: '21-15-9' },
+              { id: 'lat-pulldowns', name: 'Lat Pulldowns', reps: '21-15-9' },
         ]},
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'pigeon-pose', name: 'Pigeon Pose (60s each)' }, { id: 'lat-stretch', name: 'Lat Stretch (60s each)' } ]},
       ],
