@@ -13,7 +13,8 @@ import { newCrossfitExercises } from './newCrossfitExercises.js';
 import { newPullupChallengeExercises } from './newPullupChallengeExercises.js';
 import { newBodyweightExercises } from './newBodyweightExercises.js'; 
 import { newBodyweightBuilderExercises } from './newBodyweightBuilder.js';
-import { newAdvancedBuilderExercises } from './newAdvancedBuilder.js';// <-- ADD THIS IMPORT
+import { newAdvancedBuilderExercises } from './newAdvancedBuilder.js';
+import { fullGymExercises } from './fullGymExercises.js';// <-- ADD THIS IMPORT
 
 // Combine all exercise arrays into one master array.
 const allExercises = [
@@ -29,7 +30,8 @@ const allExercises = [
   ...newPullupChallengeExercises,
   ...newBodyweightExercises,
   ...newBodyweightBuilderExercises, 
-  ...newAdvancedBuilderExercises,// <-- ADD THE NEW EXERCISES HERE
+  ...newAdvancedBuilderExercises,
+  ...fullGymExercises,// <-- ADD THE NEW EXERCISES HERE
 ];
 
 // To ensure all exercises have a unique ID, we can do a quick check here.

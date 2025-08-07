@@ -9,6 +9,7 @@ import { bodyweightBlastAdvancedTemplate } from './templates/bodyweightBlastAdva
 // import { bodyweightBuilderBeginnerTemplate } from './templates/bodyweightBuilderBeginnerTemplate.js';
 // import { bodyweightBuilderIntermediateTemplate } from './templates/bodyweightBuilderIntermediateTemplate.js';
 // import { bodyweightBuilderAdvancedTemplate } from './templates/bodyweightBuilderAdvancedTemplate.js';
+import { thirtyDayGfIntermediateTemplate } from './templates/thirtyDayGfIntermediateTemplate.js';
 import { kettlebellKrusherTemplate } from './templates/kettlebellKrusherTemplate.js';
 import { strengthFocusTemplate } from './templates/strengthFocusTemplate.js';
 import { dumbbellDominationTemplate } from './templates/dumbbellDominationTemplate.js';
@@ -31,6 +32,7 @@ export const programTemplates = [
 // bodyweightBuilderIntermediateTemplate,
 // bodyweightBuilderAdvancedTemplate,
   // Equipment-Based Programs
+  thirtyDayIntermediateFatLossTemplate,
   kettlebellKrusherTemplate,
   strengthFocusTemplate,
   dumbbellDominationTemplate,
@@ -40,6 +42,6 @@ export const programTemplates = [
   heroWodsTemplate,
   pullupChallengeTemplate,
   couchTo5kTemplate,
-thirtyDayIntermediateFatLossTemplate,
+  thirtyDayGfIntermediateTemplate,
   beginnerFatLoss20DayTemplate,
 ];
