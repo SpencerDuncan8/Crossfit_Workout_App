@@ -33,9 +33,11 @@ export const formatLargeNumber = (num) => {
     return (num / 1.0e+6).toFixed(1).replace(/\.0$/, '') + 'M';
   }
   if (absNum >= 1.0e+3) { // Thousands
-    return (num / 1.0e+3).toFixed(1).replace(/\.0$/, '') + 'K';
+    // --- THIS IS THE FIX ---
+    // Changed from .toFixed(1) to Math.round() to remove the decimal.
+    return Math.round(num / 1.0e+3) + 'K';
   }
-  
+
   // Return number with commas for values under 1000
   return Math.round(num).toLocaleString('en-US');
 };
