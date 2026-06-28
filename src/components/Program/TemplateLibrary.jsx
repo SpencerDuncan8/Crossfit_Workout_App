@@ -12,7 +12,6 @@ import './TemplateLibrary.css';
 const filterCategories = {
   type: ['Structured Program', 'WODs', 'Challenges'],
   level: ['Beginner', 'Intermediate', 'Advanced'],
-  goal: ['General Fitness', 'Get Strong', 'Build Muscle', 'Lose Weight'],
   equipment: ['Bodyweight', 'Dumbbells', 'Kettlebells', 'Full Gym'],
 };
 
@@ -22,7 +21,7 @@ const TemplateLibrary = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
-  const initialFilters = { type: null, level: null, goal: null, equipment: null };
+  const initialFilters = { type: null, level: null, equipment: null };
   const [activeFilters, setActiveFilters] = useState(initialFilters);
 
   const isPremium = appState.isPremium || currentUser?.isPremium;
@@ -68,7 +67,6 @@ const TemplateLibrary = () => {
   const getTagColors = (category) => {
     switch (category) {
       case 'level':     return { color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.1)' };
-      case 'goal':      return { color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.1)' };
       case 'equipment': return { color: '#fb923c', bgColor: 'rgba(251, 146, 60, 0.1)' };
       case 'type':      return { color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.1)' };
       default:          return { color: 'var(--text-tertiary)', bgColor: 'var(--bg-tertiary)' };
@@ -88,9 +86,8 @@ const TemplateLibrary = () => {
             {activeFilterList.length > 0 && <span className="filter-count-badge">{activeFilterList.length}</span>}
           </button>
         </div>
-        <p>Find the perfect program by filtering by type, skill, goal, and equipment.</p>
+        <p>Find the perfect program by filtering by type, level, and equipment.</p>
         
-        {/* --- NEW: Show active filter tags --- */}
         {activeFilterList.length > 0 && (
           <div className="active-filters-display">
             {activeFilterList.map(([category, value]) => (
@@ -148,7 +145,6 @@ const TemplateLibrary = () => {
         )}
       </div>
       
-      {/* --- NEW: Filter Modal --- */}
       <Modal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="Filter Programs">
         <div className="template-filters">
           {Object.entries(filterCategories).map(([category, options]) => (
