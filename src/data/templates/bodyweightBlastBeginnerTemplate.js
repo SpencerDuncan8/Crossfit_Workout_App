@@ -527,7 +527,7 @@ export const bodyweightBlastBeginnerTemplate = {
               {id: 'air-squats', name: 'Squats', reps: '50'},
               {id: 'jump-rope', name: 'Jumping Jacks', reps: '100'},
               {id: 'bodyweight-lunge', name: 'Lunges', reps: '50'},
-              {id: 'burpees', name: 'Burpees', reps: '50'},
+              {id: 'burpees', name: 'Burpees', reps: '25'},
             ]
           },
           // --- COOL-DOWN ---
@@ -677,7 +677,7 @@ export const bodyweightBlastBeginnerTemplate = {
               {id: 'bodyweight-walking-lunge', name: 'Walking Lunges', reps: '40'},
               {id: 'push-ups', name: 'Push-ups', reps: '30'},
               {id: 'tuck-jumps', name: 'Tuck Jumps', reps: '20'},
-              {id: 'handstand-hold', name: 'Handstand Hold (against wall)', reps: '60s'},
+              {id: 'pike-push-ups', name: 'Pike Push-ups', reps: '10'},
             ]
           },
           // --- COOL-DOWN ---

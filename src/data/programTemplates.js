@@ -13,6 +13,9 @@ import { pullupChallengeTemplate } from './templates/pullupChallengeTemplate.js'
 import { couchTo5kTemplate } from './templates/couchTo5kTemplate.js';
 import { thirtyDayIntermediateFatLossTemplate } from './templates/thirtyDayIntermediateFatLossTemplate.js';
 import { beginnerFatLoss20DayTemplate } from './templates/beginnerFatLoss20DayTemplate.js';
+import { ironConditioningFoundationTemplate} from './templates/ironConditioningFoundationTemplate.js';
+import { ironConditioningPowerTemplate} from './templates/ironConditioningPowerTemplate.js';
+import { ironConditioningApexTemplate} from './templates/ironConditioningApexTemplate.js';
 
 export const programTemplates = [
   // Bodyweight Programs
@@ -33,4 +36,7 @@ export const programTemplates = [
   couchTo5kTemplate,
   thirtyDayGfIntermediateTemplate,
   beginnerFatLoss20DayTemplate,
+  ironConditioningFoundationTemplate,
+  ironConditioningPowerTemplate,
+  ironConditioningApexTemplate,
 ];

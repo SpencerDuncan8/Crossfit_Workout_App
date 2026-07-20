@@ -38,7 +38,6 @@ export const bodyweightBlastIntermediateTemplate = {
       blocks: [
         { id: generateUniqueId(), type: 'Warm-up', exercises: [ { id: 'high-knees', name: 'High Knees (90s)' }, { id: 'butt-kicks', name: 'Butt Kicks (90s)' } ] },
         { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'high-knees', name: 'High Knees' }, { id: 'tuck-jumps', name: 'Tuck Jumps' } ], note: 'Alternate between High Knees and Tuck Jumps for the 8 rounds.' },
-        { id: generateUniqueId(), type: 'Rest', duration: 180, note: 'Rest 3 minutes.'},
         { id: generateUniqueId(), type: 'Conditioning: Tabata', exercises: [ { id: 'mountain-climbers', name: 'Mountain Climbers' }, { id: 'v-up', name: 'V-Ups' } ], note: 'Alternate between Mountain Climbers and V-Ups for the 8 rounds.' },
         { id: generateUniqueId(), type: 'Cool-down', exercises: [ { id: 'childs-pose', name: 'Childs Pose (90s)' } ] }
       ]
