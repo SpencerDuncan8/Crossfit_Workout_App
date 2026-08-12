@@ -16,7 +16,8 @@ import { beginnerFatLoss20DayTemplate } from './templates/beginnerFatLoss20DayTe
 import { ironConditioningFoundationTemplate} from './templates/ironConditioningFoundationTemplate.js';
 import { ironConditioningPowerTemplate} from './templates/ironConditioningPowerTemplate.js';
 import { ironConditioningApexTemplate} from './templates/ironConditioningApexTemplate.js';
-import { ironConditioningApexTemplate} from './templates/homeIronFoundationTemplate.js';
+import { 
+homeIronFoundationTemplate} from './templates/homeIronFoundationTemplate.js';
 
 export const programTemplates = [
   // Bodyweight Programs
