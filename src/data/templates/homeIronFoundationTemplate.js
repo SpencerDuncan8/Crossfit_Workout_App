@@ -9,15 +9,6 @@ const upperProgressionNote = 'Double progression: 4 sets, same weight across all
 const lowerProgressionNote = 'Double progression: 4 sets, same weight across all sets, 6-10 reps (heavy compounds). Hit 10 reps on all 4 sets → add 10 lbs next session. Miss the range → repeat the weight. RDL: moderate load only, stop 2 reps shy of failure, neutral spine.';
 
 // ─────────────────────────────────────────────
-// BIKE COOLDOWN — every session
-// ─────────────────────────────────────────────
-const bikeCooldown = () => ({
-  id: generateUniqueId(), type: 'Cardio',
-  exercises: [{ id: 'stationary-bike', name: '5 min easy bike cooldown', duration: '5' }],
-  note: 'Easy spin only — flush the legs and bring heart rate down.'
-});
-
-// ─────────────────────────────────────────────
 // WARM-UP BLOCKS — single block per workout
 // McGill Big 3 + 5 min bike + session-specific
 // ─────────────────────────────────────────────
@@ -143,10 +134,10 @@ const upperA = () => ([
       { id: 'tricep-rope-pushdowns', name: 'Cable Tricep Pressdown', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '12-15', load: '' })) },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'doorway-chest-stretch', name: 'Doorway Chest Stretch (60s)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each side)' },
       { id: 'tricep-stretch', name: 'Tricep Stretch (45s each side)' },
@@ -167,10 +158,10 @@ const lowerA = () => ([
       { id: 'barbell-rollout', name: 'Ab Wheel Rollout', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '8-10', load: '' })) },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'couch-stretch', name: 'Couch Stretch (60s each side)' },
       { id: 'pigeon-pose', name: 'Pigeon Pose (60s each side)' },
       { id: 'hamstring-stretch', name: 'Seated Hamstring Stretch (60s)' },
@@ -192,10 +183,10 @@ const upperB = () => ([
       { id: 'hanging-leg-raise', name: 'Hanging Knee Raise', sets: Array.from({ length: 3 }, () => ({ id: generateUniqueId(), reps: '10-12', load: '' })) },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'cross-body-shoulder-stretch', name: 'Cross-Body Shoulder Stretch (45s each)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each side)' },
       { id: 'doorway-chest-stretch', name: 'Chest Stretch (60s)' },
@@ -216,10 +207,10 @@ const lowerB = () => ([
       { id: 'side-plank', name: 'Side Plank', note: 'Per side.', sets: Array.from({ length: 2 }, () => ({ id: generateUniqueId(), reps: '30-45s', load: '' })) },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'couch-stretch', name: 'Couch Stretch (60s each side)' },
       { id: 'hamstring-stretch', name: 'Hamstring Stretch (60s)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each side)' },
@@ -234,10 +225,10 @@ const activeRecovery = () => ([
     exercises: [{ id: 'stationary-bike', name: 'Easy Spin Bike', duration: '20' }],
     note: '20-30 mins easy spin. Conversational pace only. This is recovery, not training.'
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'pigeon-pose', name: 'Pigeon Pose (90s each side)' },
       { id: 'couch-stretch', name: 'Couch Stretch (60s each side)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each side)' },
@@ -264,10 +255,10 @@ const w1wed = () => ([
       { id: 'air-squats', name: 'Air Squats', reps: '15' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each)' },
       { id: 'childs-pose', name: "Child's Pose (90s)" },
     ]
@@ -290,10 +281,10 @@ const w1sat = () => ([
       { id: 'sit-up', name: 'Sit-ups' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'cobra-stretch', name: 'Cobra Stretch (60s)' },
       { id: 'quad-stretch', name: 'Quad Stretch (60s each)' },
     ]
@@ -314,10 +305,10 @@ const w2wed = () => ([
       { id: 'running', name: 'Run 800m', reps: '1' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'quad-stretch', name: 'Quad Stretch (60s each)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each)' },
       { id: 'childs-pose', name: "Child's Pose (90s)" },
@@ -354,10 +345,10 @@ const w2sat = () => ([
       { id: generateUniqueId(), task: 'Min 20: Rest' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'childs-pose', name: "Child's Pose (90s)" },
       { id: 'cobra-stretch', name: 'Cobra Stretch (60s)' },
     ]
@@ -376,10 +367,10 @@ const w3wed = () => ([
       { id: 'pullups', name: 'Pull-ups', reps: '10' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'quad-stretch', name: 'Quad Stretch (60s each)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each)' },
     ]
@@ -396,10 +387,10 @@ const w3sat = () => ([
       { id: 'burpees', name: 'Burpees' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'cobra-stretch', name: 'Cobra Stretch (60s)' },
       { id: 'hamstring-stretch', name: 'Hamstring Stretch (60s)' },
     ]
@@ -419,10 +410,10 @@ const w4wed = () => ([
       { id: 'pullups', name: 'Pull-ups', reps: '5' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'quad-stretch', name: 'Quad Stretch (60s each)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each)' },
       { id: 'childs-pose', name: "Child's Pose (90s)" },
@@ -444,10 +435,10 @@ const w4sat = () => ([
       { id: 'running', name: 'Run 400m', reps: '1' },
     ]
   },
-  bikeCooldown(),
   {
     id: generateUniqueId(), type: 'Cool-down',
     exercises: [
+      { id: 'stationary-bike', name: '5 min easy bike cooldown' },
       { id: 'pigeon-pose', name: 'Pigeon Pose (90s each side)' },
       { id: 'couch-stretch', name: 'Couch Stretch (90s each side)' },
       { id: 'lat-stretch', name: 'Lat Stretch (60s each)' },
