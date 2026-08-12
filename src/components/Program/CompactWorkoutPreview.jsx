@@ -31,11 +31,18 @@ const CompactWorkoutPreview = ({ blocks }) => {
 <ul className="compact-preview-list">
   {block.type === 'Conditioning: EMOM' ? (
     (block.minutes || []).map((min, i) => {
-      // Create the descriptive text from the new structured exercises
-      const taskDescription = (min.exercises || [])
+      // Create the descriptive text from the structured exercises,
+      // falling back to the legacy plain-text `task` field if present.
+      let taskDescription = (min.exercises || [])
         .map(ex => `${ex.reps || ''} ${ex.name}`.trim())
         .join(', ');
-      
+
+      if (!taskDescription && min.task) {
+        // Legacy templates store the full "Min X: ..." string in `task`,
+        // so strip a leading "Min X:" prefix to avoid duplicating it below.
+        taskDescription = min.task.replace(/^Min\s*\d+:\s*/i, '');
+      }
+
       return (
         <li key={i}>
           {`Min ${i + 1}: ${taskDescription.substring(0, 25)}${taskDescription.length > 25 ? '...' : ''}`}
