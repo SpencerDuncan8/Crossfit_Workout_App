@@ -18,6 +18,8 @@ import { ironConditioningPowerTemplate} from './templates/ironConditioningPowerT
 import { ironConditioningApexTemplate} from './templates/ironConditioningApexTemplate.js';
 import { 
 homeIronFoundationTemplate} from './templates/homeIronFoundationTemplate.js';
+import { 
+homeIronForgeTemplate} from './templates/homeIronForgeTemplate.js';
 
 export const programTemplates = [
   // Bodyweight Programs
@@ -42,4 +44,5 @@ export const programTemplates = [
   ironConditioningPowerTemplate,
   ironConditioningApexTemplate,
   homeIronFoundationTemplate,
+  homeIronForgeTemplate,
 ];
