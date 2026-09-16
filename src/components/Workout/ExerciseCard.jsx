@@ -74,7 +74,7 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
   const { appState, openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
   const { unitSystem } = appState;
   const { name, sets, note, id, trackingType, value, weight, unit, previousPerformance } = exercise;
-  const fullExerciseId = `${blockId}-${id}`;
+  const fullExerciseId = `${blockId}-${id ?? exercise.name.toLowerCase().replace(/\s+/g, '-')}`;
 
   const handleRestClick = () => {
     const restSeconds = parseInt(restDuration, 10);
