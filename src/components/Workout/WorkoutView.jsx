@@ -94,7 +94,7 @@ const WorkoutView = ({ setActiveView }) => {
       activeWorkout.blocks.forEach(block => {
         if ((block.type === 'Strength' || block.type === 'Bodyweight') && block.exercises) {
           block.exercises.forEach(exercise => {
-            const exerciseId = `${block.id}-${exercise.id}`;
+            const exerciseId = `${block.id}-${exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-')}`;
             const oneRepMaxLbs = appState.oneRepMaxes[exercise.id] || 0;
             initialProgress[exerciseId] = {
               sets: exercise.sets.map(set => {
@@ -121,7 +121,7 @@ const WorkoutView = ({ setActiveView }) => {
             };
           });
         }
-        if (block.type === 'Accessory / Carry' && block.exercises) { block.exercises.forEach(exercise => { const exerciseId = `${block.id}-${exercise.id}`; const numSets = parseInt(exercise.sets, 10) || 1; initialProgress[exerciseId] = { sets: Array.from({ length: numSets }, (_, i) => ({ id: `${exerciseId}-set-${i}`, completed: false })) }; }); }
+        if (block.type === 'Accessory / Carry' && block.exercises) { block.exercises.forEach(exercise => { const exerciseId = `${block.id}-${exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-')}`; const numSets = parseInt(exercise.sets, 10) || 1; initialProgress[exerciseId] = { sets: Array.from({ length: numSets }, (_, i) => ({ id: `${exerciseId}-set-${i}`, completed: false })) }; }); }
       });
       setExerciseProgress(initialProgress);
       setBlockProgress({});
