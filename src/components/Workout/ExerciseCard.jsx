@@ -74,7 +74,11 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
   const { appState, openExerciseModal, hasExerciseDetails } = useContext(AppStateContext);
   const { unitSystem } = appState;
   const { name, sets, note, id, trackingType, value, weight, unit, previousPerformance } = exercise;
-  const fullExerciseId = `${blockId}-${id ?? exercise.name.toLowerCase().replace(/\s+/g, '-')}`;
+
+  // Fix: when exercise has no database ID (custom/typed exercise), generate a
+  // stable key from the name so it never collides with other null-id exercises.
+  const safeId = id ?? name.toLowerCase().replace(/\s+/g, '-');
+  const fullExerciseId = `${blockId}-${safeId}`;
 
   const handleRestClick = () => {
     const restSeconds = parseInt(restDuration, 10);
@@ -84,9 +88,9 @@ const ExerciseCard = ({ blockId, exercise, progress, onSetUpdate, restDuration, 
   };
 
   const handleExerciseClick = () => { 
-  if (exercise.id && hasExerciseDetails(exercise.id)) { 
-        openExerciseModal(exercise.id); 
-      } 
+    if (exercise.id && hasExerciseDetails(exercise.id)) { 
+      openExerciseModal(exercise.id); 
+    } 
   };
   
   if (blockType === 'Bodyweight') {

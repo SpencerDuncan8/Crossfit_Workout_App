@@ -24,22 +24,14 @@ const WorkoutView = ({ setActiveView }) => {
   const daySchedule = appState.workoutSchedule[appState.viewingDate] || [];
   const scheduleEntry = daySchedule.find(item => item.scheduleId === appState.viewingScheduleId);
 
-  // --- START OF THE FIX ---
-  // This is the core logic change. We now find the active workout by first checking
-  // for a snapshot, then falling back to the allWorkouts list.
   const activeWorkout = useMemo(() => {
     if (!scheduleEntry) return null;
-    
-    // Priority #1: If it's a completed workout with a snapshot, use that.
     if (scheduleEntry.completedData?.workoutSnapshot) {
       return scheduleEntry.completedData.workoutSnapshot;
     }
-    
-    // Priority #2: Fallback for non-completed workouts or old data.
     const workoutId = scheduleEntry.workoutId;
     return allWorkouts.find(w => w.id === workoutId) || null;
   }, [scheduleEntry, allWorkouts]);
-  // --- END OF THE FIX ---
 
   const enrichedActiveWorkout = useMemo(() => {
     if (!activeWorkout) return null;
@@ -94,7 +86,10 @@ const WorkoutView = ({ setActiveView }) => {
       activeWorkout.blocks.forEach(block => {
         if ((block.type === 'Strength' || block.type === 'Bodyweight') && block.exercises) {
           block.exercises.forEach(exercise => {
-            const exerciseId = `${block.id}-${exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-')}`;
+            // Fix: use name-based fallback when exercise has no database ID
+            // so custom/typed exercises never collide with each other
+            const safeExerciseId = exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-');
+            const exerciseId = `${block.id}-${safeExerciseId}`;
             const oneRepMaxLbs = appState.oneRepMaxes[exercise.id] || 0;
             initialProgress[exerciseId] = {
               sets: exercise.sets.map(set => {
@@ -121,7 +116,19 @@ const WorkoutView = ({ setActiveView }) => {
             };
           });
         }
-        if (block.type === 'Accessory / Carry' && block.exercises) { block.exercises.forEach(exercise => { const exerciseId = `${block.id}-${exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-')}`; const numSets = parseInt(exercise.sets, 10) || 1; initialProgress[exerciseId] = { sets: Array.from({ length: numSets }, (_, i) => ({ id: `${exerciseId}-set-${i}`, completed: false })) }; }); }
+        if (block.type === 'Accessory / Carry' && block.exercises) {
+          block.exercises.forEach(exercise => {
+            const safeExerciseId = exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-');
+            const exerciseId = `${block.id}-${safeExerciseId}`;
+            const numSets = parseInt(exercise.sets, 10) || 1;
+            initialProgress[exerciseId] = {
+              sets: Array.from({ length: numSets }, (_, i) => ({
+                id: `${exerciseId}-set-${i}`,
+                completed: false
+              }))
+            };
+          });
+        }
       });
       setExerciseProgress(initialProgress);
       setBlockProgress({});
@@ -224,13 +231,13 @@ const WorkoutView = ({ setActiveView }) => {
         stopTimer();
     }
 
-  completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats, () => {
-    setActiveView('dashboard');
-    setTimeout(() => {
-        window.scrollTo(0, 0);
-        document.querySelector('.main-content')?.scrollTo(0, 0);
-    }, 50);
-  });
+    completeWorkout(appState.viewingDate, scheduleEntry.scheduleId, sessionStats, () => {
+      setActiveView('dashboard');
+      setTimeout(() => {
+          window.scrollTo(0, 0);
+          document.querySelector('.main-content')?.scrollTo(0, 0);
+      }, 50);
+    });
   };
 
   const scheduledDates = getScheduledDates();
