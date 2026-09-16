@@ -35,9 +35,7 @@ const WorkoutView = ({ setActiveView }) => {
 
   const enrichedActiveWorkout = useMemo(() => {
     if (!activeWorkout) return null;
-    
     const workoutCopy = JSON.parse(JSON.stringify(activeWorkout));
-
     return {
       ...workoutCopy,
       blocks: workoutCopy.blocks.map(block => ({
@@ -86,8 +84,8 @@ const WorkoutView = ({ setActiveView }) => {
       activeWorkout.blocks.forEach(block => {
         if ((block.type === 'Strength' || block.type === 'Bodyweight') && block.exercises) {
           block.exercises.forEach(exercise => {
-            // Fix: use name-based fallback when exercise has no database ID
-            // so custom/typed exercises never collide with each other
+            // Fix: use name-based fallback for custom exercises with no database ID
+            // so they never collide with each other or with database exercises
             const safeExerciseId = exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-');
             const exerciseId = `${block.id}-${safeExerciseId}`;
             const oneRepMaxLbs = appState.oneRepMaxes[exercise.id] || 0;
@@ -119,8 +117,6 @@ const WorkoutView = ({ setActiveView }) => {
         if (block.type === 'Accessory / Carry' && block.exercises) {
           block.exercises.forEach(exercise => {
             const safeExerciseId = exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-');
-            const safeExerciseId = ex.id ?? ex.name.toLowerCase().replace(/\s+/g, '-');
-            const safeExerciseId = ex.id ?? ex.name.toLowerCase().replace(/\s+/g, '-');
             const exerciseId = `${block.id}-${safeExerciseId}`;
             const numSets = parseInt(exercise.sets, 10) || 1;
             initialProgress[exerciseId] = {
@@ -191,7 +187,6 @@ const WorkoutView = ({ setActiveView }) => {
         progress.sets.forEach((progressSet) => {
           if (progressSet.completed) {
             sessionStats.sets++;
-
             if (block.type === 'Strength') {
               const reps = parseInt(progressSet.reps, 10) || 0;
               let weightInLbs = parseFloat(progressSet.weight) || 0;
@@ -215,7 +210,6 @@ const WorkoutView = ({ setActiveView }) => {
     Object.keys(finalBlockProgress).forEach(blockId => {
       const blockData = finalBlockProgress[blockId];
       const blockDefinition = activeWorkout.blocks.find(b => b.id === blockId);
-      
       if (blockDefinition?.type === 'Conditioning: RFT' && blockData.laps && blockData.laps.length > 0) {
         const lastLapTimeInSeconds = blockData.laps[blockData.laps.length - 1];
         blockData.recordedTime = formatTime(lastLapTimeInSeconds);
