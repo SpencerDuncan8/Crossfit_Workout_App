@@ -98,7 +98,8 @@ const WorkoutSection = ({ block, progress, onSetUpdate, startTimer, setActiveVie
           {(isStrength || isBodyweight || isAccessory) && (
             <>
               {block.exercises?.map((exercise) => {
-                const exerciseId = `${block.id}-${exercise.id}`;
+                const safeExerciseId = exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-');
+const exerciseId = `${block.id}-${safeExerciseId}`;
                 return (
                   <ExerciseCard 
                     key={exerciseId} 
