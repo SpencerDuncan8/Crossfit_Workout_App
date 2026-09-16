@@ -119,6 +119,8 @@ const WorkoutView = ({ setActiveView }) => {
         if (block.type === 'Accessory / Carry' && block.exercises) {
           block.exercises.forEach(exercise => {
             const safeExerciseId = exercise.id ?? exercise.name.toLowerCase().replace(/\s+/g, '-');
+            const safeExerciseId = ex.id ?? ex.name.toLowerCase().replace(/\s+/g, '-');
+            const safeExerciseId = ex.id ?? ex.name.toLowerCase().replace(/\s+/g, '-');
             const exerciseId = `${block.id}-${safeExerciseId}`;
             const numSets = parseInt(exercise.sets, 10) || 1;
             initialProgress[exerciseId] = {

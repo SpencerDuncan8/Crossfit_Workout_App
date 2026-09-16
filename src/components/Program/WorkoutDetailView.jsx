@@ -127,7 +127,8 @@ const WorkoutDetailView = ({ workout, completedData }) => {
                     const trackedBlockTypes = ['Strength', 'Accessory / Carry', 'Bodyweight'];
 
                     if (performanceStats?.detailedProgress && trackedBlockTypes.includes(block.type)) {
-                      const exerciseId = `${block.id}-${ex.id}`;
+                      const safeExerciseId = ex.id ?? ex.name.toLowerCase().replace(/\s+/g, '-');
+const exerciseId = `${block.id}-${safeExerciseId}`;
                       const progress = performanceStats.detailedProgress[exerciseId];
 
                       if (!progress) return null;
