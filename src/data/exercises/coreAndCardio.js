@@ -4,7 +4,7 @@ export const coreAndCardioExercises = [
   {
     id: "mountain-climbers",
     name: "Mountain Climbers",
-    category: "Core/Cardio",
+    category: "Core",
     primaryMuscles: ["Core", "Shoulders", "Hip Flexors"],
     equipment: ["None"],
     setup: [
