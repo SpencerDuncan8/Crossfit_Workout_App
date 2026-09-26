@@ -43,8 +43,8 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
       return '---';
     }
 
-    // Use the new large number formatter for the Total Volume card
-    if (title === 'Total Volume') {
+    // Use the large number formatter for cards that can grow into the thousands
+    if (title === 'Total Volume' || title === 'Total Reps') {
       return formatLargeNumber(val);
     }
     
