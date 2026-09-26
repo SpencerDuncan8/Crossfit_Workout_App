@@ -3,7 +3,7 @@
 import React, { useContext, useState, useMemo } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { getAllExercisesCombined, searchAllExercises, getExerciseCategories } from '../../data/exerciseDatabase.js';
-import { Search, PlusCircle, Pencil, Trash2, Dumbbell } from 'lucide-react';
+import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 import QuickAddExerciseModal from '../Common/QuickAddExerciseModal.jsx';
 import './ExerciseLibrary.css';
@@ -114,9 +114,7 @@ const ExerciseLibrary = () => {
       <div className="exercise-library-list">
         {displayedExercises.map(exercise => (
           <div key={exercise.id} className="exercise-library-card" onClick={() => handleCardClick(exercise)}>
-            <div className="exercise-library-card-icon">
-              <Dumbbell size={18} />
-            </div>
+            <span className="exercise-library-card-dot" />
             <div className="exercise-library-card-info">
               <h4>{exercise.name}</h4>
               <span className="exercise-library-card-category">{exercise.category}</span>
