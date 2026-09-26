@@ -2,7 +2,7 @@
 
 import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { X } from 'lucide-react';
+import { X, Copy } from 'lucide-react';
 import './ExerciseDetailModal.css';
 
 const DetailSection = ({ title, items }) => {
@@ -20,10 +20,18 @@ const DetailSection = ({ title, items }) => {
 };
 
 const ExerciseDetailModal = () => {
-  const { appState, closeModal } = useContext(AppStateContext);
+  const { appState, closeModal, duplicateExerciseAsCustom } = useContext(AppStateContext);
   const { modalContent: exercise } = appState;
 
   if (!exercise) return null;
+
+  const handleDuplicate = () => {
+    const newExercise = duplicateExerciseAsCustom(exercise);
+    if (newExercise) {
+      alert(`"${newExercise.name}" was added to your exercises. Edit it anytime from the Exercises tab.`);
+      closeModal();
+    }
+  };
 
   return (
     <div className="modal-backdrop" onClick={closeModal}>
@@ -42,9 +50,16 @@ const ExerciseDetailModal = () => {
           {exercise.modifications && (
             <div className="detail-section">
               <h3 className="detail-section-title">Modifications</h3>
-              <p className="modification-item"><strong>Easier:</strong> {exercise.modifications.easier}</p>
-              <p className="modification-item"><strong>Harder:</strong> {exercise.modifications.harder}</p>
+              {exercise.modifications.easier && <p className="modification-item"><strong>Easier:</strong> {exercise.modifications.easier}</p>}
+              {exercise.modifications.harder && <p className="modification-item"><strong>Harder:</strong> {exercise.modifications.harder}</p>}
             </div>
+          )}
+
+          {!exercise.isCustom && (
+            <button type="button" className="action-btn schedule-btn detail-duplicate-btn" onClick={handleDuplicate}>
+              <Copy size={16} />
+              Duplicate & Customize
+            </button>
           )}
         </div>
       </div>
