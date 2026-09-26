@@ -1,7 +1,7 @@
 // src/App.jsx
 
 import React, { useState, useContext, useEffect } from 'react';
-import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen, LogOut, Cloud, UserCheck, Crown, Star, User, Users } from 'lucide-react';
+import { Home, Calendar, TrendingUp, Dumbbell, Moon, Sun, BookOpen, LogOut, Cloud, UserCheck, Crown, Star, User, Users, ClipboardList } from 'lucide-react';
 import { ThemeContext, AppStateContext } from './context/AppContext.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
 import WorkoutView from './components/Workout/WorkoutView.jsx';
@@ -21,6 +21,7 @@ import PremiumModal from './components/Premium/PremiumModal.jsx';
 import AccountModal from './components/Premium/AccountModal.jsx';
 import ReactivationConfirmation from './components/Premium/ReactivationConfirmation.jsx';
 import CommunityView from './components/Community/CommunityView.jsx';
+import ExerciseLibrary from './components/ExerciseLibrary/ExerciseLibrary.jsx';
 
 import './App.css';
 import './components/Dashboard/Dashboard.css';
@@ -41,6 +42,7 @@ import './components/Premium/AccountModal.css';
 import './components/Community/CommunityView.css';
 import './components/Community/FriendDetailView.css';
 import './components/Program/WorkoutDetailView.css';
+import './components/ExerciseLibrary/ExerciseLibrary.css';
 
 const NavItem = ({ icon: Icon, label, isActive, onClick, isMobile }) => {
   const baseStyle = { display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start', padding: isMobile ? '12px' : '12px 16px', borderRadius: '12px', transition: 'all 0.3s ease', cursor: 'pointer', border: 'none', background: isActive ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent', color: isActive ? '#ffffff' : 'var(--text-tertiary)', boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none', transform: isActive ? 'scale(1.02)' : 'scale(1)', width: '100%', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '12px', position: 'relative', overflow: 'hidden' };
@@ -127,6 +129,7 @@ export default function App() {
     { id: 'program', label: 'Program', icon: BookOpen },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'workout', label: 'Workout', icon: Dumbbell },
+    { id: 'exercises', label: 'Exercises', icon: ClipboardList },
     { id: 'progress', label: 'Progress', icon: TrendingUp },
     { id: 'community', label: 'Community', icon: Users },
   ];
@@ -137,7 +140,8 @@ export default function App() {
       case 'workout': return <WorkoutView setActiveView={setActiveView} />;
       case 'calendar': return <CalendarView setActiveView={setActiveView} />;
       case 'progress': return <ProgressView />;
-        case 'community': return <CommunityView />;
+      case 'community': return <CommunityView />;
+      case 'exercises': return <ExerciseLibrary />;
       case 'program': return <ProgramOverview setActiveView={setActiveView} />;
       default: return <ProgramOverview setActiveView={setActiveView} />;
     }
@@ -171,7 +175,7 @@ export default function App() {
             {/* --- THIS IS THE CORRECTED FIX --- */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(6, 1fr)', // Change from 5 to 6
+              gridTemplateColumns: 'repeat(7, 1fr)', // 7 tabs now that Exercises is added
               padding: '8px' 
             }}>
               {navItems.map(item => (

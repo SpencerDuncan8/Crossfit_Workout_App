@@ -28,4 +28,5 @@ export const initialAppState = {
   friends: [],
   friendRequestsSent: [],
   friendRequestsReceived: [],
+  customExercises: [],
 };

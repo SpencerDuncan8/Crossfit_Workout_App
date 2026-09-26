@@ -13,6 +13,7 @@ import { useProgramActions } from './actions/useProgramActions.js';
 import { useScheduleActions } from './actions/useScheduleActions.js';
 import { useProgressActions } from './actions/useProgressActions.js';
 import { useFriendActions } from './actions/useFriendActions.js';
+import { useExerciseActions } from './actions/useExerciseActions.js';
 
 export const AppStateContext = createContext();
 export const ThemeContext = createContext();
@@ -56,12 +57,13 @@ const AppStateProviderComponent = ({ children }) => {
     setAppState(prev => ({ ...prev, ...updates }));
   }, [setAppState]);
 
-  const uiActions = useUIActions({ updateAppState, setAppState });
+  const uiActions = useUIActions({ updateAppState, setAppState, customExercises: appState.customExercises });
   const authActions = useAuthActions({ appState, setAppState, updateAppState, currentUser, clearTimer, clearLocalState });
   const programActions = useProgramActions({ appState, setAppState, currentUser, openPremiumModal: uiActions.openPremiumModal });
   const scheduleActions = useScheduleActions({ appState, setAppState, updateAppState });
   const progressActions = useProgressActions({ setAppState });
   const friendActions = useFriendActions({ appState, currentUser, updateAppState });
+  const exerciseActions = useExerciseActions({ setAppState });
 
   const contextValue = useMemo(() => ({
     currentUser, authLoading, appState, updateAppState,
@@ -71,9 +73,10 @@ const AppStateProviderComponent = ({ children }) => {
     ...scheduleActions,
     ...progressActions,
     ...friendActions,
+    ...exerciseActions,
   }), [
     currentUser, authLoading, appState, updateAppState,
-    uiActions, authActions, programActions, scheduleActions, progressActions, friendActions,
+    uiActions, authActions, programActions, scheduleActions, progressActions, friendActions, exerciseActions,
   ]);
 
   return (

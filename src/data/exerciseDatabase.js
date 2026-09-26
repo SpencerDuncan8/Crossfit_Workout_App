@@ -95,5 +95,56 @@ export function searchExercises(searchTerm) {
 // --- END OF UPDATED SECTION ---
 
 
+// --- START OF CUSTOM EXERCISE SUPPORT ---
+// These functions merge the built-in database with a user's custom exercises
+// (passed in from app state, since custom exercises are runtime data, not
+// bundled at build time like the rest of this file).
+
+export function findExercise(id, customExercises = []) {
+  if (!id) return null;
+  return exerciseDatabase[id] || customExercises.find(ex => ex.id === id) || null;
+}
+
+export function getAllExercisesCombined(customExercises = []) {
+  return [...Object.values(exerciseDatabase), ...customExercises];
+}
+
+export function searchAllExercises(searchTerm, customExercises = []) {
+  const builtInResults = searchExercises(searchTerm);
+
+  const searchWords = searchTerm
+    .toLowerCase()
+    .split(' ')
+    .filter(word => word.length > 0);
+
+  if (searchWords.length === 0) {
+    return builtInResults;
+  }
+
+  const customResults = customExercises.filter(exercise => {
+    const exerciseWords = new Set();
+    exercise.name.toLowerCase().split(' ').forEach(word => {
+      exerciseWords.add(word.replace(/[^a-z0-9]/g, ''));
+    });
+    (exercise.category || '').toLowerCase().split(' ').forEach(word => {
+      exerciseWords.add(word.replace(/[^a-z0-9]/g, ''));
+    });
+    (exercise.primaryMuscles || []).forEach(muscleGroup => {
+      muscleGroup.toLowerCase().split(' ').forEach(word => {
+        exerciseWords.add(word.replace(/[^a-z0-9]/g, ''));
+      });
+    });
+
+    return searchWords.every(word =>
+      Array.from(exerciseWords).some(exWord => exWord.startsWith(word))
+    );
+  });
+
+  return [...customResults, ...builtInResults];
+}
+
+// --- END OF CUSTOM EXERCISE SUPPORT ---
+
+
 // Export the database object itself, as the original file did.
 export default exerciseDatabase;

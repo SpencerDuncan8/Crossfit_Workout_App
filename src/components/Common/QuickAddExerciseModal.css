@@ -1,0 +1,87 @@
+/* src/components/Common/QuickAddExerciseModal.css */
+
+.quick-add-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  /* Must sit above WorkoutEditor.css (z-index: 3000) so it's visible when
+     adding an exercise mid-edit. */
+  z-index: 3500;
+  animation: quickAddFadeIn 0.2s ease-out;
+}
+
+.quick-add-sheet {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  animation: quickAddSlideUp 0.25s ease-out;
+}
+
+.quick-add-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.quick-add-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.quick-add-close-btn {
+  background: var(--bg-tertiary);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.quick-add-close-btn:hover {
+  color: var(--text-primary);
+}
+
+@keyframes quickAddFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes quickAddSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* On larger screens, show it as a centered dialog instead of a bottom sheet */
+@media (min-width: 768px) {
+  .quick-add-backdrop {
+    align-items: center;
+  }
+
+  .quick-add-sheet {
+    border-radius: 16px;
+    max-width: 420px;
+  }
+
+  @keyframes quickAddSlideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}

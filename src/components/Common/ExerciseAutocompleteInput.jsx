@@ -1,26 +1,30 @@
 // src/components/Common/ExerciseAutocompleteInput.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
-import { searchExercises } from '../../data/exerciseDatabase.js';
-import { X } from 'lucide-react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { searchAllExercises } from '../../data/exerciseDatabase.js';
+import { AppStateContext } from '../../context/AppContext.jsx';
+import { X, PlusCircle } from 'lucide-react';
+import QuickAddExerciseModal from './QuickAddExerciseModal.jsx';
 import './ExerciseAutocompleteInput.css';
 
 // This is now a "controlled" component. It does not manage its own text value.
 const ExerciseAutocompleteInput = ({ value, onChange, onSelect, placeholder }) => {
+  const { appState } = useContext(AppStateContext);
   const [suggestions, setSuggestions] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
     if (value && value.length >= 2 && isFocused) {
-      const results = searchExercises(value).slice(0, 10);
+      const results = searchAllExercises(value, appState.customExercises || []).slice(0, 10);
       setSuggestions(results);
     } else {
       setSuggestions([]);
     }
     setActiveIndex(-1);
-  }, [value, isFocused]);
+  }, [value, isFocused, appState.customExercises]);
 
   const handleSelect = (exercise) => {
     onSelect(exercise);
@@ -28,8 +32,19 @@ const ExerciseAutocompleteInput = ({ value, onChange, onSelect, placeholder }) =
     setIsFocused(false);
   };
 
+  const handleOpenQuickAdd = () => {
+    setSuggestions([]);
+    setIsFocused(false);
+    setShowQuickAdd(true);
+  };
+
+  const handleExerciseCreated = (newExercise) => {
+    onSelect(newExercise);
+    setShowQuickAdd(false);
+  };
+
   const handleBlur = () => {
-    // A short delay allows a click on a suggestion to register before the blur closes the list.
+    // A short delay allows a click on a suggestion (or the Add Exercise row) to register before the blur closes the list.
     setTimeout(() => {
       if (isFocused) {
         // If the user blurs without selecting, treat it as a custom entry.
@@ -38,18 +53,24 @@ const ExerciseAutocompleteInput = ({ value, onChange, onSelect, placeholder }) =
       }
     }, 200);
   };
-  
+
   const handleKeyDown = (e) => {
+    // Total selectable rows = suggestions + the "Add Exercise" row (when shown)
+    const showAddRow = value && value.length >= 2;
+    const totalRows = suggestions.length + (showAddRow ? 1 : 0);
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIndex((prev) => (prev + 1) % suggestions.length);
+      setActiveIndex((prev) => (prev + 1) % totalRows);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActiveIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+      setActiveIndex((prev) => (prev - 1 + totalRows) % totalRows);
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (activeIndex > -1 && suggestions[activeIndex]) {
+      if (activeIndex > -1 && activeIndex < suggestions.length) {
         handleSelect(suggestions[activeIndex]);
+      } else if (showAddRow && activeIndex === suggestions.length) {
+        handleOpenQuickAdd();
       } else {
         // Treat Enter like a blur for custom entries
         onSelect({ id: null, name: value });
@@ -64,6 +85,8 @@ const ExerciseAutocompleteInput = ({ value, onChange, onSelect, placeholder }) =
   const clearInput = () => {
     onChange(''); // Tell the parent to clear the value
   };
+
+  const showAddRow = isFocused && value && value.length >= 2;
 
   return (
     <div className="autocomplete-container" ref={containerRef}>
@@ -84,7 +107,7 @@ const ExerciseAutocompleteInput = ({ value, onChange, onSelect, placeholder }) =
             </button>
         )}
       </div>
-      {isFocused && suggestions.length > 0 && (
+      {(isFocused && (suggestions.length > 0 || showAddRow)) && (
         <ul className="suggestions-list">
           {suggestions.map((exercise, index) => (
             <li
@@ -97,8 +120,23 @@ const ExerciseAutocompleteInput = ({ value, onChange, onSelect, placeholder }) =
               <span className="suggestion-category">{exercise.category}</span>
             </li>
           ))}
+          {showAddRow && (
+            <li
+              className={`suggestion-item add-exercise-row ${activeIndex === suggestions.length ? 'active' : ''}`}
+              onMouseDown={handleOpenQuickAdd}
+            >
+              <PlusCircle size={16} />
+              <span>Add "{value}" as a new exercise</span>
+            </li>
+          )}
         </ul>
       )}
+      <QuickAddExerciseModal
+        isOpen={showQuickAdd}
+        initialName={value}
+        onClose={() => setShowQuickAdd(false)}
+        onCreated={handleExerciseCreated}
+      />
     </div>
   );
 };
