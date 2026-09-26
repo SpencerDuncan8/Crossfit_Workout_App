@@ -240,3 +240,31 @@
   color: #fff;
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
 }
+.photo-compare-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.photo-compare-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.photo-compare-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.photo-compare-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 13px;
+}

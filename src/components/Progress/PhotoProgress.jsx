@@ -1,16 +1,22 @@
 // src/components/Progress/PhotoProgress.jsx
 
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 
-const PhotoProgress = () => { // Removed isInitialSetup as it's no longer needed
+const PhotoProgress = () => {
   const { appState, addPhotoEntry } = useContext(AppStateContext);
-  
+
   const validPhotos = appState.photos.filter(p => p.url && p.url.startsWith('data:image'));
-  
+
   const fileInputRef = useRef(null);
+
+  // null means "auto" — before tracks the oldest photo, after tracks the
+  // newest one, so uploading a new photo keeps working like before unless
+  // the person has deliberately picked a specific photo on that side.
+  const [beforeIdx, setBeforeIdx] = useState(null);
+  const [afterIdx, setAfterIdx] = useState(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -24,8 +30,12 @@ const PhotoProgress = () => { // Removed isInitialSetup as it's no longer needed
 
   const handleUploadClick = () => { fileInputRef.current.click(); };
 
-  const firstPhoto = validPhotos[0];
-  const lastPhoto = validPhotos.length > 1 ? validPhotos[validPhotos.length - 1] : null;
+  const oldestPhoto = validPhotos[0];
+  const newestPhoto = validPhotos[validPhotos.length - 1];
+
+  const beforePhoto = (beforeIdx !== null && validPhotos[beforeIdx]) ? validPhotos[beforeIdx] : oldestPhoto;
+  const afterPhoto = (afterIdx !== null && validPhotos[afterIdx]) ? validPhotos[afterIdx] : newestPhoto;
+
   const imageStyle = { objectFit: 'contain', backgroundColor: 'var(--bg-primary)' };
 
   return (
@@ -36,20 +46,51 @@ const PhotoProgress = () => { // Removed isInitialSetup as it's no longer needed
         </div>
         <h3 className="progress-card-title">Photo Progress</h3>
       </div>
-      
+
+      {validPhotos.length >= 2 && (
+        <div className="photo-compare-controls">
+          <div className="photo-compare-field">
+            <label className="photo-compare-label">Before</label>
+            <select
+              className="photo-compare-select"
+              value={beforeIdx === null ? '' : beforeIdx}
+              onChange={(e) => setBeforeIdx(e.target.value === '' ? null : Number(e.target.value))}
+            >
+              <option value="">Oldest (Auto)</option>
+              {validPhotos.map((p, idx) => (
+                <option key={idx} value={idx}>{p.date}</option>
+              ))}
+            </select>
+          </div>
+          <div className="photo-compare-field">
+            <label className="photo-compare-label">After</label>
+            <select
+              className="photo-compare-select"
+              value={afterIdx === null ? '' : afterIdx}
+              onChange={(e) => setAfterIdx(e.target.value === '' ? null : Number(e.target.value))}
+            >
+              <option value="">Most Recent (Auto)</option>
+              {validPhotos.map((p, idx) => (
+                <option key={idx} value={idx}>{p.date}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       <div className="photo-progress-container">
         {validPhotos.length < 2 ? (
           <div className="photo-placeholder">
-            {firstPhoto ? (
-              <img src={firstPhoto.url} alt={`Photo from ${firstPhoto.date}`} className="single-photo-preview" />
+            {oldestPhoto ? (
+              <img src={oldestPhoto.url} alt={`Photo from ${oldestPhoto.date}`} className="single-photo-preview" />
             ) : (
               <p>Upload at least two photos to see your comparison.</p>
             )}
           </div>
         ) : (
           <ReactCompareSlider
-            itemOne={<ReactCompareSliderImage src={firstPhoto.url} alt={`Photo from ${firstPhoto.date}`} style={imageStyle} />}
-            itemTwo={<ReactCompareSliderImage src={lastPhoto.url} alt={`Photo from ${lastPhoto.date}`} style={imageStyle} />}
+            itemOne={<ReactCompareSliderImage src={beforePhoto.url} alt={`Photo from ${beforePhoto.date}`} style={imageStyle} />}
+            itemTwo={<ReactCompareSliderImage src={afterPhoto.url} alt={`Photo from ${afterPhoto.date}`} style={imageStyle} />}
             className="comparison-slider"
           />
         )}
