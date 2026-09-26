@@ -100,7 +100,9 @@ export const useScheduleActions = ({ appState, setAppState, updateAppState }) =>
       .sort((a, b) => new Date(b.date) - new Date(a.date));
 
     for (const completed of completedWorkouts) {
-      const detailedProgress = completed.completedData?.detailedProgress;
+      // Check the new data structure (inside `stats`) first, then fall back
+      // to the old structure for backward compatibility with older completions.
+      const detailedProgress = completed.completedData?.stats?.detailedProgress || completed.completedData?.detailedProgress;
       if (detailedProgress) {
         for (const progressKey in detailedProgress) {
           if (progressKey.endsWith(`-${exerciseId}`)) {
