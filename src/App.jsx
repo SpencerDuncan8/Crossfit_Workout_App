@@ -108,10 +108,10 @@ export default function App() {
   const [isReactivationConfirmOpen, setIsReactivationConfirmOpen] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (appState.pendingExerciseEditId) {
+      setActiveView('exercises');
+    }
+  }, [appState.pendingExerciseEditId]);
 
   const handleLogoutClick = () => {
     setIsLogoutConfirmOpen(true);

@@ -1,6 +1,6 @@
 // src/components/ExerciseLibrary/ExerciseLibrary.jsx
 
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useEffect } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
 import { getAllExercisesCombined, searchAllExercises, getExerciseCategories } from '../../data/exerciseDatabase.js';
 import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
@@ -9,7 +9,7 @@ import QuickAddExerciseModal from '../Common/QuickAddExerciseModal.jsx';
 import './ExerciseLibrary.css';
 
 const ExerciseLibrary = () => {
-  const { appState, openExerciseModal, updateCustomExercise, deleteCustomExercise } = useContext(AppStateContext);
+  const { appState, openExerciseModal, updateCustomExercise, deleteCustomExercise, updateAppState } = useContext(AppStateContext);
   const customExercises = appState.customExercises || [];
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,12 +42,7 @@ const ExerciseLibrary = () => {
     return list;
   }, [searchTerm, activeCategory, customExercises]);
 
-  const handleCardClick = (exercise) => {
-    openExerciseModal(exercise.id);
-  };
-
-  const handleEditClick = (e, exercise) => {
-    e.stopPropagation();
+  const openEditFormFor = (exercise) => {
     setEditingExercise(exercise);
     setEditName(exercise.name);
     setEditCategory(exercise.category || categories[0] || 'Other');
@@ -56,6 +51,28 @@ const ExerciseLibrary = () => {
     setEditCommonMistakes((exercise.commonMistakes || []).join('\n'));
     setEditEasier(exercise.modifications?.easier || '');
     setEditHarder(exercise.modifications?.harder || '');
+  };
+
+  // Picks up requests from the exercise detail modal's "Add Details" button
+  // (which sets appState.pendingExerciseEditId and switches to this tab).
+  useEffect(() => {
+    if (appState.pendingExerciseEditId) {
+      const exerciseToEdit = customExercises.find(ex => ex.id === appState.pendingExerciseEditId);
+      if (exerciseToEdit) {
+        openEditFormFor(exerciseToEdit);
+      }
+      updateAppState({ pendingExerciseEditId: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appState.pendingExerciseEditId, customExercises]);
+
+  const handleCardClick = (exercise) => {
+    openExerciseModal(exercise.id);
+  };
+
+  const handleEditClick = (e, exercise) => {
+    e.stopPropagation();
+    openEditFormFor(exercise);
   };
 
   const handleDeleteClick = (e, exercise) => {

@@ -29,4 +29,5 @@ export const initialAppState = {
   friendRequestsSent: [],
   friendRequestsReceived: [],
   customExercises: [],
+  pendingExerciseEditId: null,
 };

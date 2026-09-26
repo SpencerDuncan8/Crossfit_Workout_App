@@ -2,7 +2,7 @@
 
 import React, { useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { X, Copy } from 'lucide-react';
+import { X, Copy, Pencil } from 'lucide-react';
 import './ExerciseDetailModal.css';
 
 const DetailSection = ({ title, items }) => {
@@ -20,10 +20,16 @@ const DetailSection = ({ title, items }) => {
 };
 
 const ExerciseDetailModal = () => {
-  const { appState, closeModal, duplicateExerciseAsCustom } = useContext(AppStateContext);
+  const { appState, closeModal, duplicateExerciseAsCustom, updateAppState } = useContext(AppStateContext);
   const { modalContent: exercise } = appState;
 
   if (!exercise) return null;
+
+  const hasAnyDetails =
+    (exercise.setup && exercise.setup.length > 0) ||
+    (exercise.execution && exercise.execution.length > 0) ||
+    (exercise.commonMistakes && exercise.commonMistakes.length > 0) ||
+    !!exercise.modifications;
 
   const handleDuplicate = () => {
     const newExercise = duplicateExerciseAsCustom(exercise);
@@ -31,6 +37,11 @@ const ExerciseDetailModal = () => {
       alert(`"${newExercise.name}" was added to your exercises. Edit it anytime from the Exercises tab.`);
       closeModal();
     }
+  };
+
+  const handleAddDetails = () => {
+    updateAppState({ pendingExerciseEditId: exercise.id });
+    closeModal();
   };
 
   return (
@@ -52,6 +63,16 @@ const ExerciseDetailModal = () => {
               <h3 className="detail-section-title">Modifications</h3>
               {exercise.modifications.easier && <p className="modification-item"><strong>Easier:</strong> {exercise.modifications.easier}</p>}
               {exercise.modifications.harder && <p className="modification-item"><strong>Harder:</strong> {exercise.modifications.harder}</p>}
+            </div>
+          )}
+
+          {!hasAnyDetails && exercise.isCustom && (
+            <div className="detail-empty-state">
+              <p>No details added yet for this exercise.</p>
+              <button type="button" className="action-btn schedule-btn detail-duplicate-btn" onClick={handleAddDetails}>
+                <Pencil size={16} />
+                Add Details
+              </button>
             </div>
           )}
 
