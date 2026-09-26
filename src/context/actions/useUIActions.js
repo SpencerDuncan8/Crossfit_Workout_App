@@ -1,9 +1,9 @@
 // src/context/actions/useUIActions.js
 
 import { useCallback, useMemo } from 'react';
-import { getExerciseByName } from '../../data/exerciseDatabase.js';
+import { findExercise } from '../../data/exerciseDatabase.js';
 
-export const useUIActions = ({ updateAppState, setAppState }) => {
+export const useUIActions = ({ updateAppState, setAppState, customExercises }) => {
   const openInfoModal = useCallback((content) => {
     updateAppState({ isInfoModalOpen: true, infoModalContent: content });
   }, [updateAppState]);
@@ -33,15 +33,15 @@ export const useUIActions = ({ updateAppState, setAppState }) => {
   }, [updateAppState]);
 
   const openExerciseModal = useCallback((exerciseId) => {
-    const exerciseData = getExerciseByName(exerciseId);
+    const exerciseData = findExercise(exerciseId, customExercises);
     if (exerciseData) updateAppState({ isModalOpen: true, modalContent: exerciseData });
-  }, [updateAppState]);
+  }, [updateAppState, customExercises]);
 
   const closeModal = useCallback(() => {
     updateAppState({ isModalOpen: false, modalContent: null });
   }, [updateAppState]);
 
-  const hasExerciseDetails = useCallback((exerciseId) => !!getExerciseByName(exerciseId), []);
+  const hasExerciseDetails = useCallback((exerciseId) => !!findExercise(exerciseId, customExercises), [customExercises]);
 
   return useMemo(() => ({
     openInfoModal, closeInfoModal, openPremiumModal, closePremiumModal,
