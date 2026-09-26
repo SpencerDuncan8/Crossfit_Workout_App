@@ -44,7 +44,7 @@ const MetricCard = ({ icon: Icon, title, value, unit, color, iconElement }) => {
     }
 
     // Use the large number formatter for cards that can grow into the thousands
-    if (title === 'Total Volume' || title === 'Total Reps') {
+    if (title === 'Total Volume' || title === 'Total Reps' || title === 'Total Sets' || title === 'Total Cardio') {
       return formatLargeNumber(val);
     }
     
