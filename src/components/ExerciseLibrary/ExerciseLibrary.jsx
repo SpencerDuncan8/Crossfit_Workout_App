@@ -19,6 +19,11 @@ const ExerciseLibrary = () => {
   const [deletingExercise, setDeletingExercise] = useState(null);
   const [editName, setEditName] = useState('');
   const [editCategory, setEditCategory] = useState('');
+  const [editSetup, setEditSetup] = useState('');
+  const [editExecution, setEditExecution] = useState('');
+  const [editCommonMistakes, setEditCommonMistakes] = useState('');
+  const [editEasier, setEditEasier] = useState('');
+  const [editHarder, setEditHarder] = useState('');
 
   const categories = useMemo(() => {
     const builtIn = getExerciseCategories();
@@ -46,6 +51,11 @@ const ExerciseLibrary = () => {
     setEditingExercise(exercise);
     setEditName(exercise.name);
     setEditCategory(exercise.category || categories[0] || 'Other');
+    setEditSetup((exercise.setup || []).join('\n'));
+    setEditExecution((exercise.execution || []).join('\n'));
+    setEditCommonMistakes((exercise.commonMistakes || []).join('\n'));
+    setEditEasier(exercise.modifications?.easier || '');
+    setEditHarder(exercise.modifications?.harder || '');
   };
 
   const handleDeleteClick = (e, exercise) => {
@@ -56,7 +66,14 @@ const ExerciseLibrary = () => {
   const handleSaveEdit = () => {
     const trimmedName = editName.trim();
     if (!trimmedName || !editingExercise) return;
-    updateCustomExercise(editingExercise.id, { name: trimmedName, category: editCategory });
+    updateCustomExercise(editingExercise.id, {
+      name: trimmedName,
+      category: editCategory,
+      setup: editSetup.split('\n'),
+      execution: editExecution.split('\n'),
+      commonMistakes: editCommonMistakes.split('\n'),
+      modifications: { easier: editEasier, harder: editHarder },
+    });
     setEditingExercise(null);
   };
 
@@ -165,6 +182,59 @@ const ExerciseLibrary = () => {
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="modal-label">Setup <span className="modal-label-hint">(one step per line, optional)</span></label>
+            <textarea
+              className="modal-input"
+              rows={3}
+              value={editSetup}
+              onChange={(e) => setEditSetup(e.target.value)}
+              placeholder={"e.g.\nStart in plank position\nHands under shoulders"}
+            />
+          </div>
+
+          <div>
+            <label className="modal-label">Execution <span className="modal-label-hint">(one step per line, optional)</span></label>
+            <textarea
+              className="modal-input"
+              rows={3}
+              value={editExecution}
+              onChange={(e) => setEditExecution(e.target.value)}
+              placeholder={"e.g.\nLower with control\nDrive back up explosively"}
+            />
+          </div>
+
+          <div>
+            <label className="modal-label">Common Mistakes <span className="modal-label-hint">(one per line, optional)</span></label>
+            <textarea
+              className="modal-input"
+              rows={3}
+              value={editCommonMistakes}
+              onChange={(e) => setEditCommonMistakes(e.target.value)}
+              placeholder={"e.g.\nLosing core stability"}
+            />
+          </div>
+
+          <div>
+            <label className="modal-label">Modifications <span className="modal-label-hint">(optional)</span></label>
+            <input
+              type="text"
+              className="modal-input"
+              style={{ marginBottom: '8px' }}
+              value={editEasier}
+              onChange={(e) => setEditEasier(e.target.value)}
+              placeholder="Easier variation"
+            />
+            <input
+              type="text"
+              className="modal-input"
+              value={editHarder}
+              onChange={(e) => setEditHarder(e.target.value)}
+              placeholder="Harder variation"
+            />
+          </div>
+
           <div className="modal-actions">
             <button type="button" className="action-btn" onClick={() => setEditingExercise(null)}>Cancel</button>
             <button type="button" className="action-btn schedule-btn" onClick={handleSaveEdit} disabled={!editName.trim()}>
