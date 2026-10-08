@@ -87,7 +87,7 @@ const ProfileSection = ({ currentUser, isPremium, onLogoutClick, setIsPremiumMod
                 </div>
                 <div>
                     <p style={{fontWeight:'600', color:'var(--text-primary)'}}>Upgrade to Premium</p>
-                    <p style={{fontSize:'12px', color:'var(--text-tertiary)'}}>Unlimited programs + sync</p>
+                    <p style={{fontSize:'12px', color:'var(--text-tertiary)'}}>Cloud backup + sync</p>
                 </div>
             </div>
         </button>

@@ -25,8 +25,8 @@ const PremiumModal = ({ isOpen, onClose }) => {
     },
     {
       icon: <Zap size={20} />,
-      title: "Unlimited Programs",
-      description: "Create as many custom workout programs as you want"
+      title: "Never Lose Your Data",
+      description: "Your programs, logs, and progress are safely stored in the cloud, even if you clear your browser or switch phones"
     },
     {
       icon: <Users size={20} />,
@@ -44,14 +44,13 @@ const PremiumModal = ({ isOpen, onClose }) => {
     "Full workout editor",
     "Calendar scheduling", 
     "Progress tracking",
-    "3 custom programs",
-    "Local storage only"
+    "Unlimited custom programs",
+    "Local storage only (this device)"
   ];
 
   const premiumFeatures = [
     "Everything in Free",
-    "Unlimited custom programs",
-    "Cloud sync across devices",
+    "Cloud backup & sync across devices",
     "Social features & sharing",
     "Advanced analytics",
     "Priority support",
@@ -73,7 +72,7 @@ const PremiumModal = ({ isOpen, onClose }) => {
         <div className="premium-modal-content">
           <div className="premium-hero">
             <h3>Unlock the Full BlockFit Experience</h3>
-            <p>Take your fitness journey to the next level with unlimited programs, cloud sync, and social features.</p>
+            <p>Back up your data and sync it across all your devices, plus friends and program sharing.</p>
           </div>
 
           <div className="premium-features-showcase">

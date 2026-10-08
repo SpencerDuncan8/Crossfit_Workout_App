@@ -7,16 +7,10 @@ export const useProgramActions = ({ appState, setAppState, currentUser, openPrem
   const allWorkouts = useMemo(() => appState.programs.flatMap(p => p.workouts), [appState.programs]);
 
   const createProgram = useCallback((name) => {
-    const userPrograms = appState.programs.filter(p => !p.isTemplate);
-    const isPremium = appState.isPremium || currentUser?.isPremium;
-    if (!isPremium && userPrograms.length >= 3) {
-      openPremiumModal();
-      return null;
-    }
     const newProgram = { id: generateUniqueId(), name, description: "A collection of your custom workouts.", workouts: [], isTemplate: false };
     setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
     return newProgram.id;
-  }, [appState.programs, appState.isPremium, currentUser, openPremiumModal, setAppState]);
+  }, [setAppState]);
 
   const copyProgram = useCallback((programToCopy) => {
     const newProgram = { ...JSON.parse(JSON.stringify(programToCopy)), id: generateUniqueId(), name: `${programToCopy.name} (Copy)`, isTemplate: false };
@@ -66,15 +60,9 @@ export const useProgramActions = ({ appState, setAppState, currentUser, openPrem
       alert(`"${template.name}" is already in your library.`);
       return;
     }
-    const userPrograms = appState.programs.filter(p => !p.isTemplate);
-    const isPremium = appState.isPremium || currentUser?.isPremium;
-    if (!isPremium && userPrograms.length >= 3) {
-      openPremiumModal();
-      return;
-    }
     const newProgram = { ...template, isTemplate: false };
     setAppState(prev => ({ ...prev, programs: [...prev.programs, newProgram] }));
-  }, [appState.programs, appState.isPremium, currentUser, openPremiumModal, setAppState]);
+  }, [appState.programs, setAppState]);
 
   const saveCustomWorkout = useCallback((programId, workout) => {
     setAppState(prev => ({

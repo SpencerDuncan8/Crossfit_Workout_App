@@ -13,7 +13,6 @@ const ProgramOverview = ({ setActiveView }) => {
   const { 
     appState, 
     currentUser, 
-    openPremiumModal,
     deleteCustomWorkout, 
     openWorkoutEditor,      
     copyCustomWorkout,
@@ -38,10 +37,6 @@ const ProgramOverview = ({ setActiveView }) => {
   };
 
   const handleCreateProgram = () => {
-    if (!isPremium && programCount >= maxPrograms) {
-      openPremiumModal();
-      return;
-    }
     setNewProgramName('My New Program');
     setIsCreateModalOpen(true);
   };
@@ -82,8 +77,6 @@ const ProgramOverview = ({ setActiveView }) => {
   const viewingProgram = appState.programs.find(p => p.id === viewingProgramId);
   const userPrograms = appState.programs.filter(p => !p.isTemplate);
   const isPremium = appState.isPremium || currentUser?.isPremium;
-  const programCount = userPrograms.length;
-  const maxPrograms = 3;
 
   let currentView;
 
@@ -162,8 +155,7 @@ const ProgramOverview = ({ setActiveView }) => {
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1>My Programs</h1>
-            {!isPremium && (<p>Select a program to view its workouts. ({programCount}/{maxPrograms} programs)</p>)}
-            {isPremium && (<p>Select a program to view its workouts.</p>)}
+            <p>Select a program to view its workouts.</p>
           </div>
           <button className="create-workout-btn" onClick={handleCreateProgram}>
             <PlusCircle size={20} />

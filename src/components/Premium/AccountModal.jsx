@@ -185,7 +185,6 @@ const AccountModal = ({
             </h4>
             <div className="active-features">
               <div className="feature-item"><span>☁️ Cloud Sync</span><span className="feature-status active">Active</span></div>
-              <div className="feature-item"><span>⚡ Unlimited Programs</span><span className="feature-status active">Active</span></div>
               <div className="feature-item"><span>👥 Social Features</span><span className="feature-status active">Active</span></div>
               <div className="feature-item"><span>📊 Advanced Analytics</span><span className="feature-status active">Active</span></div>
             </div>

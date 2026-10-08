@@ -16,17 +16,13 @@ const filterCategories = {
 };
 
 const TemplateLibrary = () => {
-  const { appState, currentUser, loadProgramTemplate, autoScheduleProgram, openPremiumModal } = useContext(AppStateContext);
+  const { appState, loadProgramTemplate, autoScheduleProgram } = useContext(AppStateContext);
   const [scheduleConfirm, setScheduleConfirm] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
   const initialFilters = { type: null, level: null, equipment: null };
   const [activeFilters, setActiveFilters] = useState(initialFilters);
-
-  const isPremium = appState.isPremium || currentUser?.isPremium;
-  const programCount = appState.programs.filter(p => !p.isTemplate).length;
-  const maxPrograms = 3;
 
   const handleFilterClick = (category, value) => {
     setActiveFilters(prev => {
@@ -38,14 +34,12 @@ const TemplateLibrary = () => {
   };
 
   const handleLoadAndSchedule = (template) => {
-    if (!isPremium && programCount >= maxPrograms) { openPremiumModal(); return; }
     const isAlreadyLoaded = appState.programs.some(p => p.id === template.id);
     if (!isAlreadyLoaded) { loadProgramTemplate(template); }
     setScheduleConfirm(template);
   };
 
   const handleAddTemplate = (template) => {
-    if (!isPremium && programCount >= maxPrograms) { openPremiumModal(); return; }
     loadProgramTemplate(template);
   };
 
