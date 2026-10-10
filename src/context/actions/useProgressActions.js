@@ -13,12 +13,37 @@ export const useProgressActions = ({ setAppState }) => {
     });
   }, [setAppState]);
 
-  const addPhotoEntry = useCallback((photoUrl) => {
-    const today = new Date().toLocaleDateString();
-    const photo = { date: today, url: photoUrl };
+  // The app only ever stores TWO progress photos: one "before" and one "after".
+  // Setting a slot replaces whatever was there. Any photos saved by the older
+  // multi-photo version are folded into the two slots and then cleared.
+  const setProgressPhoto = useCallback((slot, photoUrl) => {
+    if (slot !== 'before' && slot !== 'after') return;
+    const photo = { date: new Date().toLocaleDateString(), url: photoUrl };
     setAppState(prev => {
-      const updated = [...prev.photos, photo].sort((a, b) => new Date(a.date) - new Date(b.date));
-      return { ...prev, photos: updated };
+      const legacy = (prev.photos || []).filter(p => p.url && p.url.startsWith('data:image'));
+      const before = prev.beforePhoto || legacy[0] || null;
+      const after = prev.afterPhoto || (legacy.length >= 2 ? legacy[legacy.length - 1] : null);
+      return {
+        ...prev,
+        photos: [],
+        beforePhoto: slot === 'before' ? photo : before,
+        afterPhoto: slot === 'after' ? photo : after,
+      };
+    });
+  }, [setAppState]);
+
+  const removeProgressPhoto = useCallback((slot) => {
+    if (slot !== 'before' && slot !== 'after') return;
+    setAppState(prev => {
+      const legacy = (prev.photos || []).filter(p => p.url && p.url.startsWith('data:image'));
+      const before = prev.beforePhoto || legacy[0] || null;
+      const after = prev.afterPhoto || (legacy.length >= 2 ? legacy[legacy.length - 1] : null);
+      return {
+        ...prev,
+        photos: [],
+        beforePhoto: slot === 'before' ? null : before,
+        afterPhoto: slot === 'after' ? null : after,
+      };
     });
   }, [setAppState]);
 
@@ -29,8 +54,8 @@ export const useProgressActions = ({ setAppState }) => {
   }, [setAppState]);
 
   return useMemo(() => ({
-    addWeightEntry, addPhotoEntry, updateOneRepMax,
+    addWeightEntry, setProgressPhoto, removeProgressPhoto, updateOneRepMax,
   }), [
-    addWeightEntry, addPhotoEntry, updateOneRepMax,
+    addWeightEntry, setProgressPhoto, removeProgressPhoto, updateOneRepMax,
   ]);
 };

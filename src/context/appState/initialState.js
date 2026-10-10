@@ -2,7 +2,7 @@
 
 export const initialAppState = {
   startingWeight: 0, currentWeight: 0, totalWorkoutsCompleted: 0,
-  weightHistory: [], photos: [], totalLbsLifted: 0, totalReps: 0, totalSets: 0,
+  weightHistory: [], photos: [], beforePhoto: null, afterPhoto: null, totalLbsLifted: 0, totalReps: 0, totalSets: 0,
   totalCardioMinutes: 0,
   programs: [],
   workoutSchedule: {},
