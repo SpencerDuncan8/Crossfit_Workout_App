@@ -4,6 +4,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext';
 import { User, Send, CheckCircle, XCircle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
+import { apiPost } from '../../utils/apiClient.js';
 
 const ShareProgramModal = ({ isOpen, onClose, programToShare }) => {
   const { appState, currentUser } = useContext(AppStateContext);
@@ -22,11 +23,7 @@ const ShareProgramModal = ({ isOpen, onClose, programToShare }) => {
       const friendUids = appState.friends || [];
       if (friendUids.length > 0) {
         try {
-          const response = await fetch('/api/getUsersBatch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uids: friendUids }),
-          });
+          const response = await apiPost('/api/getUsersBatch', { uids: friendUids });
           const data = await response.json();
           if (response.ok) {
             setFriendUsers(data);
@@ -47,14 +44,9 @@ const ShareProgramModal = ({ isOpen, onClose, programToShare }) => {
     setShareStatus(prev => ({ ...prev, [recipient.uid]: 'sending' }));
 
     try {
-      const response = await fetch('/api/shareProgram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderUid: currentUser.uid,
-          recipientUid: recipient.uid,
-          programId: programToShare.id
-        }),
+      const response = await apiPost('/api/shareProgram', {
+        recipientUid: recipient.uid,
+        programId: programToShare.id,
       });
       
       const data = await response.json();

@@ -1,12 +1,11 @@
 // src/context/actions/useAuthActions.js
 
 import { useCallback, useMemo } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { db, auth } from '../../firebase/config.js';
+import { auth } from '../../firebase/config.js';
 import { loadFromFirestore } from '../appState/firestoreSync.js';
 import { initialAppState } from '../appState/initialState.js';
 
@@ -54,25 +53,14 @@ export const useAuthActions = ({ appState, setAppState, updateAppState, currentU
     setAppState(initialAppState);
   }, [clearTimer, setAppState]);
 
-  const updateUserPremiumStatus = useCallback(async (uid, status) => {
-    if (!uid) return;
-    try {
-      const userDocRef = doc(db, 'users', uid);
-      await updateDoc(userDocRef, { isPremium: status });
-      updateAppState({ isPremium: status });
-    } catch (error) {
-      console.error("Error updating premium status:", error);
-    }
-  }, [updateAppState]);
-
   const resetAllData = useCallback(() => {
     clearLocalState();
     setAppState(initialAppState);
   }, [clearLocalState, setAppState]);
 
   return useMemo(() => ({
-    signUp, logIn, logOut, refreshSubscriptionData, updateUserPremiumStatus, resetAllData,
+    signUp, logIn, logOut, refreshSubscriptionData, resetAllData,
   }), [
-    signUp, logIn, logOut, refreshSubscriptionData, updateUserPremiumStatus, resetAllData,
+    signUp, logIn, logOut, refreshSubscriptionData, resetAllData,
   ]);
 };

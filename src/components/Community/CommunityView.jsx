@@ -5,6 +5,7 @@ import { AppStateContext } from '../../context/AppContext';
 import { Search, UserPlus, Check, Clock, UserCheck, UserX, User, ArrowLeft } from 'lucide-react';
 import Modal from '../Common/Modal.jsx'; // Import Modal
 import FriendDetailView from './FriendDetailView.jsx'; // Import the new component
+import { apiPost } from '../../utils/apiClient.js';
 
 const CommunityView = () => {
   const { appState, currentUser, sendFriendRequest, handleFriendRequest } = useContext(AppStateContext);
@@ -34,7 +35,7 @@ const CommunityView = () => {
       if (requestUids && requestUids.length > 0) {
         setIsLoadingRequests(true);
         try {
-          const response = await fetch('/api/getUsersBatch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uids: requestUids }), });
+          const response = await apiPost('/api/getUsersBatch', { uids: requestUids });
           if (response.ok) setRequestUsers(await response.json());
         } catch (error) { console.error("Failed to fetch request user data:", error); } 
         finally { setIsLoadingRequests(false); }
@@ -53,7 +54,7 @@ const CommunityView = () => {
       if (friendUids && friendUids.length > 0) {
         setIsLoadingFriends(true);
         try {
-          const response = await fetch('/api/getUsersBatch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uids: friendUids }), });
+          const response = await apiPost('/api/getUsersBatch', { uids: friendUids });
           if (response.ok) setFriendUsers(await response.json());
         } catch (error) { console.error("Failed to fetch friend user data:", error); } 
         finally { setIsLoadingFriends(false); }
@@ -69,11 +70,7 @@ const CommunityView = () => {
   const handleViewFriend = async (friendUid) => {
     setIsLoadingFriendDetail(true);
     try {
-      const response = await fetch('/api/getFriendActivity', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ friendUid }),
-      });
+      const response = await apiPost('/api/getFriendActivity', { friendUid });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not fetch friend data.');
       setViewingFriend(data);
@@ -85,7 +82,7 @@ const CommunityView = () => {
   };
 
   // ... (handleSearch, handleSendRequest, handleRequestAction, renderSearchResults functions remain exactly the same) ...
-  const handleSearch = async (e) => { e.preventDefault(); if (searchTerm.trim().length < 3) { setSearchError('Please enter at least 3 characters to search.'); return; } setIsSearching(true); setSearchError(''); setSearchResults(null); try { const response = await fetch('/api/searchUsers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: searchTerm }), }); const data = await response.json(); if (!response.ok) { setSearchError(data.message || 'No user found.'); } else { setSearchResults(data); } } catch (err) { setSearchError(err.message); } finally { setIsSearching(false); } };
+  const handleSearch = async (e) => { e.preventDefault(); if (searchTerm.trim().length < 3) { setSearchError('Please enter at least 3 characters to search.'); return; } setIsSearching(true); setSearchError(''); setSearchResults(null); try { const response = await apiPost('/api/searchUsers', { username: searchTerm }); const data = await response.json(); if (!response.ok) { setSearchError(data.message || 'No user found.'); } else { setSearchResults(data); } } catch (err) { setSearchError(err.message); } finally { setIsSearching(false); } };
   const handleSendRequest = async (receiverUid) => { try { await sendFriendRequest(receiverUid); setSearchResults(prev => ({ ...prev, requestSent: true })); } catch (err) { alert(err.message); } };
   const handleRequestAction = async (requesterUid, action) => { try { await handleFriendRequest(requesterUid, action); } catch (err) { alert(err.message); } };
   const renderSearchResults = () => { if (isSearching) return <p className="search-status-text">Searching...</p>; if (searchError) return <p className="search-status-text error">{searchError}</p>; if (searchResults) { const isSelf = searchResults.uid === currentUser?.uid; const isFriend = appState.friends?.includes(searchResults.uid); const requestSent = appState.friendRequestsSent?.includes(searchResults.uid) || searchResults.requestSent; const requestReceived = appState.friendRequestsReceived?.includes(searchResults.uid); let button; if (isSelf) { button = <button className="add-friend-btn" disabled>This is you</button>; } else if (isFriend) { button = <button className="add-friend-btn is-friend" disabled><Check size={18} /> Friends</button>; } else if (requestSent) { button = <button className="add-friend-btn is-pending" disabled><Clock size={18} /> Request Sent</button>; } else if (requestReceived) { button = <button className="add-friend-btn is-pending" disabled>Check Requests</button>; } else { button = ( <button className="add-friend-btn" onClick={() => handleSendRequest(searchResults.uid)}><UserPlus size={18} /> Add Friend</button> ); } return ( <div className="search-result-item"> <div className="user-info"><span className="username">{searchResults.username}</span></div> {button} </div> ); } return null; };

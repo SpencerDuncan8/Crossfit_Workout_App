@@ -7,6 +7,7 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import LoadingSpinner from '../Common/LoadingSpinner';
+import { apiPost } from '../../utils/apiClient.js';
 import './CheckoutForm.css';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -60,16 +61,11 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
                 throw new Error("Failed to create user account after payment. Please contact support.");
             }
 
-            // Step 4: Call the server API with the new user's UID to create the subscription.
-            const response = await fetch('/api/complete-subscription', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    customerId: customerId,
-                    paymentMethodId: setupIntent.payment_method
-                })
+            // Step 4: Call the server API (authenticated with the new user's login token)
+            // to create the subscription. The server works out the uid/email itself.
+            const response = await apiPost('/api/complete-subscription', {
+                customerId: customerId,
+                paymentMethodId: setupIntent.payment_method
             });
 
             const result = await response.json();

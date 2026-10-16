@@ -4,6 +4,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext'; // NEW: Import AppStateContext
 import { Crown, User, CreditCard, Settings, LogOut, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
+import { apiPost } from '../../utils/apiClient.js';
 
 const AccountModal = ({ 
   isOpen, 
@@ -41,11 +42,7 @@ const AccountModal = ({
     setUsernameError('');
 
     try {
-      const response = await fetch('/api/setUsername', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: currentUser.uid, username: usernameInput }),
-      });
+      const response = await apiPost('/api/setUsername', { username: usernameInput });
 
       const data = await response.json();
 
@@ -74,11 +71,7 @@ const AccountModal = ({
       if (!stripeCustomerId) {
         throw new Error('No Stripe Customer ID found.');
       }
-      const response = await fetch('/api/create-customer-portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: stripeCustomerId }),
-      });
+      const response = await apiPost('/api/create-customer-portal', { customerId: stripeCustomerId });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create customer portal session.');

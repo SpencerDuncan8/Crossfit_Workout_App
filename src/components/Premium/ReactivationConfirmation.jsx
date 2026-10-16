@@ -3,6 +3,7 @@
 import React, { useState, useContext } from 'react';
 import { AppStateContext } from '../../context/AppContext';
 import { Crown, AlertTriangle, Settings } from 'lucide-react';
+import { apiPost } from '../../utils/apiClient.js';
 
 const ReactivationConfirmation = ({ onConfirm, onCancel }) => {
   const { appState, currentUser, refreshSubscriptionData } = useContext(AppStateContext);
@@ -14,11 +15,7 @@ const ReactivationConfirmation = ({ onConfirm, onCancel }) => {
     // This is a simplified version of the logic in AccountModal
     setIsLoading(true);
     try {
-      const response = await fetch('/api/create-customer-portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: appState.stripeCustomerId }),
-      });
+      const response = await apiPost('/api/create-customer-portal', { customerId: appState.stripeCustomerId });
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
@@ -36,13 +33,8 @@ const ReactivationConfirmation = ({ onConfirm, onCancel }) => {
     setShowPortalButton(false);
 
     try {
-      const response = await fetch('/api/reactivate-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: currentUser.uid,
-          customerId: appState.stripeCustomerId,
-        }),
+      const response = await apiPost('/api/reactivate-subscription', {
+        customerId: appState.stripeCustomerId,
       });
 
       const result = await response.json();

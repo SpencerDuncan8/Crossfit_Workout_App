@@ -1,16 +1,13 @@
 // src/context/actions/useFriendActions.js
 
 import { useCallback, useMemo } from 'react';
+import { apiPost } from '../../utils/apiClient.js';
 
 export const useFriendActions = ({ appState, currentUser, updateAppState }) => {
   const sendFriendRequest = useCallback(async (receiverUid) => {
     if (!currentUser) throw new Error("Not logged in.");
 
-    const response = await fetch('/api/sendFriendRequest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ senderUid: currentUser.uid, receiverUid }),
-    });
+    const response = await apiPost('/api/sendFriendRequest', { receiverUid });
 
     const data = await response.json();
     if (!response.ok) {
@@ -28,11 +25,7 @@ export const useFriendActions = ({ appState, currentUser, updateAppState }) => {
   const handleFriendRequest = useCallback(async (requesterUid, action) => {
     if (!currentUser) throw new Error("Not logged in.");
 
-    const response = await fetch('/api/handleFriendRequest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentUserUid: currentUser.uid, requesterUid, action }),
-    });
+    const response = await apiPost('/api/handleFriendRequest', { requesterUid, action });
 
     const data = await response.json();
     if (!response.ok) {

@@ -1,61 +1,39 @@
 // /api/handleFriendRequest.js
 
-import admin from 'firebase-admin';
+import { admin, db } from '../server/firebaseAdmin.js';
+import { createHandler, HttpError, requireString } from '../server/http.js';
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+export default createHandler(async (req, res) => {
+  const currentUserUid = req.user.uid; // from the verified login token
+  const requesterUid = requireString(req.body.requesterUid, 'Requester UID');
+  const action = req.body.action;
+
+  if (action !== 'accept' && action !== 'decline') {
+    throw new HttpError(400, 'Action must be "accept" or "decline".');
+  }
+
+  const currentUserRef = db.collection('users').doc(currentUserUid);
+  const requesterRef = db.collection('users').doc(requesterUid);
+  const currentUserDoc = await currentUserRef.get();
+
+  // You can only answer a request that was actually sent to you.
+  if (!currentUserDoc.exists || !(currentUserDoc.data().friendRequestsReceived || []).includes(requesterUid)) {
+    throw new HttpError(400, 'There is no pending friend request from that user.');
+  }
+
+  const batch = db.batch();
+  batch.update(currentUserRef, { friendRequestsReceived: admin.firestore.FieldValue.arrayRemove(requesterUid) });
+  batch.update(requesterRef, { friendRequestsSent: admin.firestore.FieldValue.arrayRemove(currentUserUid) });
+
+  if (action === 'accept') {
+    batch.update(currentUserRef, { friends: admin.firestore.FieldValue.arrayUnion(requesterUid) });
+    batch.update(requesterRef, { friends: admin.firestore.FieldValue.arrayUnion(currentUserUid) });
+  }
+
+  await batch.commit();
+
+  res.status(200).json({
+    success: true,
+    message: action === 'accept' ? 'Friend request accepted!' : 'Friend request declined.',
   });
-}
-
-const db = admin.firestore();
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  try {
-    const { currentUserUid, requesterUid, action } = req.body; // action can be "accept" or "decline"
-
-    if (!currentUserUid || !requesterUid || !action) {
-      return res.status(400).json({ error: 'Missing required parameters.' });
-    }
-
-    const currentUserRef = db.collection('users').doc(currentUserUid);
-    const requesterRef = db.collection('users').doc(requesterUid);
-
-    const batch = db.batch();
-
-    // Always remove the request from both users' lists regardless of action
-    batch.update(currentUserRef, {
-      friendRequestsReceived: admin.firestore.FieldValue.arrayRemove(requesterUid)
-    });
-    batch.update(requesterRef, {
-      friendRequestsSent: admin.firestore.FieldValue.arrayRemove(currentUserUid)
-    });
-
-    // If the action is "accept", add each user to the other's friends list
-    if (action === 'accept') {
-      batch.update(currentUserRef, {
-        friends: admin.firestore.FieldValue.arrayUnion(requesterUid)
-      });
-      batch.update(requesterRef, {
-        friends: admin.firestore.FieldValue.arrayUnion(currentUserUid)
-      });
-    }
-
-    await batch.commit();
-
-    const message = action === 'accept' ? 'Friend request accepted!' : 'Friend request declined.';
-    res.status(200).json({ success: true, message });
-
-  } catch (error) {
-    console.error(`Error handling friend request for action "${req.body.action}":`, error);
-    res.status(500).json({ error: 'An internal server error occurred.' });
-  }
-}
+});

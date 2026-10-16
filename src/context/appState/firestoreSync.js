@@ -10,6 +10,11 @@ export const saveToFirestore = async (uid, data) => {
       isModalOpen, modalContent, showConfetti,
       isWorkoutEditorOpen, editingInfo, workoutToScheduleId,
       isInfoModalOpen, infoModalContent, isPremiumModalOpen,
+      // Billing and social fields are owned by the SERVER (Stripe webhook / API endpoints).
+      // The browser must never write them, or a user could grant themselves premium or friends.
+      isPremium, stripeCustomerId, subscriptionId, subscriptionStatus, subscriptionPriceId,
+      subscriptionCurrentPeriodEnd, subscriptionCancelAtPeriodEnd, subscriptionEndDate,
+      username, friends, friendRequestsSent, friendRequestsReceived,
       ...saveableData
     } = data;
     const userDocRef = doc(db, 'users', uid);

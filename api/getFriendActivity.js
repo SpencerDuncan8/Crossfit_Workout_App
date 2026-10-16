@@ -1,53 +1,25 @@
 // /api/getFriendActivity.js
 
-import admin from 'firebase-admin';
+import { db } from '../server/firebaseAdmin.js';
+import { createHandler, HttpError, requireString } from '../server/http.js';
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+export default createHandler(async (req, res) => {
+  const callerUid = req.user.uid; // from the verified login token
+  const friendUid = requireString(req.body.friendUid, 'Friend User ID');
+
+  const friendDoc = await db.collection('users').doc(friendUid).get();
+  if (!friendDoc.exists) throw new HttpError(404, 'User not found.');
+
+  const friendData = friendDoc.data();
+
+  // Only people on THEIR friends list may view their workouts.
+  if (!(friendData.friends || []).includes(callerUid)) {
+    throw new HttpError(403, 'You are not friends with this user.');
+  }
+
+  res.status(200).json({
+    username: friendData.username || 'Unknown User',
+    workoutSchedule: friendData.workoutSchedule || {},
+    programs: friendData.programs || [],
   });
-}
-
-const db = admin.firestore();
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  try {
-    const { friendUid } = req.body;
-
-    if (!friendUid) {
-      return res.status(400).json({ error: 'Friend User ID is required.' });
-    }
-
-    const userDocRef = db.collection('users').doc(friendUid);
-    const userDoc = await userDocRef.get();
-
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
-
-    const userData = userDoc.data();
-
-    // --- THIS IS THE FIX ---
-    // Now we send back their programs list as well.
-    const publicFriendData = {
-      username: userData.username || 'Unknown User',
-      workoutSchedule: userData.workoutSchedule || {},
-      programs: userData.programs || [], // Send the friend's programs
-    };
-    // --- END OF FIX ---
-
-    res.status(200).json(publicFriendData);
-
-  } catch (error) {
-    console.error('Error fetching friend activity:', error);
-    res.status(500).json({ error: 'An internal server error occurred.' });
-  }
-}
+});
