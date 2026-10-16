@@ -1,9 +1,14 @@
 // src/hooks/usePersistentState.jsx
 
 import { useState, useEffect } from 'react';
+import { reportSaveStatus } from '../utils/saveStatus.js';
 
 // This custom hook manages loading from and saving to localStorage.
-export function usePersistentState(key, initialValue) {
+// Pass { reportStatus: true } for the main app data so a failed save (for example
+// when the device's storage is full) is shown to the user instead of failing silently.
+export function usePersistentState(key, initialValue, options = {}) {
+  const reportStatus = options.reportStatus === true;
+
   const [state, setState] = useState(() => {
     try {
       const storedValue = localStorage.getItem(key);
@@ -19,10 +24,12 @@ export function usePersistentState(key, initialValue) {
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(state));
+      if (reportStatus) reportSaveStatus('local', null);
     } catch (error) {
       console.error(`Error writing to localStorage key “${key}”:`, error);
+      if (reportStatus) reportSaveStatus('local', { kind: 'storage-full' });
     }
-  }, [key, state]);
+  }, [key, state, reportStatus]);
 
   // A new function to clear state both in memory and storage.
   const clearState = () => {

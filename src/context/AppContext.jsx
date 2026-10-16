@@ -19,7 +19,7 @@ export const AppStateContext = createContext();
 export const ThemeContext = createContext();
 
 const AppStateProviderComponent = ({ children }) => {
-  const [appState, setAppState, clearLocalState] = usePersistentState('blockfitState_v2_multi', initialAppState);
+  const [appState, setAppState, clearLocalState] = usePersistentState('blockfitState_v2_multi', initialAppState, { reportStatus: true });
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const { clearTimer } = useContext(TimerContext);

@@ -22,6 +22,7 @@ import AccountModal from './components/Premium/AccountModal.jsx';
 import ReactivationConfirmation from './components/Premium/ReactivationConfirmation.jsx';
 import CommunityView from './components/Community/CommunityView.jsx';
 import ExerciseLibrary from './components/ExerciseLibrary/ExerciseLibrary.jsx';
+import SaveWarningBanner from './components/Common/SaveWarningBanner.jsx';
 
 import './App.css';
 import './components/Dashboard/Dashboard.css';
@@ -153,6 +154,7 @@ export default function App() {
   
   return (
     <div className="app">
+      <SaveWarningBanner onOpenBackup={() => setActiveView('progress')} />
       {appState.showConfetti && <Confetti width={width} height={height} recycle={false} onConfettiComplete={(confetti) => confetti.reset()} />}
       
       {isMobile ? (
