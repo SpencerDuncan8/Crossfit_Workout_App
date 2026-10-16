@@ -5,6 +5,7 @@ import WeightLogger from './WeightLogger.jsx';
 import PhotoProgress from './PhotoProgress.jsx';
 import WeightChart from '../Dashboard/WeightChart.jsx';
 import OneRepMaxEditor from './OneRepMaxEditor.jsx';
+import BackupRestore from './BackupRestore.jsx';
 import UnitToggle from './UnitToggle.jsx'; // Import the new component
 import { AppStateContext } from '../../context/AppContext.jsx';
 import Modal from '../Common/Modal.jsx';
@@ -39,6 +40,8 @@ const ProgressView = () => {
         <PhotoProgress />
 
         <OneRepMaxEditor />
+
+        <BackupRestore />
 
         <div className="progress-card danger-zone">
           <div className="progress-card-header">
