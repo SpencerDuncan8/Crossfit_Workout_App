@@ -1,7 +1,7 @@
 // src/components/Premium/PremiumModal.jsx
 
 import React, { useState } from 'react';
-import { Crown, Check, X, Users, TrendingUp, Cloud, Zap } from 'lucide-react';
+import { Crown, Check, X, Users, Cloud, Zap } from 'lucide-react';
 import Modal from '../Common/Modal.jsx';
 import Auth from '../Auth/Auth.jsx';
 
@@ -32,11 +32,6 @@ const PremiumModal = ({ isOpen, onClose }) => {
       icon: <Users size={20} />,
       title: "Add Friends & Share",
       description: "Connect with friends, view their activity, and share your custom programs."
-    },
-    {
-      icon: <TrendingUp size={20} />,
-      title: "Advanced Analytics",
-      description: "Detailed progress tracking and performance insights"
     }
   ];
 
@@ -45,16 +40,15 @@ const PremiumModal = ({ isOpen, onClose }) => {
     "Calendar scheduling", 
     "Progress tracking",
     "Unlimited custom programs",
-    "Local storage only (this device)"
+    "Download & restore a backup file",
+    "Data is stored on this device only"
   ];
 
   const premiumFeatures = [
     "Everything in Free",
-    "Cloud backup & sync across devices",
-    "Social features & sharing",
-    "Advanced analytics",
-    "Priority support",
-    "Early access to new features"
+    "Automatic cloud backup & sync across devices",
+    "Full workout history and photos kept safe",
+    "Friends, activity & program sharing"
   ];
 
   return (

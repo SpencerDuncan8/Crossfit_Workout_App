@@ -1,158 +1,164 @@
 # BlockFit: Workout Tracker & Builder
 
-A premium web application to guide your fitness journey. Get started immediately with professionally designed programs from the Template Library or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
+A web app to guide your fitness journey. Get started immediately with professionally designed programs from the Template Library, or use the powerful editor to create, plan, and track your own custom functional fitness workouts.
 
-## 🎯 Current Status: Now with Community Features & Sharing ✅
+## 🎯 Current Status
 
-The application is fully featured with a freemium model, secure payment processing, a filterable Template Library, and a complete social system for premium users.
+The app is fully featured: a program-based workout engine, a filterable Template Library, secure payment processing, automatic cloud backup & sync, and a social system for premium users.
 
--   **Goal:** Provide a full-featured experience without requiring immediate sign-up, while enabling powerful cross-device synchronization and community interaction for paid subscribers.
--   **Method:** The free tier saves all user data in **`localStorage`**. Premium users get **Firebase Authentication** + **Cloud Firestore** sync, plus the ability to add friends and share programs.
--   **Security:** Users only gain cloud access **after** successful payment completion. Email addresses are captured for follow-up even if payment is abandoned.
+-   **Goal:** Give everyone a full-featured tracker with no sign-up required, and offer paid cloud backup, sync across devices, and community features.
+-   **Free tier:** All data is kept in the browser's **`localStorage`**. A free **backup file** (download / restore) is available on the Progress page.
+-   **Premium tier:** **Firebase Authentication** + **Cloud Firestore** give automatic backup and cross-device sync, plus friends and program sharing.
+-   **Security:** Cloud accounts are created only **after** a successful payment method is confirmed. Billing and social data can only be changed by the server, never by the browser.
 
 ## 🗺️ Project Roadmap
 
-The project is being developed in distinct phases to ensure a high-quality, user-centric product.
-
 *   **Phase 1: Core Engine & Local Storage** - ✅ **Complete**
-    *   A full-featured, program-based architecture.
-    *   A powerful workout editor and interactive workout experience.
-    *   Calendar and progress tracking features.
-    *   Initial user testing with a local-storage-based version.
+    *   Program-based architecture, workout editor, interactive workout experience.
+    *   Calendar and progress tracking.
 
 *   **Phase 2: User Authentication & Cloud Sync** - ✅ **Complete**
-    *   Implemented user accounts using **Firebase Authentication**.
-    *   Implemented a one-time data migration for premium users, moving their data from `localStorage` to **Cloud Firestore**.
+    *   User accounts with **Firebase Authentication**.
+    *   Local data moves to **Cloud Firestore** automatically when a user signs up or signs in.
 
 *   **Phase 3: Premium Tier & Monetization** - ✅ **Complete**
-    *   Integrated **Stripe** for secure payment processing.
-    *   Launched "Premium" subscription tier ($4.99/month) that unlocks cloud sync.
+    *   **Stripe** subscriptions ($4.99/month) unlock cloud backup & sync and community features.
 
 *   **Phase 4: Template Library & Community Features** - ✅ **Complete**
-    *   ✅ **Complete:** Built a filterable **Template Library** with programs by skill, goal, and equipment.
-    *   ✅ **Complete:** Added new program types including **Benchmarks (The Girls)**, **Hero WODs**, and skill-based **Challenges**.
-    *   ✅ **Complete:** Premium users can now create a unique username, add friends, view their activity, and share their custom programs.
+    *   Filterable **Template Library** (skill, goal, equipment), including Benchmarks, Hero WODs and Challenges.
+    *   Usernames, friends, friend activity, and program sharing for premium users.
     *   **Planned:** Leaderboards for benchmark workouts.
+
+*   **Phase 5: Hardening & Scale** - ✅ **Complete**
+    *   Every server endpoint verifies the caller's Firebase login token.
+    *   Firestore security rules protect billing and social fields.
+    *   Cloud data is split into small documents so history can grow without limit (see Data Storage).
+    *   Visible warnings when a save fails, and a free backup/restore file.
 
 ## 💰 Monetization & Business Model
 
-The application follows a **Freemium** model with a secure payment gateway to prevent unauthorized access.
-
 *   **Free Tier:**
-    *   Full access to the workout editor, calendar, and all tracking features.
-    *   Limited to 3 custom programs.
-    *   Access to the full Template Library, but can only add programs if under the 3-program limit.
-    *   **All data is stored locally in the browser's `localStorage`**.
-    *   No account required - immediate access to core functionality.
+    *   Full access to the workout editor, calendar, progress dashboard and all tracking features.
+    *   **Unlimited custom programs** and the full Template Library.
+    *   **All data is stored locally in the browser's `localStorage`** (this device only).
+    *   Free **Download Backup / Restore from File** on the Progress page.
+    *   No account required.
 
 *   **Premium Tier ($4.99/month):**
-    *   **Secure Account Creation:** Firebase user account created only after successful payment.
-    *   **Cloud Data Sync:** All local data is automatically migrated to the cloud upon signup.
-    *   **Cross-Device Access:** Access your programs, logs, and progress from any device.
-    *   **Unlimited Custom Programs:** Create and save as many workout programs as you want.
-    *   **Full Template Library Access:** Load and schedule any template without program-count restrictions.
-    *   **Community & Sharing:** Add friends, view their workout calendar, and share your custom programs with them.
-    *   **Advanced Analytics:** Access the progress dashboard and track historical performance on lifts and workouts.
+    *   **Automatic cloud backup & sync:** programs, full workout history, weight log and photos are saved to the cloud and available on any device.
+    *   **Community & Sharing:** a unique username, friends, view friends' recent activity, and share programs with friends.
+    *   **Secure account creation:** the Firebase account is created only after the payment method is confirmed.
 
-## 🔒 Payment Security
+## 🔒 Security
 
-*   **Stripe Integration:** Industry-standard payment processing with PCI compliance.
-*   **No Premature Access:** Users cannot access premium features before payment completion.
-*   **Email Capture:** User emails are stored for marketing follow-up even if payment is abandoned.
-*   **One-Time Migration:** Local data is seamlessly transferred to cloud storage upon successful payment.
-*   **Automatic Premium Status:** User accounts are immediately activated with premium features post-payment.
+*   **Verified API calls:** Every endpoint in `api/` (except sign-up, which has no account yet) requires a Firebase ID token (`Authorization: Bearer ...`). The server takes the user's identity from the token and ignores any user ID in the request body.
+*   **Friend checks:** A user can only see another user's activity or share a program with them if the *other* user's friends list contains them.
+*   **Stripe ownership:** Customers are tagged with the owning user ID, and billing endpoints refuse customers or payment methods that belong to someone else.
+*   **Firestore rules** (`firestore.rules`): users can only read/write their own documents, and can never write billing or social fields (`isPremium`, Stripe IDs, `username`, `friends`, requests). Those are written only by the server (Admin SDK).
+*   **Webhook:** `api/stripe-webhook.js` verifies Stripe's signature.
+*   **CORS** is limited to the site's own origins.
+*   **Payment flow:** Stripe stores the card; the app never sees card numbers.
 
 ## 🚀 Features
 
 ### 1. Program Management & Template Library
-- **Intelligent Program Design:** Templates are designed with specific goals and durations in mind (e.g., 4-week strength cycles, 30-day skill challenges).
-- **Filterable Template Library:** Discover the perfect program by filtering a rich library of templates by Program Type, Skill Level, Goal, and Equipment.
-- **Load & Auto-Schedule:** A "quick start" option instantly adds a template to your library and intelligently schedules its workouts onto your calendar.
-- **Create From Scratch:** Build your own custom programs from the ground up. *(Free tier limited to 3 programs)*.
-- **Full Customization:** For any program you own, easily rename it, create new workouts, or edit existing ones.
+- **Intelligent Program Design:** Templates have specific goals and durations (e.g., 4-week strength cycles, 30-day skill challenges, the Home Iron series).
+- **Filterable Template Library:** Filter by Program Type, Skill Level, Goal, and Equipment.
+- **Load & Auto-Schedule:** Add a template to your library and schedule its workouts onto your calendar in one step.
+- **Create From Scratch:** Build as many custom programs as you like.
+- **Full Customization:** Rename programs, create new workouts, edit existing ones.
 
 ### 2. Powerful Workout Editor
-- **Modular Blocks:** Build workouts using a variety of block types: Warm-up, Strength, Conditioning, Cardio, and more.
-- **Strength Blocks:** Define exercises with unique sets, reps, and load. Supports percentage-based loading which automatically calculates weight based on your saved 1-Rep Max.
-- **Conditioning Blocks:** AMRAP, RFT, Chipper, Tabata, EMOM, and custom Intervals.
+- **Modular Blocks:** Warm-up, Strength, Conditioning, Cardio, and more.
+- **Strength Blocks:** Sets, reps and load per exercise, including percentage-based loads calculated from your saved 1-Rep Max.
+- **Conditioning Blocks:** AMRAP, RFT, Chipper, Tabata, EMOM and custom Intervals.
 
 ### 3. Interactive Workout Experience
-- **Live Tracking & Timers:** Log sets/reps in real-time and use context-aware timers (Stopwatch, Countdown, AMRAP, etc.).
-- **Live Feedback & Score Logging:** Log round times, record final times, and enter reps/rounds to save detailed performance data.
-- **1RM Percentage Calculation:** Automatically displays the target weight based on your saved 1-Rep Max.
+- **Live Tracking & Timers:** Log sets/reps in real time with context-aware timers.
+- **Score Logging:** Record round times, final times, and reps/rounds.
+- **1RM Percentage Calculation:** Target weights shown from your saved 1-Rep Max.
 
-### 4. Full-Featured Calendar & Logbook
-- **Multi-Workout Scheduling:** Add multiple workouts to a single day and track completion status individually.
-- **Interactive Day Modal:** Click a day to view all scheduled workouts, start a new one, or review completed sessions with a full performance summary.
-- **Detailed Logbook:** Completed workouts are marked on the calendar, offering a review of all logged data.
+### 4. Calendar & Logbook
+- **Multi-Workout Scheduling:** Several workouts per day, tracked individually.
+- **Interactive Day Modal:** Review scheduled and completed sessions with a full performance summary.
+- **Completed workouts keep a snapshot** of what you did, so history stays correct even if you later edit the program.
 
-### 5. Advanced Progress Tracking
-- **At-a-Glance Dashboard:** Displays key metrics like total workouts, lifetime volume lifted, and total reps.
-- **1-Rep Max (1RM) Tracking:** A dedicated editor to log your personal bests for key lifts.
-- **Historical Performance:** Automatically view your previous performance for a given exercise or benchmark WOD when you start a workout.
-- **Weight & Photo Logging:** Track your body weight and visualize it on a chart. Upload and compare progress photos side-by-side.
+### 5. Progress Tracking (free for everyone)
+- **Dashboard:** Total workouts, lifetime volume, total reps, streaks.
+- **1-Rep Max tracking** for key lifts.
+- **Historical performance:** See your previous results for an exercise when you start a workout.
+- **Weight & Photo logging:** Body-weight chart, plus one **before** and one **after** photo you can change any time (photos are compressed before saving).
+- **Backup & Restore:** Download all your data as a file and restore it later.
 
 ### 6. Community & Social Features (Premium)
-- **Unique Usernames:** Create a public username to connect with others in the BlockFit community.
-- **Build Your Network:** Search for other users by their username and send friend requests to build your fitness circle.
-- **View Friend Activity:** Once connected, you can view your friends' workout calendars to see what they've completed and what's coming up, helping with motivation and accountability.
-- **Share Your Genius:** Share any of your custom-built workout programs with a friend with a single click. They receive a full, independent copy of your program to use in their own training.
+- **Unique Usernames**, friend search and requests.
+- **View Friend Activity:** your friends' current-month calendar and completed workouts.
+- **Share Programs:** send a full, independent copy of any program to a friend.
 
-### 7. Quality of Life Features
-- **In-App Explanations:** Click the help icon next to any conditioning workout type (AMRAP, RFT, etc.) to get a detailed explanation.
-- **Light & Dark Mode:** Toggle between a sleek dark theme and a clean light theme.
-- **Responsive Design:** A mobile-first design ensures a seamless experience on any device.
+### 7. Quality of Life
+- **In-App Explanations** for conditioning types.
+- **Light & Dark Mode.**
+- **Responsive design** that works on phones, tablets and desktops.
+- **Save warnings:** a banner appears if data can't be saved to the device or to the cloud, so nothing fails silently.
 
 ## 💻 Technical Stack
-- **Framework:** React 18 with Vite bundler
-- **State Management:** React Context API (with custom hooks for persistent state)
+- **Framework:** React 18 with Vite
+- **State Management:** React Context API (custom hooks per feature, `usePersistentState` for `localStorage`)
 - **Styling:** CSS with variables for theming
-- **Backend:** Firebase (Authentication & Cloud Firestore)
+- **Backend:** Firebase (Authentication & Cloud Firestore); Firebase Admin in the serverless functions
 - **Payments:** Stripe (SetupIntent + Subscriptions API)
-- **Deployment:** Vercel (Frontend + Serverless Functions for API)
-- **Libraries:**
-  - `recharts` for progress charts
-  - `lucide-react` for icons
-  - `react-compare-slider` for photo comparison
-  - `react-confetti` for workout completion celebration
-  - `@stripe/stripe-js` and `@stripe/react-stripe-js` for payment processing
+- **Deployment:** Vercel (frontend + serverless functions in `api/`)
+- **Libraries:** `recharts`, `lucide-react`, `react-compare-slider`, `react-confetti`, `@stripe/stripe-js`, `@stripe/react-stripe-js`
 
 ## 🏗️ Architecture
 
+### Project layout
+- `src/` – the React app.
+- `api/` – Vercel serverless endpoints (each file is a URL).
+- `server/` – helpers shared by the endpoints (Firebase Admin, auth/CORS handling, Stripe helpers, user-data reading). Kept outside `api/` so they are **not** exposed as URLs.
+- `shared/` – plain JavaScript used by **both** the app and the server (how cloud data is split into documents).
+- `firestore.rules` – the Firestore security rules (copy into Firebase Console → Firestore → Rules and publish; this file is not deployed automatically).
+
 ### Payment Flow
-1. **Free Usage:** Users can immediately use all features with localStorage
-2. **Signup:** Email/password collected but no Firebase account created
-3. **Payment:** Stripe processes payment and stores customer data
-4. **Account Creation:** Firebase user created only after successful payment
-5. **Data Migration:** Local data automatically synced to cloud storage
-6. **Premium Access:** Full cross-device synchronization and social features activated
+1. **Free usage:** everything works immediately with `localStorage`.
+2. **Sign-up:** email/password are collected; no Firebase account yet.
+3. **Payment:** Stripe confirms the payment method.
+4. **Account creation:** the Firebase user is created only after that succeeds.
+5. **Subscription:** the app calls `/api/complete-subscription` with the new user's login token.
+6. **Webhook:** Stripe events keep the user's subscription status up to date in Firestore.
 
 ### Data Storage
-- **Free Tier:** Browser localStorage for single-device persistence
-- **Premium Tier:** Firebase Firestore for cloud synchronization
-- **Migration:** Seamless one-time transfer from local to cloud storage
+- **Free tier:** browser `localStorage` (about 5 MB per browser).
+- **Premium tier:** Cloud Firestore, split into small documents because Firestore limits one document to 1 MB:
+  - `users/{uid}` – small data: totals, weight history, settings, billing/social fields, `storageVersion: 2`, `programOrder`.
+  - `users/{uid}/chunks/s_YYYY-MM` – one document per month of workout history.
+  - `users/{uid}/chunks/p_{programId}` – one document per program.
+  - `users/{uid}/chunks/photo_beforePhoto` / `photo_afterPhoto` – the two progress photos.
+- **Saving:** only the documents that changed are written. Saving is refused if the cloud data could not be loaded first, so a failed read can never overwrite good data.
+- **Migration:** accounts that still use the old single-document layout are moved automatically on their next sign-in. Old fields are removed only after the new documents are read back and verified to match.
+- **Friends' view:** the server sends only the current month (and neighbouring months) and only the workouts used in them.
 
-## 🚀 Getting Started
+## 🛠️ For Developers
 
-### For Users
-1. Visit the app and start using it immediately (no signup required).
-2. Browse the **Template Library** to find a program that fits your goals.
-3. When ready for cloud sync, unlimited programs, and social features, upgrade to Premium.
-4. Create your unique username, add friends, and start sharing your fitness journey!
+1. Clone the repository and run `npm install`.
+2. Create environment variables:
+   - **Frontend (Vite):** `VITE_API_KEY`, `VITE_AUTH_DOMAIN`, `VITE_PROJECT_ID`, `VITE_STORAGE_BUCKET`, `VITE_MESSAGING_SENDER_ID`, `VITE_APP_ID`, `VITE_STRIPE_PUBLISHABLE_KEY`.
+   - **Server (Vercel):** `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`.
+   - **Optional (server):** `SITE_URL` and/or `ALLOWED_ORIGINS` (comma-separated) if the site is served from a domain other than `blockfit.app` / `www.blockfit.app`.
+3. Run the dev server with `npm run dev`. The `/api` routes only run on Vercel (or `vercel dev`), not in the plain Vite dev server.
+4. Publish `firestore.rules` in the Firebase Console.
+5. Deploy to Vercel.
 
-### For Developers
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables for Firebase and Stripe
-4. Run development server: `npm run dev`
-5. Deploy to Vercel for production
+### Deploying changes safely
+- Publish new Firestore rules **before** deploying code that needs them.
+- Use the Firebase Console **Rules Playground** to check rules.
+- Close or refresh open BlockFit tabs on every device after a deploy so they stop running old code.
+- Keep the Firebase project on the **Blaze** (pay-as-you-go) plan with a budget alert, so a busy day can't hit a hard limit.
 
 ## 📱 Mobile Support
-- Progressive Web App (PWA) capabilities
-- Responsive design optimized for mobile devices
-- Touch-friendly interface for workout tracking
-- Offline functionality for free tier users
+- Responsive, mobile-first design with a touch-friendly interface.
+- The app is a normal website (not an installable PWA) and needs a connection to load. Once loaded, your data is kept on the device.
 
 ---
 
-**BlockFit** - Transform your fitness journey with intelligent program design and effortless progress tracking.
+**BlockFit** - Intelligent program design and effortless progress tracking.
