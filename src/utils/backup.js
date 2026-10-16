@@ -29,10 +29,19 @@ const BACKUP_KEYS = Object.keys(initialAppState).filter((k) => !EXCLUDED_KEYS.ha
 
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
+// A progress photo is stored as { url: 'data:image/jpeg;base64,...', date: '7/18/2025' } (or null).
+const PHOTO_KEYS = new Set(['beforePhoto', 'afterPhoto']);
+const isValidPhoto = (value) =>
+  value === null ||
+  (isPlainObject(value) &&
+    typeof value.url === 'string' &&
+    /^(data:image\/|https:\/\/)/.test(value.url) &&
+    (value.date === undefined || typeof value.date === 'string'));
+
 // Does `value` have the same general shape as the default for that field?
-const matchesShape = (defaultValue, value) => {
+const matchesShape = (key, defaultValue, value) => {
+  if (PHOTO_KEYS.has(key)) return isValidPhoto(value);
   if (Array.isArray(defaultValue)) return Array.isArray(value);
-  if (defaultValue === null) return value === null || typeof value === 'string'; // photos
   if (isPlainObject(defaultValue)) return isPlainObject(value);
   return typeof value === typeof defaultValue;
 };
@@ -102,7 +111,7 @@ export function parseBackup(text) {
   const restored = {};
   for (const key of BACKUP_KEYS) {
     if (!(key in parsed.data)) continue;
-    if (matchesShape(initialAppState[key], parsed.data[key])) {
+    if (matchesShape(key, initialAppState[key], parsed.data[key])) {
       restored[key] = parsed.data[key];
     }
   }
