@@ -2,6 +2,7 @@
 
 import { db } from '../server/firebaseAdmin.js';
 import { createHandler, HttpError, requireString } from '../server/http.js';
+import { readFriendView } from '../server/userData.js';
 
 export default createHandler(async (req, res) => {
   const callerUid = req.user.uid; // from the verified login token
@@ -17,9 +18,11 @@ export default createHandler(async (req, res) => {
     throw new HttpError(403, 'You are not friends with this user.');
   }
 
+  const { workoutSchedule, programs } = await readFriendView(db, friendUid, friendData);
+
   res.status(200).json({
     username: friendData.username || 'Unknown User',
-    workoutSchedule: friendData.workoutSchedule || {},
-    programs: friendData.programs || [],
+    workoutSchedule,
+    programs,
   });
 });

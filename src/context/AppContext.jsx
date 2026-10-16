@@ -6,7 +6,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { usePersistentState } from '../hooks/usePersistentState.jsx';
 import { TimerProvider, TimerContext } from './TimerContext.jsx';
 import { initialAppState } from './appState/initialState.js';
-import { saveToFirestore, loadFromFirestore } from './appState/firestoreSync.js';
+import { saveToFirestore, loadAllFromFirestore, clearSyncSessions } from './appState/firestoreSync.js';
+import { reportSaveStatus } from '../utils/saveStatus.js';
 import { useUIActions } from './actions/useUIActions.js';
 import { useAuthActions } from './actions/useAuthActions.js';
 import { useProgramActions } from './actions/useProgramActions.js';
@@ -28,16 +29,24 @@ const AppStateProviderComponent = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
-        const cloudData = await loadFromFirestore(user.uid);
-        if (cloudData) {
-          // Convert Firestore Timestamps back to JS Dates
-          const convertedData = { ...cloudData };
-          if (convertedData.subscriptionCurrentPeriodEnd && convertedData.subscriptionCurrentPeriodEnd.toDate) {
-            convertedData.subscriptionCurrentPeriodEnd = convertedData.subscriptionCurrentPeriodEnd.toDate();
+        try {
+          const cloudData = await loadAllFromFirestore(user.uid);
+          if (cloudData) {
+            // Convert Firestore Timestamps back to JS Dates
+            const convertedData = { ...cloudData };
+            if (convertedData.subscriptionCurrentPeriodEnd && convertedData.subscriptionCurrentPeriodEnd.toDate) {
+              convertedData.subscriptionCurrentPeriodEnd = convertedData.subscriptionCurrentPeriodEnd.toDate();
+            }
+            setAppState(prev => ({ ...prev, ...convertedData }));
           }
-          setAppState(prev => ({ ...prev, ...convertedData }));
+        } catch (error) {
+          // If the cloud copy can't be read we must NOT save over it, so saving stays off
+          // until the next sign-in or refresh. Your data on this device is untouched.
+          console.error('Error loading cloud data:', error);
+          reportSaveStatus('cloud', { kind: 'load-failed' });
         }
       } else {
+        clearSyncSessions();
         setCurrentUser(null);
       }
       setAuthLoading(false);

@@ -14,6 +14,10 @@ const CLOUD_MESSAGES = {
     'Cloud backup is temporarily unavailable. Your changes are saved on this device and will sync when it is back.',
   'signed-out':
     'You have been signed out of cloud backup. Your changes are saved on this device. Log out and back in to resume syncing.',
+  'item-too-large':
+    'One item (usually a large photo) is too big to back up to the cloud. Everything else is backing up normally. Open Progress and use Change Before / Change After to re-select the photo and it will be shrunk automatically.',
+  'load-failed':
+    'We could not load your cloud data, so cloud backup is paused to protect it. Your data on this device is safe. Refresh the page to try again.',
   unknown:
     'We could not save your latest changes to the cloud. They are saved on this device, and we will try again with your next change.',
 };
@@ -48,7 +52,8 @@ const SaveWarningBanner = ({ onOpenBackup }) => {
   if (!key || dismissedKey === key) return null;
 
   const background = urgent ? '#b91c1c' : '#b45309';
-  const showBackupButton = urgent || key.startsWith('cloud:permission');
+  const isPhotoProblem = key === 'cloud:item-too-large';
+  const showBackupButton = urgent || key.startsWith('cloud:permission') || isPhotoProblem;
 
   return (
     <div
@@ -87,7 +92,7 @@ const SaveWarningBanner = ({ onOpenBackup }) => {
             flexShrink: 0,
           }}
         >
-          Go to Backup
+          {isPhotoProblem ? 'Open Progress' : 'Go to Backup'}
         </button>
       )}
       <button

@@ -2,6 +2,7 @@
 
 import { admin, db } from '../server/firebaseAdmin.js';
 import { createHandler, HttpError, requireString } from '../server/http.js';
+import { findProgram, addProgram } from '../server/userData.js';
 
 const serverGenerateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
@@ -27,7 +28,7 @@ export default createHandler(async (req, res) => {
   }
 
   const senderData = senderDoc.data();
-  const programToShare = (senderData.programs || []).find(p => p.id === programId);
+  const programToShare = await findProgram(db, senderUid, senderData, programId);
   if (!programToShare) throw new HttpError(404, "Program not found in sender's account.");
 
   const newProgram = JSON.parse(JSON.stringify(programToShare));
@@ -51,7 +52,7 @@ export default createHandler(async (req, res) => {
     throw new HttpError(400, 'That program is too large to share.');
   }
 
-  await recipientRef.update({ programs: admin.firestore.FieldValue.arrayUnion(newProgram) });
+  await addProgram(db, admin, recipientUid, recipientDoc.data(), newProgram);
 
   res.status(200).json({ success: true, message: 'Program shared successfully!' });
 });
