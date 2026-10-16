@@ -7,8 +7,16 @@ import Auth from '../Auth/Auth.jsx';
 
 const PremiumModal = ({ isOpen, onClose }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  // "upgrade" opens on Create Account, "signin" opens on Log In
+  const [authMode, setAuthMode] = useState('upgrade');
 
   const handleUpgradeClick = () => {
+    setAuthMode('upgrade');
+    setShowAuthModal(true);
+  };
+
+  const handleLoginClick = () => {
+    setAuthMode('signin');
     setShowAuthModal(true);
   };
 
@@ -118,13 +126,23 @@ const PremiumModal = ({ isOpen, onClose }) => {
 
           <div className="premium-footer">
             <p>✨ Try it today. Cancel anytime.</p>
+            <p style={{ marginTop: '12px' }}>
+              Already have a Premium account?{' '}
+              <button
+                type="button"
+                onClick={handleLoginClick}
+                style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 'inherit', fontWeight: 600, padding: 0, textDecoration: 'underline' }}
+              >
+                Log in
+              </button>
+            </p>
           </div>
         </div>
       </Modal>
 
       {showAuthModal && (
   <Modal isOpen={showAuthModal} onClose={handleAuthModalClose}>
-    <Auth closeModal={handleAuthModalClose} defaultMode="upgrade" />
+    <Auth key={authMode} closeModal={handleAuthModalClose} defaultMode={authMode} />
   </Modal>
 )}
     </>

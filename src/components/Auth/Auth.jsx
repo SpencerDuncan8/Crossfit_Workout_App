@@ -77,7 +77,7 @@ const Auth = ({ closeModal, defaultMode = "signin" }) => {
             <p className="auth-subtitle">
               {defaultMode === "upgrade" ? 
                 (isLogin ? 'Log in to upgrade to Premium' : 'Create your account to upgrade to Premium') :
-                (isLogin ? 'Log in to upgrade to Premium' : 'Create your Premium account')
+                (isLogin ? 'Log in to your Premium account' : 'Create your Premium account')
               }
             </p>
           </div>
