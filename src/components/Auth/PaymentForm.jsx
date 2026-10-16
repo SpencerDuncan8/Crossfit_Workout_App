@@ -88,7 +88,11 @@ const CheckoutForm = ({ onSuccess, customerId, userEmail, userPassword }) => {
 
         } catch (error) {
             console.error('Error during signup process:', error);
-            setErrorMessage(error.message || 'An error occurred. Please try again.');
+            if (error?.code === 'auth/email-already-in-use') {
+                setErrorMessage('An account with this email already exists. Please close this window and log in instead. Your card was not charged.');
+            } else {
+                setErrorMessage(error.message || 'An error occurred. Please try again.');
+            }
         } finally {
             setIsProcessing(false);
         }
