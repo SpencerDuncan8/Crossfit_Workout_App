@@ -2,7 +2,7 @@
 
 import React, { useContext, useState } from 'react';
 import { AppStateContext } from '../../context/AppContext.jsx';
-import { programTemplates } from '../../data/programTemplates.js';
+import { getLibraryTemplates, isPrivateTemplate, templateHasEquipment } from '../../data/programTemplates.js';
 import { Check, Copy, XCircle, Filter } from 'lucide-react';
 import ScheduleProgramModal from './ScheduleProgramModal.jsx';
 import Modal from '../Common/Modal.jsx';
@@ -12,7 +12,22 @@ import './TemplateLibrary.css';
 const filterCategories = {
   type: ['Structured Program', 'WODs', 'Challenges'],
   level: ['Beginner', 'Intermediate', 'Advanced'],
-  equipment: ['Bodyweight', 'Dumbbells', 'Kettlebells', 'Full Gym'],
+  equipment: ['Bodyweight', 'Dumbbells', 'Kettlebells', 'Pullup Bar', 'Full Gym'],
+};
+
+// Private templates are hidden from the public library. Opening the site once with
+// "?templates=all" turns them on for this browser; "?templates=public" turns them off.
+const SHOW_ALL_KEY = 'blockfit_show_all_templates';
+const readShowAllFlag = () => {
+  let param = null;
+  try { param = new URLSearchParams(window.location.search).get('templates'); } catch (e) { /* ignore */ }
+  try {
+    if (param === 'all') localStorage.setItem(SHOW_ALL_KEY, '1');
+    else if (param === 'public') localStorage.removeItem(SHOW_ALL_KEY);
+    return localStorage.getItem(SHOW_ALL_KEY) === '1';
+  } catch (e) {
+    return param === 'all'; // storage blocked: still honour the address for this visit
+  }
 };
 
 const TemplateLibrary = () => {
@@ -20,6 +35,7 @@ const TemplateLibrary = () => {
   const [scheduleConfirm, setScheduleConfirm] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [showPrivate, setShowPrivate] = useState(readShowAllFlag);
   
   const initialFilters = { type: null, level: null, equipment: null };
   const [activeFilters, setActiveFilters] = useState(initialFilters);
@@ -51,9 +67,15 @@ const TemplateLibrary = () => {
     }
   };
 
-  const filteredTemplates = programTemplates.filter(template => {
+  const handleHidePrivate = () => {
+    try { localStorage.removeItem(SHOW_ALL_KEY); } catch (e) { /* ignore */ }
+    setShowPrivate(false);
+  };
+
+  const filteredTemplates = getLibraryTemplates(showPrivate).filter(template => {
     return Object.keys(activeFilters).every(category => {
       if (activeFilters[category] === null) return true;
+      if (category === 'equipment') return templateHasEquipment(template, activeFilters[category]);
       return template.meta?.[category] === activeFilters[category];
     });
   });
@@ -81,6 +103,14 @@ const TemplateLibrary = () => {
           </button>
         </div>
         <p>Find the perfect program by filtering by type, level, and equipment.</p>
+        {showPrivate && (
+          <p style={{ fontSize: '13px', opacity: 0.8 }}>
+            Showing private templates on this device.{' '}
+            <button type="button" onClick={handleHidePrivate} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 0, fontSize: 'inherit', textDecoration: 'underline' }}>
+              Hide them
+            </button>
+          </p>
+        )}
         
         {activeFilterList.length > 0 && (
           <div className="active-filters-display">
@@ -114,6 +144,11 @@ const TemplateLibrary = () => {
                         </span>
                       );
                   })}
+                  {isPrivateTemplate(template) && (
+                    <span className="meta-tag" style={{'--tag-color': '#ef4444', '--tag-bg-color': 'rgba(239, 68, 68, 0.1)'}}>
+                      Private
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="template-actions">
